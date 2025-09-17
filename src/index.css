@@ -8,17 +8,17 @@
 
 @layer base {
   :root {
-    /* GitHub Dark Theme Colors */
-    --github-canvas-default: 215 15% 6%;      /* #0d1117 */
-    --github-canvas-subtle: 220 14% 11%;      /* #161b22 */
-    --github-canvas-inset: 224 13% 13%;       /* #21262d */
-    --github-border-default: 223 14% 20%;     /* #30363d */
-    --github-border-muted: 223 14% 17%;       /* #21262d */
+    /* Exact GitHub Dark Theme Colors */
+    --github-canvas-default: 218 19% 7%;      /* #0d1117 */
+    --github-canvas-subtle: 220 13% 11%;      /* #161b22 */
+    --github-canvas-inset: 225 13% 13%;       /* #21262d */
+    --github-border-default: 224 14% 20%;     /* #30363d */
+    --github-border-muted: 224 14% 17%;       /* #21262d */
     
-    /* Text Colors */
-    --github-fg-default: 213 15% 93%;         /* #f0f6fc */
-    --github-fg-muted: 213 11% 65%;           /* #8b949e */
-    --github-fg-subtle: 213 11% 50%;          /* #6e7681 */
+    /* Exact GitHub Text Colors */
+    --github-fg-default: 213 17% 91%;         /* #e6edf3 */
+    --github-fg-muted: 213 11% 62%;           /* #8b949e */
+    --github-fg-subtle: 213 11% 45%;          /* #6e7681 */
     
     /* Brand Colors */
     --github-accent-fg: 212 92% 45%;          /* #2f81f7 */
@@ -86,7 +86,8 @@
   }
 
   body {
-    @apply bg-background text-foreground font-inter antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
   

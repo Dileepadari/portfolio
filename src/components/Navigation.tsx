@@ -15,12 +15,14 @@ export function Navigation() {
     { path: "/", label: "Overview" },
     { path: "/repositories", label: "Repositories" },
     { path: "/projects", label: "Projects" },
-    { path: "/packages", label: "Packages" },
-    { path: "/stars", label: "Stars" },
+    { path: "/blog", label: "Blog" },
+    { path: "/timeline", label: "Timeline" },
+    { path: "/schedule", label: "Schedule" },
+    { path: "/resume", label: "Resume" },
   ];
 
   return (
-    <nav className="border-b border-[hsl(var(--github-border-default))] bg-[hsl(var(--github-canvas-default))] sticky top-0 z-50">
+    <nav className="border-b border-[#30363d]" style={{backgroundColor: '#0d1117'}}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left side - Logo and main nav */}
@@ -56,7 +58,7 @@ export function Navigation() {
                 <input
                   type="text"
                   placeholder="Search or jump to..."
-                  className="w-64 pl-10 pr-4 py-1.5 text-sm bg-[hsl(var(--github-canvas-inset))] border border-[hsl(var(--github-border-default))] rounded-md focus:outline-none focus:ring-2 focus:ring-[hsl(var(--github-accent-emphasis))] focus:border-transparent text-foreground placeholder-muted-foreground"
+                  className="w-64 pl-10 pr-4 py-1.5 text-sm bg-[#21262d] border border-[#30363d] rounded-md focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent text-[#e6edf3] placeholder-[#8b949e]"
                 />
               </div>
             </div>
