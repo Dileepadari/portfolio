@@ -8,17 +8,7 @@ export function Profile() {
         {/* Left Sidebar - Profile Info */}
         <aside className="lg:w-80 flex-shrink-0">
           <div className="fade-in">
-            <ProfileCard
-              name="Your Name"
-              username="yourusername"
-              bio="A passionate full-stack developer and design thinker creating amazing digital experiences."
-              location="Your City, Country"
-              website="yourwebsite.com"
-              company="Your Company"
-              email="you@email.com"
-              followers={42}
-              following={58}
-            />
+            <ProfileCard />
           </div>
         </aside>
         

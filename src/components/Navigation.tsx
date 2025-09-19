@@ -1,15 +1,24 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Github, Search, Bell, Plus, Menu } from "lucide-react";
+import { Github, Search, Bell, Plus, Menu, LogIn, LogOut, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import profileAvatar from "@/assets/profile-avatar.jpg";
 
 export function Navigation() {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
+  };
   
   const navItems = [
     { path: "/", label: "Overview" },
@@ -80,10 +89,46 @@ export function Navigation() {
               <Bell className="w-4 h-4" />
             </Button>
             
+            {/* Auth Section for Desktop */}
+            <div className="hidden md:flex items-center space-x-3">
+              {user ? (
+                <>
+                  <div className="text-right">
+                    <p className="text-xs text-[#8b949e]">Signed in as</p>
+                    <p className="text-sm font-medium text-[#e6edf3] flex items-center">
+                      {user.email?.split('@')[0]}
+                      {isAdmin && (
+                        <Shield className="w-3 h-3 ml-1 text-yellow-400" />
+                      )}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
+            </div>
+            
             {/* User avatar */}
             <Avatar className="w-8 h-8 cursor-pointer">
               <AvatarImage src={profileAvatar} alt="Profile" />
-              <AvatarFallback>YN</AvatarFallback>
+              <AvatarFallback>DA</AvatarFallback>
             </Avatar>
             
             {/* Mobile menu button */}
@@ -116,6 +161,41 @@ export function Navigation() {
                   {item.label}
                 </Link>
               ))}
+              
+              {/* Auth Section in Mobile */}
+              <div className="border-t border-[#30363d] pt-2 mt-2">
+                {user ? (
+                  <div className="space-y-2">
+                    <div className="px-3 py-2">
+                      <p className="text-xs text-[#8b949e]">
+                        Signed in as
+                      </p>
+                      <p className="text-sm font-medium text-[#e6edf3] flex items-center">
+                        {user.email}
+                        {isAdmin && (
+                          <Shield className="w-3 h-3 ml-1 text-yellow-400" />
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full px-3 py-2 text-sm font-medium text-left text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--github-canvas-subtle))] rounded flex items-center"
+                    >
+                      <LogOut className="w-4 h-4 mr-3" />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    to="/auth"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block w-full px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--github-canvas-subtle))] rounded"
+                  >
+                    <LogIn className="w-4 h-4 mr-3 inline" />
+                    Sign In
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}
