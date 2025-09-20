@@ -1,18 +1,29 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Book, Edit, FileText } from "lucide-react";
+import { usePersonalInfo } from "@/hooks/usePortfolioData";
 
-interface ReadmeCardProps {
-  title?: string;
-  content?: string;
-}
+export function ReadmeCard() {
+  const { data: personalInfo } = usePersonalInfo();
 
-export function ReadmeCard({ 
-  title = "Hi, I'm [Your Name]! 👋",
-  content = `
-**💻 Passionate about Coding** | **🎨 Exploring Design Thinking** | **🎓 Student**
+  if (!personalInfo) {
+    return (
+      <Card className="github-card">
+        <CardContent className="p-6">
+          <div className="animate-pulse">
+            <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-**🏆 B.Tech in Computer Science** | **📅 Final Year** | **🌍 From [Your Location]**
+  const title = `Hi, I'm ${personalInfo.name}! 👋`;
+  const content = `
+**💻 Passionate about Coding** | **🎨 Exploring Design Thinking** | **📚 IIIT Hyderabad Student** | **🌏 Joomla! CMS @GSoC'25**
+
+**🎓 B.Tech in Computer Science** | **📅 7th Semester** | **🌍 From ${personalInfo.location}**
 
 ---
 
@@ -20,19 +31,18 @@ export function ReadmeCard({
 
 I'm diving deep into **Design Thinking** and also enhancing my skills in **coding**. I thrive on bringing creative ideas to life and solving complex problems through innovative design and technology.
 
-### 🎯 Current Focus
+### 🌱 Current Focus
 
-Actively learning and applying **Design Thinking** methodologies while pursuing my academic journey. Always on the lookout for opportunities to expand my knowledge and skills!
+Actively learning and applying **Design Thinking** methodologies while pursuing my academic journey at **IIIT Hyderabad**. Always on the lookout for opportunities to expand my knowledge and skills!
 
 ### 🤝 Looking for Collaborations
 
 I'm eager to collaborate on **projects** that blend innovative thinking with practical coding skills. Together, we can make a significant impact!
 
-### 📧 Let's Connect
+### 📫 Let's Connect
 
-Feel free to reach out to me via **email** - I'm open to interesting conversations and new opportunities!
-  `
-}: ReadmeCardProps) {
+Feel free to reach out to me via [email](mailto:${personalInfo.email})—I'm open to interesting conversations and new opportunities!
+  `;
   return (
     <Card className="github-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">

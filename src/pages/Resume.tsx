@@ -57,17 +57,7 @@ interface Skill {
   skills: string[];
 }
 
-const personalInfo = {
-  name: "Your Name",
-  title: "Computer Science Student & Full-Stack Developer",
-  email: "your.email@example.com",
-  phone: "+1 (555) 123-4567",
-  location: "City, State, Country",
-  website: "yourwebsite.com",
-  linkedin: "linkedin.com/in/yourprofile",
-  github: "github.com/yourusername",
-  summary: "Passionate Computer Science student with strong foundation in full-stack development, data structures, and algorithms. Experienced in building scalable web applications using modern technologies. Seeking opportunities to contribute to innovative projects and grow as a software engineer."
-};
+import { usePersonalInfo, useEducation, useExperience, useProjects, useSkills, useAchievements } from "@/hooks/usePortfolioData";
 
 const education: Education[] = [
   {
@@ -184,7 +174,26 @@ const achievements = [
 ];
 
 export function Resume() {
-  const [activeSection, setActiveSection] = useState("preview");
+  const { data: personalInfo } = usePersonalInfo();
+  const { data: education } = useEducation();
+  const { data: experience } = useExperience();
+  const { data: projects } = useProjects();
+  const { data: skills } = useSkills();
+  const { data: achievements } = useAchievements();
+
+  const skillsByCategory = skills?.reduce((acc, skill) => {
+    if (!acc[skill.category]) acc[skill.category] = [];
+    acc[skill.category].push(skill);
+    return acc;
+  }, {} as Record<string, typeof skills>) || {};
+
+  if (!personalInfo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#0d1117'}}>
+        <div className="animate-pulse text-[#e6edf3]">Loading resume...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{backgroundColor: '#0d1117', color: '#e6edf3'}}>
@@ -245,10 +254,10 @@ export function Resume() {
                   </div>
                   
                   <div className="flex justify-center gap-4 mt-4">
-                    <a href={`https://${personalInfo.linkedin}`} className="text-[#58a6ff] hover:underline">
+                    <a href={personalInfo.linkedin} className="text-[#58a6ff] hover:underline" target="_blank" rel="noopener noreferrer">
                       <Linkedin className="w-5 h-5" />
                     </a>
-                    <a href={`https://${personalInfo.github}`} className="text-[#58a6ff] hover:underline">
+                    <a href={personalInfo.github} className="text-[#58a6ff] hover:underline" target="_blank" rel="noopener noreferrer">
                       <Github className="w-5 h-5" />
                     </a>
                   </div>
@@ -258,7 +267,7 @@ export function Resume() {
                 
                 <div>
                   <h3 className="text-lg font-semibold text-[#e6edf3] mb-3">Professional Summary</h3>
-                  <p className="text-[#8b949e] leading-relaxed">{personalInfo.summary}</p>
+                  <p className="text-[#8b949e] leading-relaxed">{personalInfo.bio}</p>
                 </div>
               </CardContent>
             </Card>
@@ -273,7 +282,7 @@ export function Resume() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {experience.map((exp, index) => (
+                  {experience?.map((exp, index) => (
                     <div key={exp.id} className={index > 0 ? "border-t border-[#30363d] pt-6" : ""}>
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
                         <h3 className="text-lg font-semibold text-[#e6edf3]">{exp.title}</h3>
@@ -281,13 +290,15 @@ export function Resume() {
                       </div>
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3">
                         <p className="text-[#58a6ff] font-medium">{exp.company}</p>
-                        <span className="text-sm text-[#8b949e]">{exp.location}</span>
+                        {exp.location && <span className="text-sm text-[#8b949e]">{exp.location}</span>}
                       </div>
-                      <ul className="space-y-1 mb-3">
-                        {exp.description.map((item, i) => (
-                          <li key={i} className="text-[#8b949e] text-sm">• {item}</li>
-                        ))}
-                      </ul>
+                      {exp.description && (
+                        <ul className="space-y-1 mb-3">
+                          {exp.description.map((item, i) => (
+                            <li key={i} className="text-[#8b949e] text-sm">• {item}</li>
+                          ))}
+                        </ul>
+                      )}
                       {exp.technologies && (
                         <div className="flex flex-wrap gap-1">
                           {exp.technologies.map((tech) => (
@@ -317,35 +328,37 @@ export function Resume() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {projects.map((project, index) => (
+                  {projects?.slice(0, 3).map((project, index) => (
                     <div key={project.id} className={index > 0 ? "border-t border-[#30363d] pt-6" : ""}>
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="text-lg font-semibold text-[#e6edf3]">{project.title}</h3>
                         <div className="flex gap-2">
-                          {project.github && (
-                            <a href={project.github} target="_blank" rel="noopener noreferrer">
+                          {project.github_url && (
+                            <a href={project.github_url} target="_blank" rel="noopener noreferrer">
                               <Github className="w-4 h-4 text-[#8b949e] hover:text-[#e6edf3]" />
                             </a>
                           )}
-                          {project.link && (
-                            <a href={project.link} target="_blank" rel="noopener noreferrer">
+                          {project.live_url && (
+                            <a href={project.live_url} target="_blank" rel="noopener noreferrer">
                               <ExternalLink className="w-4 h-4 text-[#8b949e] hover:text-[#e6edf3]" />
                             </a>
                           )}
                         </div>
                       </div>
                       <p className="text-[#8b949e] text-sm leading-relaxed mb-3">{project.description}</p>
-                      <div className="flex flex-wrap gap-1">
-                        {project.technologies.map((tech) => (
-                          <Badge 
-                            key={tech} 
-                            variant="outline" 
-                            className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 text-xs"
-                          >
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
+                      {project.technologies && (
+                        <div className="flex flex-wrap gap-1">
+                          {project.technologies.map((tech) => (
+                            <Badge 
+                              key={tech} 
+                              variant="outline" 
+                              className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 text-xs"
+                            >
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -364,12 +377,12 @@ export function Resume() {
                 </h2>
               </CardHeader>
               <CardContent>
-                {education.map((edu) => (
+                {education?.map((edu) => (
                   <div key={edu.id}>
                     <h3 className="font-semibold text-[#e6edf3] text-sm">{edu.degree}</h3>
                     <p className="text-[#58a6ff] text-sm">{edu.institution}</p>
                     <p className="text-[#8b949e] text-xs">{edu.duration}</p>
-                    <p className="text-[#8b949e] text-xs">{edu.location}</p>
+                    {edu.location && <p className="text-[#8b949e] text-xs">{edu.location}</p>}
                     {edu.gpa && (
                       <p className="text-[#8b949e] text-xs">GPA: {edu.gpa}</p>
                     )}
@@ -404,17 +417,17 @@ export function Resume() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {skills.map((skillGroup) => (
-                    <div key={skillGroup.category}>
-                      <h4 className="text-sm font-medium text-[#e6edf3] mb-2">{skillGroup.category}</h4>
+                  {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
+                    <div key={category}>
+                      <h4 className="text-sm font-medium text-[#e6edf3] mb-2">{category}</h4>
                       <div className="flex flex-wrap gap-1">
-                        {skillGroup.skills.map((skill) => (
+                        {categorySkills.map((skill) => (
                           <Badge 
-                            key={skill} 
+                            key={skill.id} 
                             variant="outline" 
                             className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 text-xs"
                           >
-                            {skill}
+                            {skill.skill_name}
                           </Badge>
                         ))}
                       </div>
@@ -434,10 +447,10 @@ export function Resume() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {achievements.map((achievement, index) => (
-                    <li key={index} className="text-[#8b949e] text-sm flex items-start gap-2">
+                  {achievements?.map((achievement) => (
+                    <li key={achievement.id} className="text-[#8b949e] text-sm flex items-start gap-2">
                       <span className="text-yellow-400 mt-1">•</span>
-                      <span>{achievement}</span>
+                      <span>{achievement.title}</span>
                     </li>
                   ))}
                 </ul>
