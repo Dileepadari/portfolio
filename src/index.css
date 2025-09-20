@@ -8,74 +8,97 @@
 
 @layer base {
   :root {
-    /* Exact GitHub Dark Theme Colors */
-    --github-canvas-default: 218 19% 7%;      /* #0d1117 */
-    --github-canvas-subtle: 220 13% 11%;      /* #161b22 */
-    --github-canvas-inset: 225 13% 13%;       /* #21262d */
-    --github-border-default: 224 14% 20%;     /* #30363d */
-    --github-border-muted: 224 14% 17%;       /* #21262d */
+    /* Light theme colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
     
-    /* Exact GitHub Text Colors */
-    --github-fg-default: 213 17% 91%;         /* #e6edf3 */
-    --github-fg-muted: 213 11% 62%;           /* #8b949e */
-    --github-fg-subtle: 213 11% 45%;          /* #6e7681 */
+    /* GitHub light specific */
+    --github-canvas-default: 0 0% 100%;
+    --github-canvas-subtle: 210 17% 98%;
+    --github-canvas-inset: 210 17% 95%;
+    --github-border-default: 210 18% 87%;
+    --github-border-muted: 210 18% 91%;
+    --github-fg-default: 222.2 84% 4.9%;
+    --github-fg-muted: 215.4 16.3% 46.9%;
+    --github-fg-subtle: 215.4 16.3% 56.9%;
+    --github-accent-fg: 212 92% 45%;
+    --github-accent-emphasis: 212 92% 45%;
+    --github-success-fg: 137 64% 50%;
+    --github-danger-fg: 347 87% 65%;
+    --github-btn-bg: 210 40% 96%;
+    --github-btn-border: 214.3 31.8% 91.4%;
+    --github-btn-hover-bg: 210 40% 92%;
+    --github-link: 212 92% 45%;
+    --github-link-hover: 212 100% 35%;
+    --profile-border: 214.3 31.8% 91.4%;
+    --profile-hover: 210 40% 92%;
+    --repo-bg: 0 0% 100%;
+    --repo-border: 214.3 31.8% 91.4%;
+    --repo-hover: 210 40% 96%;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
     
-    /* Brand Colors */
-    --github-accent-fg: 212 92% 45%;          /* #2f81f7 */
-    --github-accent-emphasis: 212 92% 45%;    /* #2f81f7 */
-    --github-success-fg: 137 64% 50%;         /* #3fb950 */
-    --github-danger-fg: 347 87% 65%;          /* #f85149 */
-    
-    /* Interactive */
-    --github-btn-bg: 224 13% 13%;             /* #21262d */
-    --github-btn-border: 223 14% 20%;         /* #30363d */
-    --github-btn-hover-bg: 218 12% 17%;       /* #30363d */
-    
-    /* Design System Mapping */
-    --background: var(--github-canvas-default);
-    --foreground: var(--github-fg-default);
-    
-    --card: var(--github-canvas-inset);
-    --card-foreground: var(--github-fg-default);
-    
-    --popover: var(--github-canvas-inset);
-    --popover-foreground: var(--github-fg-default);
-    
-    --primary: var(--github-accent-emphasis);
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: var(--github-btn-bg);
-    --secondary-foreground: var(--github-fg-default);
-    
-    --muted: var(--github-canvas-subtle);
-    --muted-foreground: var(--github-fg-muted);
-    
-    --accent: var(--github-canvas-inset);
-    --accent-foreground: var(--github-fg-default);
-    
-    --destructive: var(--github-danger-fg);
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: var(--github-border-default);
-    --input: var(--github-border-default);
-    --ring: var(--github-accent-emphasis);
-    
-    --radius: 0.375rem;
-    
-    /* GitHub-specific tokens */
-    --github-link: var(--github-accent-fg);
+    /* GitHub dark specific colors */
+    --github-canvas-default: 218 19% 7%;
+    --github-canvas-subtle: 220 13% 11%;
+    --github-canvas-inset: 225 13% 13%;
+    --github-border-default: 224 14% 20%;
+    --github-border-muted: 224 14% 17%;
+    --github-fg-default: 213 17% 91%;
+    --github-fg-muted: 213 11% 62%;
+    --github-fg-subtle: 213 11% 45%;
+    --github-accent-fg: 212 92% 45%;
+    --github-accent-emphasis: 212 92% 45%;
+    --github-success-fg: 137 64% 50%;
+    --github-danger-fg: 347 87% 65%;
+    --github-btn-bg: 224 13% 13%;
+    --github-btn-border: 223 14% 20%;
+    --github-btn-hover-bg: 218 12% 17%;
+    --github-link: 212 92% 45%;
     --github-link-hover: 212 100% 60%;
-    --github-success: var(--github-success-fg);
-    --github-warning: 45 100% 51%;
-    --github-danger: var(--github-danger-fg);
-    
-    /* Profile specific */
-    --profile-border: var(--github-border-muted);
+    --profile-border: 224 14% 17%;
     --profile-hover: 220 14% 15%;
-    
-    /* Repository card specific */
-    --repo-bg: var(--github-canvas-inset);
-    --repo-border: var(--github-border-default);
+    --repo-bg: 225 13% 13%;
+    --repo-border: 224 14% 20%;
     --repo-hover: 218 12% 17%;
   }
 }
