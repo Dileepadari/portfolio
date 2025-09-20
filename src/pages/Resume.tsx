@@ -1,405 +1,161 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { 
-  Download, 
-  Upload, 
-  Eye, 
-  Edit,
+  MapPin, 
+  Mail, 
+  Globe, 
+  Linkedin, 
+  Github, 
+  Twitter,
+  Download,
   Phone,
-  Mail,
-  MapPin,
-  Globe,
-  Linkedin,
-  Github,
   Calendar,
+  GraduationCap,
+  Briefcase,
   Award,
-  BookOpen,
-  Code,
-  Users,
-  Star,
-  ExternalLink
+  Code
 } from "lucide-react";
-
-interface Education {
-  id: string;
-  degree: string;
-  institution: string;
-  duration: string;
-  gpa?: string;
-  location: string;
-  coursework?: string[];
-}
-
-interface Experience {
-  id: string;
-  title: string;
-  company: string;
-  duration: string;
-  location: string;
-  description: string[];
-  technologies?: string[];
-}
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  technologies: string[];
-  link?: string;
-  github?: string;
-}
-
-interface Skill {
-  category: string;
-  skills: string[];
-}
-
-import { usePersonalInfo, useEducation, useExperience, useProjects, useSkills, useAchievements } from "@/hooks/usePortfolioData";
-
-const education: Education[] = [
-  {
-    id: "1",
-    degree: "Bachelor of Technology in Computer Science",
-    institution: "Your University",
-    duration: "2021 - 2025",
-    gpa: "3.8/4.0",
-    location: "City, State",
-    coursework: [
-      "Data Structures & Algorithms",
-      "Database Management Systems",
-      "Operating Systems",
-      "Computer Networks",
-      "Software Engineering",
-      "Machine Learning",
-      "Web Development",
-      "Mobile App Development"
-    ]
-  }
-];
-
-const experience: Experience[] = [
-  {
-    id: "1",
-    title: "Software Development Intern",
-    company: "TechCorp Solutions",
-    duration: "Jun 2024 - Aug 2024",
-    location: "Remote",
-    description: [
-      "Developed and maintained React-based dashboard applications serving 10,000+ users",
-      "Implemented RESTful APIs using Node.js and Express, improving response times by 30%",
-      "Collaborated with cross-functional teams using Agile methodologies",
-      "Contributed to code reviews and followed best practices for clean, maintainable code",
-      "Built automated testing suites increasing code coverage to 85%"
-    ],
-    technologies: ["React", "TypeScript", "Node.js", "PostgreSQL", "AWS", "Docker"]
-  },
-  {
-    id: "2",
-    title: "Frontend Developer",
-    company: "Freelance",
-    duration: "Jan 2024 - Present",
-    location: "Remote",
-    description: [
-      "Built responsive web applications for 5+ clients using React and Next.js",
-      "Designed and implemented user interfaces with modern CSS frameworks",
-      "Integrated third-party APIs and payment systems",
-      "Delivered projects on time with 100% client satisfaction rate"
-    ],
-    technologies: ["React", "Next.js", "Tailwind CSS", "JavaScript", "Stripe API"]
-  }
-];
-
-const projects: Project[] = [
-  {
-    id: "1",
-    title: "E-Commerce Platform",
-    description: "Full-stack e-commerce solution with user authentication, payment integration, and admin dashboard. Features shopping cart, order management, and real-time inventory tracking.",
-    technologies: ["React", "Node.js", "MongoDB", "Stripe", "JWT", "Express"],
-    github: "https://github.com/username/ecommerce",
-    link: "https://myecommerce.com"
-  },
-  {
-    id: "2",
-    title: "Machine Learning Classifier",
-    description: "Image classification model using TensorFlow and Python. Achieved 94% accuracy on CIFAR-10 dataset with data augmentation and transfer learning techniques.",
-    technologies: ["Python", "TensorFlow", "OpenCV", "NumPy", "Jupyter", "Scikit-learn"],
-    github: "https://github.com/username/ml-classifier"
-  },
-  {
-    id: "3",
-    title: "Real-time Chat Application",
-    description: "WebSocket-based chat application with rooms, direct messaging, file sharing, and user presence indicators. Supports real-time communication for 100+ concurrent users.",
-    technologies: ["React", "Socket.io", "Node.js", "MongoDB", "Redis"],
-    github: "https://github.com/username/chat-app",
-    link: "https://mychatapp.com"
-  }
-];
-
-const skills: Skill[] = [
-  {
-    category: "Programming Languages",
-    skills: ["JavaScript", "TypeScript", "Python", "Java", "C++", "SQL", "HTML", "CSS"]
-  },
-  {
-    category: "Frontend Development",
-    skills: ["React", "Next.js", "Vue.js", "Angular", "Tailwind CSS", "Bootstrap", "SASS", "Redux"]
-  },
-  {
-    category: "Backend Development",
-    skills: ["Node.js", "Express", "FastAPI", "Spring Boot", "REST APIs", "GraphQL", "Microservices"]
-  },
-  {
-    category: "Databases",
-    skills: ["PostgreSQL", "MongoDB", "MySQL", "Redis", "SQLite", "Firebase"]
-  },
-  {
-    category: "Tools & Technologies",
-    skills: ["Git", "Docker", "AWS", "Kubernetes", "Linux", "CI/CD", "Jest", "Webpack"]
-  },
-  {
-    category: "Machine Learning",
-    skills: ["TensorFlow", "PyTorch", "Scikit-learn", "Pandas", "NumPy", "Matplotlib", "Jupyter"]
-  }
-];
-
-const achievements = [
-  "Winner - University Hackathon 2024 (AI-powered Learning Assistant)",
-  "Dean's List Recognition - Fall 2023, Spring 2024",
-  "Open Source Contributor - 5+ repositories with 200+ stars combined",
-  "Google Code-in Finalist 2023",
-  "Published research paper on Machine Learning optimization techniques"
-];
+import { usePersonalInfo, useEducation, useExperience, useSkills, useAchievements } from "@/hooks/usePortfolioData";
+import profileAvatar from "@/assets/profile-avatar.jpg";
 
 export function Resume() {
   const { data: personalInfo } = usePersonalInfo();
   const { data: education } = useEducation();
   const { data: experience } = useExperience();
-  const { data: projects } = useProjects();
   const { data: skills } = useSkills();
   const { data: achievements } = useAchievements();
 
-  const skillsByCategory = skills?.reduce((acc, skill) => {
-    if (!acc[skill.category]) acc[skill.category] = [];
+  // Group skills by category
+  const groupedSkills = skills.reduce((acc, skill) => {
+    if (!acc[skill.category]) {
+      acc[skill.category] = [];
+    }
     acc[skill.category].push(skill);
     return acc;
-  }, {} as Record<string, typeof skills>) || {};
+  }, {} as Record<string, typeof skills>);
 
   if (!personalInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#0d1117'}}>
-        <div className="animate-pulse text-[#e6edf3]">Loading resume...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-foreground">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#0d1117', color: '#e6edf3'}}>
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-[#e6edf3]">Resume</h1>
-          <p className="text-[#8b949e] text-lg">Professional experience and qualifications</p>
-        </div>
+        {/* Header */}
+        <Card className="mb-8 bg-card border-border">
+          <CardContent className="p-8">
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              <div className="relative">
+                <img 
+                  src={personalInfo.avatar_url || profileAvatar} 
+                  alt={personalInfo.name}
+                  className="w-32 h-32 rounded-full object-cover border-4 border-border"
+                />
+              </div>
+              
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-foreground mb-2">
+                  {personalInfo.name}
+                </h1>
+                <p className="text-xl text-muted-foreground mb-4">
+                  {personalInfo.title}
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {personalInfo.location}
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Phone className="w-4 h-4 mr-2" />
+                    {personalInfo.phone}
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Mail className="w-4 h-4 mr-2" />
+                    {personalInfo.email}
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Globe className="w-4 h-4 mr-2" />
+                    {personalInfo.website}
+                  </div>
+                </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <Button className="bg-[#238636] hover:bg-[#2ea043] text-white">
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
-          </Button>
-          <Button variant="secondary" className="bg-[#21262d] border-[#30363d] text-[#e6edf3] hover:bg-[#30363d]">
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Resume
-          </Button>
-          <Button variant="ghost" className="text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]">
-            <Eye className="w-4 h-4 mr-2" />
-            Preview
-          </Button>
-          <Button variant="ghost" className="text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]">
-            <Edit className="w-4 h-4 mr-2" />
-            Edit
-          </Button>
-        </div>
+                <div className="flex gap-3 mb-6">
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer">
+                      <Linkedin className="w-4 h-4 mr-2" />
+                      LinkedIn
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={personalInfo.github} target="_blank" rel="noopener noreferrer">
+                      <Github className="w-4 h-4 mr-2" />
+                      GitHub
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={personalInfo.website} target="_blank" rel="noopener noreferrer">
+                      <Globe className="w-4 h-4 mr-2" />
+                      Portfolio
+                    </a>
+                  </Button>
+                </div>
 
-        {/* Resume Content */}
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Resume
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Header */}
-            <Card className="bg-[#21262d] border-[#30363d]">
-              <CardContent className="p-6">
-                <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold text-[#e6edf3] mb-2">{personalInfo.name}</h1>
-                  <p className="text-lg text-[#58a6ff] mb-4">{personalInfo.title}</p>
-                  
-                  <div className="flex flex-wrap justify-center gap-4 text-sm text-[#8b949e]">
-                    <div className="flex items-center gap-1">
-                      <Mail className="w-4 h-4" />
-                      <span>{personalInfo.email}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Phone className="w-4 h-4" />
-                      <span>{personalInfo.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      <span>{personalInfo.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Globe className="w-4 h-4" />
-                      <span>{personalInfo.website}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-center gap-4 mt-4">
-                    <a href={personalInfo.linkedin} className="text-[#58a6ff] hover:underline" target="_blank" rel="noopener noreferrer">
-                      <Linkedin className="w-5 h-5" />
-                    </a>
-                    <a href={personalInfo.github} className="text-[#58a6ff] hover:underline" target="_blank" rel="noopener noreferrer">
-                      <Github className="w-5 h-5" />
-                    </a>
-                  </div>
-                </div>
-                
-                <Separator className="bg-[#30363d] my-4" />
-                
-                <div>
-                  <h3 className="text-lg font-semibold text-[#e6edf3] mb-3">Professional Summary</h3>
-                  <p className="text-[#8b949e] leading-relaxed">{personalInfo.bio}</p>
-                </div>
-              </CardContent>
-            </Card>
-
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-8">
             {/* Experience */}
-            <Card className="bg-[#21262d] border-[#30363d]">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <h2 className="text-xl font-bold text-[#e6edf3] flex items-center">
-                  <Users className="w-5 h-5 mr-2" />
-                  Professional Experience
+                <h2 className="text-xl font-bold flex items-center text-foreground">
+                  <Briefcase className="w-5 h-5 mr-2" />
+                  Experience
                 </h2>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {experience?.map((exp, index) => (
-                    <div key={exp.id} className={index > 0 ? "border-t border-[#30363d] pt-6" : ""}>
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-[#e6edf3]">{exp.title}</h3>
-                        <span className="text-sm text-[#8b949e]">{exp.duration}</span>
+              <CardContent className="space-y-6">
+                {experience.map((exp) => (
+                  <div key={exp.id} className="relative">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-semibold text-foreground">{exp.title}</h3>
+                        <p className="text-primary font-medium">{exp.company}</p>
                       </div>
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3">
-                        <p className="text-[#58a6ff] font-medium">{exp.company}</p>
-                        {exp.location && <span className="text-sm text-[#8b949e]">{exp.location}</span>}
-                      </div>
-                      {exp.description && (
-                        <ul className="space-y-1 mb-3">
-                          {exp.description.map((item, i) => (
-                            <li key={i} className="text-[#8b949e] text-sm">• {item}</li>
-                          ))}
-                        </ul>
-                      )}
-                      {exp.technologies && (
-                        <div className="flex flex-wrap gap-1">
-                          {exp.technologies.map((tech) => (
-                            <Badge 
-                              key={tech} 
-                              variant="outline" 
-                              className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 text-xs"
-                            >
-                              {tech}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+                      <span className="text-sm text-muted-foreground">{exp.duration}</span>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Projects */}
-            <Card className="bg-[#21262d] border-[#30363d]">
-              <CardHeader>
-                <h2 className="text-xl font-bold text-[#e6edf3] flex items-center">
-                  <Code className="w-5 h-5 mr-2" />
-                  Key Projects
-                </h2>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {projects?.slice(0, 3).map((project, index) => (
-                    <div key={project.id} className={index > 0 ? "border-t border-[#30363d] pt-6" : ""}>
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-[#e6edf3]">{project.title}</h3>
-                        <div className="flex gap-2">
-                          {project.github_url && (
-                            <a href={project.github_url} target="_blank" rel="noopener noreferrer">
-                              <Github className="w-4 h-4 text-[#8b949e] hover:text-[#e6edf3]" />
-                            </a>
-                          )}
-                          {project.live_url && (
-                            <a href={project.live_url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="w-4 h-4 text-[#8b949e] hover:text-[#e6edf3]" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-[#8b949e] text-sm leading-relaxed mb-3">{project.description}</p>
-                      {project.technologies && (
-                        <div className="flex flex-wrap gap-1">
-                          {project.technologies.map((tech) => (
-                            <Badge 
-                              key={tech} 
-                              variant="outline" 
-                              className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 text-xs"
-                            >
-                              {tech}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Education */}
-            <Card className="bg-[#21262d] border-[#30363d]">
-              <CardHeader>
-                <h2 className="text-xl font-bold text-[#e6edf3] flex items-center">
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  Education
-                </h2>
-              </CardHeader>
-              <CardContent>
-                {education?.map((edu) => (
-                  <div key={edu.id}>
-                    <h3 className="font-semibold text-[#e6edf3] text-sm">{edu.degree}</h3>
-                    <p className="text-[#58a6ff] text-sm">{edu.institution}</p>
-                    <p className="text-[#8b949e] text-xs">{edu.duration}</p>
-                    {edu.location && <p className="text-[#8b949e] text-xs">{edu.location}</p>}
-                    {edu.gpa && (
-                      <p className="text-[#8b949e] text-xs">GPA: {edu.gpa}</p>
+                    {exp.location && (
+                      <p className="text-sm text-muted-foreground mb-3">{exp.location}</p>
                     )}
-                    {edu.coursework && (
-                      <div className="mt-2">
-                        <p className="text-[#e6edf3] text-xs font-medium mb-1">Relevant Coursework:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {edu.coursework.slice(0, 6).map((course) => (
-                            <Badge 
-                              key={course} 
-                              variant="outline" 
-                              className="bg-transparent text-[#8b949e] border-[#30363d] text-xs"
-                            >
-                              {course}
-                            </Badge>
-                          ))}
-                        </div>
+                    {exp.description && (
+                      <ul className="space-y-1 text-sm text-muted-foreground">
+                        {exp.description.map((item, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="mr-2">•</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {exp.technologies && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {exp.technologies.map((tech) => (
+                          <Badge key={tech} variant="secondary" className="text-xs">
+                            {tech}
+                          </Badge>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -407,53 +163,92 @@ export function Resume() {
               </CardContent>
             </Card>
 
-            {/* Skills */}
-            <Card className="bg-[#21262d] border-[#30363d]">
+            {/* Education */}
+            <Card className="bg-card border-border">
               <CardHeader>
-                <h2 className="text-xl font-bold text-[#e6edf3] flex items-center">
-                  <Star className="w-5 h-5 mr-2" />
-                  Technical Skills
+                <h2 className="text-xl font-bold flex items-center text-foreground">
+                  <GraduationCap className="w-5 h-5 mr-2" />
+                  Education
                 </h2>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
-                    <div key={category}>
-                      <h4 className="text-sm font-medium text-[#e6edf3] mb-2">{category}</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {categorySkills.map((skill) => (
-                          <Badge 
-                            key={skill.id} 
-                            variant="outline" 
-                            className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 text-xs"
-                          >
-                            {skill.skill_name}
-                          </Badge>
-                        ))}
+              <CardContent className="space-y-4">
+                {education.map((edu) => (
+                  <div key={edu.id}>
+                    <div className="flex justify-between items-start mb-1">
+                      <div>
+                        <h3 className="font-semibold text-foreground">{edu.degree}</h3>
+                        <p className="text-primary">{edu.institution}</p>
                       </div>
+                      <span className="text-sm text-muted-foreground">{edu.duration}</span>
                     </div>
-                  ))}
-                </div>
+                    {edu.location && (
+                      <p className="text-sm text-muted-foreground">{edu.location}</p>
+                    )}
+                    {edu.gpa && (
+                      <p className="text-sm text-muted-foreground">GPA: {edu.gpa}</p>
+                    )}
+                    {edu.description && (
+                      <p className="text-sm text-muted-foreground mt-2">{edu.description}</p>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Skills */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <h2 className="text-xl font-bold flex items-center text-foreground">
+                  <Code className="w-5 h-5 mr-2" />
+                  Skills
+                </h2>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {Object.entries(groupedSkills).map(([category, categorySkills]) => (
+                  <div key={category}>
+                    <h3 className="font-semibold text-foreground mb-3">{category}</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {categorySkills.map((skill) => (
+                        <Badge 
+                          key={skill.id} 
+                          variant="secondary" 
+                          className="justify-center text-xs py-1"
+                        >
+                          {skill.skill_name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
 
             {/* Achievements */}
-            <Card className="bg-[#21262d] border-[#30363d]">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <h2 className="text-xl font-bold text-[#e6edf3] flex items-center">
+                <h2 className="text-xl font-bold flex items-center text-foreground">
                   <Award className="w-5 h-5 mr-2" />
                   Achievements
                 </h2>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {achievements?.map((achievement) => (
-                    <li key={achievement.id} className="text-[#8b949e] text-sm flex items-start gap-2">
-                      <span className="text-yellow-400 mt-1">•</span>
-                      <span>{achievement.title}</span>
-                    </li>
-                  ))}
-                </ul>
+              <CardContent className="space-y-4">
+                {achievements.map((achievement) => (
+                  <div key={achievement.id} className="border-b border-border last:border-b-0 pb-4 last:pb-0">
+                    <h3 className="font-semibold text-foreground">{achievement.title}</h3>
+                    {achievement.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{achievement.description}</p>
+                    )}
+                    {achievement.date_achieved && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        <Calendar className="w-3 h-3 inline mr-1" />
+                        {new Date(achievement.date_achieved).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>

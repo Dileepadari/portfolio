@@ -54,6 +54,7 @@ export type Database = {
           excerpt: string | null
           id: string
           image_url: string | null
+          images: string[] | null
           order_index: number | null
           published: boolean | null
           slug: string
@@ -67,6 +68,7 @@ export type Database = {
           excerpt?: string | null
           id?: string
           image_url?: string | null
+          images?: string[] | null
           order_index?: number | null
           published?: boolean | null
           slug: string
@@ -80,6 +82,7 @@ export type Database = {
           excerpt?: string | null
           id?: string
           image_url?: string | null
+          images?: string[] | null
           order_index?: number | null
           published?: boolean | null
           slug?: string
@@ -268,6 +271,7 @@ export type Database = {
           github_url: string | null
           id: string
           image_url: string | null
+          images: string[] | null
           live_url: string | null
           order_index: number | null
           technologies: string[] | null
@@ -281,6 +285,7 @@ export type Database = {
           github_url?: string | null
           id?: string
           image_url?: string | null
+          images?: string[] | null
           live_url?: string | null
           order_index?: number | null
           technologies?: string[] | null
@@ -294,6 +299,7 @@ export type Database = {
           github_url?: string | null
           id?: string
           image_url?: string | null
+          images?: string[] | null
           live_url?: string | null
           order_index?: number | null
           technologies?: string[] | null

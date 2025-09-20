@@ -42,23 +42,23 @@ export function Projects() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#0d1117'}}>
-        <div className="animate-pulse text-[#e6edf3]">Loading projects...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-foreground">Loading projects...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#0d1117', color: '#e6edf3'}}>
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-[#e6edf3]">Projects</h1>
-          <p className="text-[#8b949e] text-lg">Building the future, one commit at a time</p>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">Projects</h1>
+          <p className="text-muted-foreground text-lg">Building the future, one commit at a time</p>
         </div>
 
         {/* Featured Projects */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 flex items-center text-[#e6edf3]">
+          <h2 className="text-xl font-semibold mb-4 flex items-center text-foreground">
             <Star className="w-5 h-5 mr-2 text-yellow-400" />
             Featured Projects
           </h2>
@@ -74,21 +74,21 @@ export function Projects() {
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b949e]" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search projects..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-[#21262d] border-[#30363d] text-[#e6edf3] placeholder-[#8b949e]"
+                  className="pl-10"
                 />
               </div>
             </div>
             
             <Tabs value={selectedType} onValueChange={setSelectedType} className="w-auto">
-              <TabsList className="bg-[#21262d] border-[#30363d]">
-                <TabsTrigger value="all" className="text-[#8b949e] data-[state=active]:text-[#e6edf3]">All</TabsTrigger>
-                <TabsTrigger value="featured" className="text-[#8b949e] data-[state=active]:text-[#e6edf3]">Featured</TabsTrigger>
-                <TabsTrigger value="personal" className="text-[#8b949e] data-[state=active]:text-[#e6edf3]">Personal</TabsTrigger>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="featured">Featured</TabsTrigger>
+                <TabsTrigger value="personal">Personal</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -103,7 +103,7 @@ export function Projects() {
 
         {filteredProjects.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-[#8b949e] text-lg">No projects found matching your criteria</div>
+            <div className="text-muted-foreground text-lg">No projects found matching your criteria</div>
           </div>
         )}
       </div>
@@ -119,17 +119,26 @@ interface ProjectCardProps {
 function ProjectCard({ project, featured = false }: ProjectCardProps) {
 
   return (
-    <Card className={`bg-[#21262d] border-[#30363d] hover:border-[#58a6ff] transition-all duration-200 ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
+    <Card className={`bg-card border-border hover:border-primary transition-all duration-200 ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
+      {(project.image_url || (project.images && project.images.length > 0)) && (
+        <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+          <img 
+            src={project.images?.[0] || project.image_url} 
+            alt={project.title}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+          />
+        </div>
+      )}
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-semibold text-[#58a6ff] hover:underline cursor-pointer">
+              <h3 className="text-lg font-semibold text-primary hover:underline cursor-pointer">
                 {project.title}
               </h3>
               {featured && <Star className="w-4 h-4 text-yellow-400 fill-current" />}
             </div>
-            <p className="text-[#8b949e] text-sm leading-relaxed mb-3">
+            <p className="text-muted-foreground text-sm leading-relaxed mb-3">
               {project.description}
             </p>
           </div>
@@ -141,7 +150,7 @@ function ProjectCard({ project, featured = false }: ProjectCardProps) {
               <Badge 
                 key={tag} 
                 variant="secondary" 
-                className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 text-xs"
+                className="bg-primary/10 text-primary border-primary/20 text-xs"
               >
                 {tag}
               </Badge>
@@ -156,7 +165,7 @@ function ProjectCard({ project, featured = false }: ProjectCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-2 text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
+              className="h-7 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
               asChild
             >
               <a href={project.github_url} target="_blank" rel="noopener noreferrer">
@@ -169,7 +178,7 @@ function ProjectCard({ project, featured = false }: ProjectCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-2 text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
+              className="h-7 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
               asChild
             >
               <a href={project.live_url} target="_blank" rel="noopener noreferrer">

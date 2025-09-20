@@ -1,205 +1,100 @@
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Github, Search, Bell, Plus, Menu, LogIn, LogOut, Shield } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Github, 
+  User, 
+  FolderGit2, 
+  BookOpen, 
+  Calendar,
+  FileText,
+  LogOut,
+  LogIn,
+  Clock
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import profileAvatar from "@/assets/profile-avatar.jpg";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Navigation() {
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   
-  const isActive = (path: string) => location.pathname === path;
-
   const handleSignOut = async () => {
     await signOut();
-    setIsMenuOpen(false);
   };
-  
+
   const navItems = [
-    { path: "/", label: "Overview" },
-    { path: "/repositories", label: "Repositories" },
-    { path: "/projects", label: "Projects" },
-    { path: "/blog", label: "Blog" },
-    { path: "/timeline", label: "Timeline" },
-    { path: "/schedule", label: "Schedule" },
-    { path: "/resume", label: "Resume" },
+    { path: "/", label: "Overview", icon: User },
+    { path: "/repositories", label: "Repositories", icon: FolderGit2 },
+    { path: "/projects", label: "Projects", icon: Github },
+    { path: "/blog", label: "Blog", icon: BookOpen },
+    { path: "/timeline", label: "Timeline", icon: Clock, adminOnly: true },
+    { path: "/schedule", label: "Schedule", icon: Calendar, adminOnly: true },
+    { path: "/resume", label: "Resume", icon: FileText },
   ];
 
+  // Filter nav items based on admin status
+  const visibleNavItems = navItems.filter(item => 
+    !item.adminOnly || (item.adminOnly && isAdmin)
+  );
+
   return (
-    <nav className="border-b border-[#30363d]" style={{backgroundColor: '#0d1117'}}>
+    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Left side - Logo and main nav */}
-          <div className="flex items-center space-x-8">
-            <Link to="/" className="flex items-center space-x-2">
-              <Github className="w-8 h-8 text-foreground" />
-            </Link>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-              {navItems.map((item) => (
+        <div className="flex justify-between items-center h-16">
+          <nav className="flex space-x-8">
+            {visibleNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-2 text-sm font-medium transition-colors duration-200 border-b-2 ${
-                    isActive(item.path)
-                      ? "border-[hsl(var(--github-accent-emphasis))] text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  className={`inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors duration-200 ${
+                    isActive
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-muted-foreground hover:text-foreground hover:border-b-2 hover:border-border"
                   }`}
                 >
+                  <Icon className="w-4 h-4 mr-2" />
                   {item.label}
+                  {item.adminOnly && <span className="ml-1 text-xs bg-primary text-primary-foreground px-1 rounded">Admin</span>}
                 </Link>
-              ))}
-            </div>
-          </div>
+              );
+            })}
+          </nav>
           
-          {/* Right side - Search and user menu */}
           <div className="flex items-center space-x-4">
-            {/* Search */}
-            <div className="hidden md:flex items-center">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search or jump to..."
-                  className="w-64 pl-10 pr-4 py-1.5 text-sm bg-[#21262d] border border-[#30363d] rounded-md focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:border-transparent text-[#e6edf3] placeholder-[#8b949e]"
-                />
+            <ThemeToggle />
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">
+                  Welcome, {user.email}
+                  {isAdmin && <span className="ml-1 text-xs bg-primary text-primary-foreground px-1 rounded">Admin</span>}
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleSignOut}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
               </div>
-            </div>
-            
-            {/* Action buttons */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden md:flex text-muted-foreground hover:text-foreground"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden md:flex text-muted-foreground hover:text-foreground"
-            >
-              <Bell className="w-4 h-4" />
-            </Button>
-            
-            {/* Auth Section for Desktop */}
-            <div className="hidden md:flex items-center space-x-3">
-              {user ? (
-                <>
-                  <div className="text-right">
-                    <p className="text-xs text-[#8b949e]">Signed in as</p>
-                    <p className="text-sm font-medium text-[#e6edf3] flex items-center">
-                      {user.email?.split('@')[0]}
-                      {isAdmin && (
-                        <Shield className="w-3 h-3 ml-1 text-yellow-400" />
-                      )}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleSignOut}
-                    className="text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </Button>
-                </>
-              ) : (
-                <Link to="/auth">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
-                  >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Sign In
-                  </Button>
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth" className="text-muted-foreground hover:text-foreground">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
                 </Link>
-              )}
-            </div>
-            
-            {/* User avatar */}
-            <Avatar className="w-8 h-8 cursor-pointer">
-              <AvatarImage src={profileAvatar} alt="Profile" />
-              <AvatarFallback>DA</AvatarFallback>
-            </Avatar>
-            
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
-        
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-[hsl(var(--github-border-default))] py-2">
-            <div className="flex flex-col space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`px-3 py-2 text-sm font-medium transition-colors duration-200 rounded ${
-                    isActive(item.path)
-                      ? "bg-[hsl(var(--github-canvas-inset))] text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--github-canvas-subtle))]"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              
-              {/* Auth Section in Mobile */}
-              <div className="border-t border-[#30363d] pt-2 mt-2">
-                {user ? (
-                  <div className="space-y-2">
-                    <div className="px-3 py-2">
-                      <p className="text-xs text-[#8b949e]">
-                        Signed in as
-                      </p>
-                      <p className="text-sm font-medium text-[#e6edf3] flex items-center">
-                        {user.email}
-                        {isAdmin && (
-                          <Shield className="w-3 h-3 ml-1 text-yellow-400" />
-                        )}
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full px-3 py-2 text-sm font-medium text-left text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--github-canvas-subtle))] rounded flex items-center"
-                    >
-                      <LogOut className="w-4 h-4 mr-3" />
-                      Sign Out
-                    </button>
-                  </div>
-                ) : (
-                  <Link
-                    to="/auth"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block w-full px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--github-canvas-subtle))] rounded"
-                  >
-                    <LogIn className="w-4 h-4 mr-3 inline" />
-                    Sign In
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </nav>
+    </header>
   );
 }

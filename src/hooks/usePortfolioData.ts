@@ -50,8 +50,11 @@ export interface Project {
   github_url?: string;
   live_url?: string;
   image_url?: string;
+  images?: string[];
   featured: boolean;
   order_index: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Skill {
@@ -79,10 +82,12 @@ export interface BlogPost {
   content: string;
   excerpt?: string;
   image_url?: string;
+  images?: string[];
   published: boolean;
   tags?: string[];
   order_index: number;
   created_at: string;
+  updated_at: string;
 }
 
 export function usePersonalInfo() {
