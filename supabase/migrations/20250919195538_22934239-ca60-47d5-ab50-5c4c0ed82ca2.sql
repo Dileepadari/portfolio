@@ -25,6 +25,8 @@ CREATE TABLE public.personal_info (
   instagram TEXT DEFAULT 'https://www.instagram.com/dileepadari',
   youtube TEXT DEFAULT 'https://www.youtube.com/@dileepadari5182/featured',
   twitter TEXT DEFAULT 'https://twitter.com/Dileepadari1',
+  medium TEXT,
+  codeforces TEXT,
   avatar_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
@@ -200,7 +202,7 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- Insert initial portfolio data
-INSERT INTO public.personal_info (name, title, bio, location, email, phone, website, linkedin, github, instagram, youtube, twitter) VALUES (
+INSERT INTO public.personal_info (name, title, bio, location, email, phone, website, linkedin, github, instagram, youtube, twitter, medium, codeforces) VALUES (
   'Dileep Adari',
   'Computer Science Student & Full-Stack Developer | GSoC''25 Joomla! CMS',
   'A passionate web developer and programmer. My journey revolves around the enchanting world of software engineering, where I thrive on turning ideas into reality through the art of coding. With a keen interest in crafting digital solutions, my focus is on creating seamless and innovative experiences.',
@@ -212,7 +214,9 @@ INSERT INTO public.personal_info (name, title, bio, location, email, phone, webs
   'https://github.com/dileepadari',
   'https://www.instagram.com/dileepadari',
   'https://www.youtube.com/@dileepadari5182/featured',
-  'https://twitter.com/Dileepadari1'
+  'https://twitter.com/Dileepadari1',
+  'https://medium.com/@dileepadari',
+  'https://codeforces.com/profile/dileepadari'
 );
 
 -- Insert education data

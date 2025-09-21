@@ -150,19 +150,19 @@ export function Schedule() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-400 bg-red-400/10 border-red-400/20';
-      case 'medium': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
-      case 'low': return 'text-green-400 bg-green-400/10 border-green-400/20';
-      default: return 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/20';
+      case 'high': return 'text-red-500 bg-red-500/10 border-red-500/20 dark:text-red-400 dark:bg-red-400/10 dark:border-red-400/20';
+      case 'medium': return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20 dark:text-yellow-400 dark:bg-yellow-400/10 dark:border-yellow-400/20';
+      case 'low': return 'text-green-500 bg-green-500/10 border-green-500/20 dark:text-green-400 dark:bg-green-400/10 dark:border-green-400/20';
+      default: return 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-400 bg-green-400/10 border-green-400/20';
-      case 'in-progress': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-      case 'pending': return 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/20';
-      default: return 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/20';
+      case 'completed': return 'text-green-500 bg-green-500/10 border-green-500/20 dark:text-green-400 dark:bg-green-400/10 dark:border-green-400/20';
+      case 'in-progress': return 'text-blue-500 bg-blue-500/10 border-blue-500/20 dark:text-blue-400 dark:bg-blue-400/10 dark:border-blue-400/20';
+      case 'pending': return 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20';
+      default: return 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20';
     }
   };
 
@@ -178,12 +178,12 @@ export function Schedule() {
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
-      case 'class': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-      case 'meeting': return 'text-purple-400 bg-purple-400/10 border-purple-400/20';
-      case 'deadline': return 'text-red-400 bg-red-400/10 border-red-400/20';
-      case 'exam': return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
-      case 'personal': return 'text-green-400 bg-green-400/10 border-green-400/20';
-      default: return 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/20';
+      case 'class': return 'text-blue-500 bg-blue-500/10 border-blue-500/20 dark:text-blue-400 dark:bg-blue-400/10 dark:border-blue-400/20';
+      case 'meeting': return 'text-purple-500 bg-purple-500/10 border-purple-500/20 dark:text-purple-400 dark:bg-purple-400/10 dark:border-purple-400/20';
+      case 'deadline': return 'text-red-500 bg-red-500/10 border-red-500/20 dark:text-red-400 dark:bg-red-400/10 dark:border-red-400/20';
+      case 'exam': return 'text-orange-500 bg-orange-500/10 border-orange-500/20 dark:text-orange-400 dark:bg-orange-400/10 dark:border-orange-400/20';
+      case 'personal': return 'text-green-500 bg-green-500/10 border-green-500/20 dark:text-green-400 dark:bg-green-400/10 dark:border-green-400/20';
+      default: return 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20';
     }
   };
 
@@ -205,24 +205,24 @@ export function Schedule() {
   ).slice(0, 5);
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#0d1117', color: '#e6edf3'}}>
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-[#e6edf3]">Schedule & Tasks</h1>
-          <p className="text-[#8b949e] text-lg">Stay organized and productive</p>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">Schedule & Tasks</h1>
+          <p className="text-muted-foreground text-lg">Stay organized and productive</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-[#21262d] border-[#30363d] mb-6">
-            <TabsTrigger value="calendar" className="text-[#8b949e] data-[state=active]:text-[#e6edf3]">
+          <TabsList className="bg-card border-border mb-6">
+            <TabsTrigger value="calendar" className="text-muted-foreground data-[state=active]:text-foreground">
               <Calendar className="w-4 h-4 mr-2" />
               Calendar
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="text-[#8b949e] data-[state=active]:text-[#e6edf3]">
+            <TabsTrigger value="tasks" className="text-muted-foreground data-[state=active]:text-foreground">
               <Target className="w-4 h-4 mr-2" />
               Tasks
             </TabsTrigger>
-            <TabsTrigger value="overview" className="text-[#8b949e] data-[state=active]:text-[#e6edf3]">
+            <TabsTrigger value="overview" className="text-muted-foreground data-[state=active]:text-foreground">
               <CheckCircle className="w-4 h-4 mr-2" />
               Overview
             </TabsTrigger>
@@ -231,24 +231,24 @@ export function Schedule() {
           <TabsContent value="calendar" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Calendar */}
-              <Card className="lg:col-span-2 bg-[#21262d] border-[#30363d]">
+              <Card className="lg:col-span-2 bg-card border-border">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-[#e6edf3]">
+                    <h3 className="text-lg font-semibold text-foreground">
                       {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h3>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" className="text-[#8b949e] hover:text-[#e6edf3]">
+                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-[#8b949e] hover:text-[#e6edf3]">
+                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                         <ChevronRight className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center text-[#8b949e] py-8">
+                  <div className="text-center text-muted-foreground py-8">
                     <Calendar className="w-12 h-12 mx-auto mb-4" />
                     <p>Interactive calendar coming soon...</p>
                     <p className="text-sm mt-1">View and manage your schedule visually</p>
@@ -258,33 +258,33 @@ export function Schedule() {
 
               {/* Today's Events */}
               <div className="space-y-4">
-                <Card className="bg-[#21262d] border-[#30363d]">
+                <Card className="bg-card border-border">
                   <CardHeader className="pb-3">
-                    <h3 className="text-lg font-semibold text-[#e6edf3]">Today's Events</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Today's Events</h3>
                   </CardHeader>
                   <CardContent>
                     {todayEvents.length > 0 ? (
                       <div className="space-y-3">
                         {todayEvents.map((event) => (
-                          <div key={event.id} className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
+                          <div key={event.id} className="p-3 bg-muted rounded border border-border">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge className={`${getEventTypeColor(event.type)} capitalize text-xs`}>
                                 {event.type}
                               </Badge>
-                              <div className="flex items-center gap-1 text-xs text-[#8b949e]">
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Clock className="w-3 h-3" />
                                 <span>{event.startTime} - {event.endTime}</span>
                               </div>
                             </div>
-                            <h4 className="font-medium text-[#e6edf3] text-sm">{event.title}</h4>
+                            <h4 className="font-medium text-foreground text-sm">{event.title}</h4>
                             {event.location && (
-                              <p className="text-xs text-[#8b949e] mt-1">{event.location}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{event.location}</p>
                             )}
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center text-[#8b949e] py-4">
+                      <div className="text-center text-muted-foreground py-4">
                         <Calendar className="w-8 h-8 mx-auto mb-2" />
                         <p className="text-sm">No events today</p>
                       </div>
@@ -292,15 +292,15 @@ export function Schedule() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-[#21262d] border-[#30363d]">
+                <Card className="bg-card border-border">
                   <CardHeader className="pb-3">
-                    <h3 className="text-lg font-semibold text-[#e6edf3]">Today's Tasks</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Today's Tasks</h3>
                   </CardHeader>
                   <CardContent>
                     {todayTasks.length > 0 ? (
                       <div className="space-y-3">
                         {todayTasks.map((task) => (
-                          <div key={task.id} className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
+                          <div key={task.id} className="p-3 bg-muted rounded border border-border">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge className={`${getPriorityColor(task.priority)} capitalize text-xs`}>
                                 {task.priority}
@@ -309,15 +309,15 @@ export function Schedule() {
                                 {task.status.replace('-', ' ')}
                               </Badge>
                             </div>
-                            <h4 className="font-medium text-[#e6edf3] text-sm">{task.title}</h4>
+                            <h4 className="font-medium text-foreground text-sm">{task.title}</h4>
                             {task.dueTime && (
-                              <p className="text-xs text-[#8b949e] mt-1">Due: {task.dueTime}</p>
+                              <p className="text-xs text-muted-foreground mt-1">Due: {task.dueTime}</p>
                             )}
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center text-[#8b949e] py-4">
+                      <div className="text-center text-muted-foreground py-4">
                         <Target className="w-8 h-8 mx-auto mb-2" />
                         <p className="text-sm">No tasks due today</p>
                       </div>
@@ -364,7 +364,7 @@ export function Schedule() {
                   Completed
                 </Button>
               </div>
-              <Button className="bg-[#238636] hover:bg-[#2ea043] text-white">
+              <Button className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 New Task
               </Button>
@@ -372,7 +372,7 @@ export function Schedule() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredTasks.map((task) => (
-                <Card key={task.id} className="bg-[#21262d] border-[#30363d] hover:border-[#58a6ff] transition-all duration-200">
+                <Card key={task.id} className="bg-card border-border hover:border-primary/50 transition-all duration-200">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -387,8 +387,8 @@ export function Schedule() {
                             {task.status.replace('-', ' ')}
                           </Badge>
                         </div>
-                        <h3 className="font-semibold text-[#e6edf3] mb-2">{task.title}</h3>
-                        <p className="text-[#8b949e] text-sm leading-relaxed mb-3">
+                        <h3 className="font-semibold text-foreground mb-2">{task.title}</h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed mb-3">
                           {task.description}
                         </p>
                       </div>
@@ -400,13 +400,13 @@ export function Schedule() {
                         <Badge 
                           key={tag} 
                           variant="outline" 
-                          className="bg-transparent text-[#8b949e] border-[#30363d] text-xs"
+                          className="bg-transparent text-muted-foreground border-border text-xs"
                         >
                           {tag}
                         </Badge>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between text-xs text-[#8b949e]">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         <span>{new Date(task.dueDate).toLocaleDateString()}</span>
@@ -418,10 +418,10 @@ export function Schedule() {
                         )}
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-[#8b949e] hover:text-[#e6edf3]">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground">
                           <Edit className="w-3 h-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-[#8b949e] hover:text-red-400">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500 dark:hover:text-red-400">
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
@@ -434,81 +434,81 @@ export function Schedule() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-[#e6edf3]">{tasks.length}</div>
-                  <div className="text-sm text-[#8b949e]">Total Tasks</div>
+                  <div className="text-2xl font-bold text-foreground">{tasks.length}</div>
+                  <div className="text-sm text-muted-foreground">Total Tasks</div>
                 </CardContent>
               </Card>
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-400">
+                  <div className="text-2xl font-bold text-blue-500 dark:text-blue-400">
                     {tasks.filter(t => t.status === 'in-progress').length}
                   </div>
-                  <div className="text-sm text-[#8b949e]">In Progress</div>
+                  <div className="text-sm text-muted-foreground">In Progress</div>
                 </CardContent>
               </Card>
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-green-400">
+                  <div className="text-2xl font-bold text-green-500 dark:text-green-400">
                     {tasks.filter(t => t.status === 'completed').length}
                   </div>
-                  <div className="text-sm text-[#8b949e]">Completed</div>
+                  <div className="text-sm text-muted-foreground">Completed</div>
                 </CardContent>
               </Card>
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-red-400">
+                  <div className="text-2xl font-bold text-red-500 dark:text-red-400">
                     {tasks.filter(t => t.priority === 'high' && t.status !== 'completed').length}
                   </div>
-                  <div className="text-sm text-[#8b949e]">High Priority</div>
+                  <div className="text-sm text-muted-foreground">High Priority</div>
                 </CardContent>
               </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardHeader>
-                  <h3 className="text-lg font-semibold text-[#e6edf3]">Upcoming Deadlines</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Upcoming Deadlines</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {upcomingTasks.map((task) => (
-                      <div key={task.id} className="flex items-center justify-between p-3 bg-[#0d1117] rounded border border-[#30363d]">
+                      <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded border border-border">
                         <div className="flex-1">
-                          <h4 className="font-medium text-[#e6edf3] text-sm">{task.title}</h4>
+                          <h4 className="font-medium text-foreground text-sm">{task.title}</h4>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge className={`${getPriorityColor(task.priority)} capitalize text-xs`}>
                               {task.priority}
                             </Badge>
-                            <span className="text-xs text-[#8b949e]">
+                            <span className="text-xs text-muted-foreground">
                               {new Date(task.dueDate).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
-                        <AlertCircle className="w-4 h-4 text-yellow-400" />
+                        <AlertCircle className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardHeader>
-                  <h3 className="text-lg font-semibold text-[#e6edf3]">Productivity Stats</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Productivity Stats</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-[#8b949e]">Completion Rate</span>
-                        <span className="text-[#e6edf3]">
+                        <span className="text-muted-foreground">Completion Rate</span>
+                        <span className="text-foreground">
                           {Math.round((tasks.filter(t => t.status === 'completed').length / tasks.length) * 100)}%
                         </span>
                       </div>
-                      <div className="w-full bg-[#30363d] rounded-full h-2">
+                      <div className="w-full bg-muted rounded-full h-2">
                         <div 
-                          className="bg-green-400 h-2 rounded-full" 
+                          className="bg-green-500 dark:bg-green-400 h-2 rounded-full" 
                           style={{ 
                             width: `${(tasks.filter(t => t.status === 'completed').length / tasks.length) * 100}%` 
                           }}
@@ -517,16 +517,16 @@ export function Schedule() {
                     </div>
                     
                     <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-[#e6edf3]">Tasks by Category</h4>
+                      <h4 className="text-sm font-medium text-foreground">Tasks by Category</h4>
                       {['academic', 'project', 'personal', 'work'].map((category) => {
                         const count = tasks.filter(t => t.category === category).length;
                         return (
                           <div key={category} className="flex justify-between text-sm">
-                            <span className="text-[#8b949e] capitalize flex items-center gap-1">
+                            <span className="text-muted-foreground capitalize flex items-center gap-1">
                               {getCategoryIcon(category)}
                               {category}
                             </span>
-                            <span className="text-[#e6edf3]">{count}</span>
+                            <span className="text-foreground">{count}</span>
                           </div>
                         );
                       })}

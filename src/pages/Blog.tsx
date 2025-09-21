@@ -113,26 +113,31 @@ export function Blog() {
   const popularTags = allTags.slice(0, 10); // Most popular tags
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#0d1117', color: '#e6edf3'}}>
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-[#e6edf3]">Blog</h1>
-          <p className="text-[#8b949e] text-lg">Thoughts, experiences, and learnings from my journey in tech</p>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            Blog & Articles
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Sharing insights, experiences, and lessons learned from my journey in software development
+          </p>
         </div>
 
         {/* Featured Posts */}
         {featuredPosts.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center text-[#e6edf3]">
-              <TrendingUp className="w-5 h-5 mr-2 text-yellow-400" />
-              Featured Posts
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-primary" />
+              Featured Articles
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {featuredPosts.map((post) => (
                 <FeaturedPostCard key={post.id} post={post} />
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -142,22 +147,22 @@ export function Blog() {
             <div className="mb-6">
               <div className="flex flex-col gap-4 mb-4">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b949e]" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Search blog posts..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-[#21262d] border-[#30363d] text-[#e6edf3] placeholder-[#8b949e]"
+                    className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
                 
                 <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-                  <TabsList className="bg-[#21262d] border-[#30363d] flex-wrap h-auto p-1">
+                  <TabsList className="bg-muted border-border flex-wrap h-auto p-1">
                     {categories.map((category) => (
                       <TabsTrigger 
                         key={category} 
                         value={category} 
-                        className="text-[#8b949e] data-[state=active]:text-[#e6edf3] text-sm"
+                        className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background text-sm"
                       >
                         {category}
                       </TabsTrigger>
@@ -176,7 +181,7 @@ export function Blog() {
 
             {filteredPosts.length === 0 && (
               <div className="text-center py-12">
-                <div className="text-[#8b949e] text-lg">No blog posts found matching your criteria</div>
+                <div className="text-muted-foreground text-lg">No blog posts found matching your criteria</div>
               </div>
             )}
           </div>
@@ -185,10 +190,10 @@ export function Blog() {
           <div className="lg:col-span-1">
             <div className="space-y-6">
               {/* Popular Tags */}
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardHeader className="pb-3">
-                  <h3 className="text-lg font-semibold text-[#e6edf3] flex items-center">
-                    <Tag className="w-4 h-4 mr-2" />
+                  <h3 className="text-lg font-semibold text-foreground flex items-center">
+                    <Tag className="w-4 h-4 mr-2 text-primary" />
                     Popular Tags
                   </h3>
                 </CardHeader>
@@ -200,7 +205,7 @@ export function Blog() {
                         variant={selectedTag === tag ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setSelectedTag(selectedTag === tag ? "" : tag)}
-                        className="h-7 px-2 text-xs bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20 hover:bg-[#388bfd]/20"
+                        className="h-7 px-2 text-xs bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                       >
                         {tag}
                       </Button>
@@ -210,25 +215,25 @@ export function Blog() {
               </Card>
 
               {/* Stats */}
-              <Card className="bg-[#21262d] border-[#30363d]">
+              <Card className="bg-card border-border">
                 <CardHeader className="pb-3">
-                  <h3 className="text-lg font-semibold text-[#e6edf3]">Blog Stats</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Blog Stats</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-[#8b949e]">Total Posts</span>
-                      <span className="text-[#e6edf3] font-semibold">{blogPosts.length}</span>
+                      <span className="text-muted-foreground">Total Posts</span>
+                      <span className="text-foreground font-semibold">{blogPosts.length}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#8b949e]">Total Likes</span>
-                      <span className="text-[#e6edf3] font-semibold">
+                      <span className="text-muted-foreground">Total Likes</span>
+                      <span className="text-foreground font-semibold">
                         {blogPosts.reduce((sum, post) => sum + post.likes, 0)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#8b949e]">Total Comments</span>
-                      <span className="text-[#e6edf3] font-semibold">
+                      <span className="text-muted-foreground">Total Comments</span>
+                      <span className="text-foreground font-semibold">
                         {blogPosts.reduce((sum, post) => sum + post.comments, 0)}
                       </span>
                     </div>
@@ -249,18 +254,18 @@ interface FeaturedPostCardProps {
 
 function FeaturedPostCard({ post }: FeaturedPostCardProps) {
   return (
-    <Card className="bg-[#21262d] border-[#30363d] hover:border-[#58a6ff] transition-all duration-200 ring-1 ring-yellow-400/20">
+    <Card className="bg-card border-border hover:border-primary transition-all duration-200 ring-1 ring-yellow-400/20">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2 mb-2">
           <Badge className="bg-yellow-400/10 text-yellow-400 border-yellow-400/20">Featured</Badge>
-          <Badge variant="secondary" className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20">
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
             {post.category}
           </Badge>
         </div>
-        <h3 className="text-xl font-semibold text-[#58a6ff] hover:underline cursor-pointer mb-2">
+        <h3 className="text-xl font-semibold text-primary hover:underline cursor-pointer mb-2">
           {post.title}
         </h3>
-        <p className="text-[#8b949e] leading-relaxed">
+        <p className="text-muted-foreground leading-relaxed">
           {post.excerpt}
         </p>
       </CardHeader>
@@ -270,13 +275,13 @@ function FeaturedPostCard({ post }: FeaturedPostCardProps) {
             <Badge 
               key={tag} 
               variant="outline" 
-              className="bg-transparent text-[#8b949e] border-[#30363d] text-xs"
+              className="bg-transparent text-muted-foreground border-border text-xs"
             >
               {tag}
             </Badge>
           ))}
         </div>
-        <div className="flex items-center justify-between text-xs text-[#8b949e]">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
@@ -309,20 +314,20 @@ interface BlogPostCardProps {
 
 function BlogPostCard({ post }: BlogPostCardProps) {
   return (
-    <Card className="bg-[#21262d] border-[#30363d] hover:border-[#58a6ff] transition-all duration-200">
+    <Card className="bg-card border-border hover:border-primary transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary" className="bg-[#388bfd]/10 text-[#58a6ff] border-[#388bfd]/20">
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
             {post.category}
           </Badge>
           {post.featured && (
             <Badge className="bg-yellow-400/10 text-yellow-400 border-yellow-400/20">Featured</Badge>
           )}
         </div>
-        <h3 className="text-xl font-semibold text-[#58a6ff] hover:underline cursor-pointer mb-2">
+        <h3 className="text-xl font-semibold text-primary hover:underline cursor-pointer mb-2">
           {post.title}
         </h3>
-        <p className="text-[#8b949e] leading-relaxed">
+        <p className="text-muted-foreground leading-relaxed">
           {post.excerpt}
         </p>
       </CardHeader>
@@ -332,13 +337,13 @@ function BlogPostCard({ post }: BlogPostCardProps) {
             <Badge 
               key={tag} 
               variant="outline" 
-              className="bg-transparent text-[#8b949e] border-[#30363d] text-xs"
+              className="bg-transparent text-muted-foreground border-border text-xs"
             >
               {tag}
             </Badge>
           ))}
         </div>
-        <div className="flex items-center justify-between text-xs text-[#8b949e]">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
@@ -361,7 +366,7 @@ function BlogPostCard({ post }: BlogPostCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
+              className="h-6 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               <Share className="w-3 h-3" />
             </Button>

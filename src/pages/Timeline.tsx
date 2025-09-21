@@ -149,13 +149,13 @@ export function Timeline() {
 
   const getEventColor = (type: string) => {
     switch (type) {
-      case 'commit': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-      case 'project': return 'text-green-400 bg-green-400/10 border-green-400/20';
-      case 'achievement': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
-      case 'education': return 'text-purple-400 bg-purple-400/10 border-purple-400/20';
-      case 'work': return 'text-pink-400 bg-pink-400/10 border-pink-400/20';
-      case 'contribution': return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
-      default: return 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/20';
+      case 'commit': return 'text-blue-500 bg-blue-500/10 border-blue-500/20 dark:text-blue-400 dark:bg-blue-400/10 dark:border-blue-400/20';
+      case 'project': return 'text-green-500 bg-green-500/10 border-green-500/20 dark:text-green-400 dark:bg-green-400/10 dark:border-green-400/20';
+      case 'achievement': return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20 dark:text-yellow-400 dark:bg-yellow-400/10 dark:border-yellow-400/20';
+      case 'education': return 'text-purple-500 bg-purple-500/10 border-purple-500/20 dark:text-purple-400 dark:bg-purple-400/10 dark:border-purple-400/20';
+      case 'work': return 'text-pink-500 bg-pink-500/10 border-pink-500/20 dark:text-pink-400 dark:bg-pink-400/10 dark:border-pink-400/20';
+      case 'contribution': return 'text-orange-500 bg-orange-500/10 border-orange-500/20 dark:text-orange-400 dark:bg-orange-400/10 dark:border-orange-400/20';
+      default: return 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20';
     }
   };
 
@@ -167,37 +167,37 @@ export function Timeline() {
   };
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#0d1117', color: '#e6edf3'}}>
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-[#e6edf3]">Timeline</h1>
-          <p className="text-[#8b949e] text-lg">My journey in tech, one milestone at a time</p>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">Timeline</h1>
+          <p className="text-muted-foreground text-lg">My journey in tech, one milestone at a time</p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-[#21262d] border-[#30363d]">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-[#e6edf3]">{stats.totalEvents}</div>
-              <div className="text-sm text-[#8b949e]">Total Events</div>
+              <div className="text-2xl font-bold text-foreground">{stats.totalEvents}</div>
+              <div className="text-sm text-muted-foreground">Total Events</div>
             </CardContent>
           </Card>
-          <Card className="bg-[#21262d] border-[#30363d]">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-400">{stats.projects}</div>
-              <div className="text-sm text-[#8b949e]">Projects</div>
+              <div className="text-2xl font-bold text-green-500 dark:text-green-400">{stats.projects}</div>
+              <div className="text-sm text-muted-foreground">Projects</div>
             </CardContent>
           </Card>
-          <Card className="bg-[#21262d] border-[#30363d]">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-400">{stats.achievements}</div>
-              <div className="text-sm text-[#8b949e]">Achievements</div>
+              <div className="text-2xl font-bold text-yellow-500 dark:text-yellow-400">{stats.achievements}</div>
+              <div className="text-sm text-muted-foreground">Achievements</div>
             </CardContent>
           </Card>
-          <Card className="bg-[#21262d] border-[#30363d]">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-orange-400">{stats.contributions}</div>
-              <div className="text-sm text-[#8b949e]">Contributions</div>
+              <div className="text-2xl font-bold text-orange-500 dark:text-orange-400">{stats.contributions}</div>
+              <div className="text-sm text-muted-foreground">Contributions</div>
             </CardContent>
           </Card>
         </div>
@@ -205,7 +205,7 @@ export function Timeline() {
         {/* Timeline */}
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-8 top-0 bottom-0 w-px bg-[#30363d]"></div>
+          <div className="absolute left-8 top-0 bottom-0 w-px bg-border"></div>
           
           <div className="space-y-6">
             {timelineEvents.map((event, index) => (
@@ -216,7 +216,7 @@ export function Timeline() {
                 </div>
                 
                 {/* Event card */}
-                <Card className="flex-1 bg-[#21262d] border-[#30363d] hover:border-[#58a6ff] transition-all duration-200">
+                <Card className="flex-1 bg-card border-border hover:border-primary/50 transition-all duration-200">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -224,38 +224,38 @@ export function Timeline() {
                           <Badge className={`${getEventColor(event.type)} capitalize`}>
                             {event.type}
                           </Badge>
-                          <div className="flex items-center gap-1 text-xs text-[#8b949e]">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="w-3 h-3" />
                             <span>{new Date(event.date).toLocaleDateString()}</span>
                           </div>
                         </div>
                         
-                        <h3 className="text-lg font-semibold text-[#e6edf3] mb-2">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
                           {event.title}
                         </h3>
                         
-                        <p className="text-[#8b949e] leading-relaxed mb-3">
+                        <p className="text-muted-foreground leading-relaxed mb-3">
                           {event.description}
                         </p>
                         
                         {event.repository && (
                           <div className="flex items-center gap-2 mb-3 text-sm">
-                            <Code className="w-4 h-4 text-[#8b949e]" />
-                            <span className="text-[#58a6ff]">{event.repository}</span>
+                            <Code className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-primary">{event.repository}</span>
                             {event.language && (
                               <div className="flex items-center gap-1">
                                 <div 
                                   className="w-3 h-3 rounded-full" 
                                   style={{ backgroundColor: event.languageColor }}
                                 />
-                                <span className="text-[#8b949e]">{event.language}</span>
+                                <span className="text-muted-foreground">{event.language}</span>
                               </div>
                             )}
                           </div>
                         )}
                         
                         {event.impact && (
-                          <div className="flex items-center gap-1 mb-3 text-sm text-yellow-400">
+                          <div className="flex items-center gap-1 mb-3 text-sm text-yellow-500 dark:text-yellow-400">
                             <Zap className="w-3 h-3" />
                             <span>{event.impact}</span>
                           </div>
@@ -267,7 +267,7 @@ export function Timeline() {
                               <Badge 
                                 key={tag} 
                                 variant="outline" 
-                                className="bg-transparent text-[#8b949e] border-[#30363d] text-xs"
+                                className="bg-transparent text-muted-foreground border-border text-xs"
                               >
                                 {tag}
                               </Badge>
@@ -285,9 +285,9 @@ export function Timeline() {
         
         {/* Activity Graph Placeholder */}
         <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-4 text-[#e6edf3]">Activity Overview</h2>
-          <Card className="bg-[#21262d] border-[#30363d] p-6">
-            <div className="text-center text-[#8b949e]">
+          <h2 className="text-xl font-semibold mb-4 text-foreground">Activity Overview</h2>
+          <Card className="bg-card border-border p-6">
+            <div className="text-center text-muted-foreground">
               <GitCommit className="w-8 h-8 mx-auto mb-2" />
               <p>Activity graph coming soon...</p>
               <p className="text-sm mt-1">Track daily commits, contributions, and project milestones</p>

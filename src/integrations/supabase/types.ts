@@ -177,6 +177,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string
+          codeforces: string | null
           created_at: string
           email: string | null
           github: string | null
@@ -184,6 +185,7 @@ export type Database = {
           instagram: string | null
           linkedin: string | null
           location: string | null
+          medium: string | null
           name: string
           phone: string | null
           title: string
@@ -195,6 +197,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string
+          codeforces?: string | null
           created_at?: string
           email?: string | null
           github?: string | null
@@ -202,6 +205,7 @@ export type Database = {
           instagram?: string | null
           linkedin?: string | null
           location?: string | null
+          medium?: string | null
           name?: string
           phone?: string | null
           title?: string
@@ -213,6 +217,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string
+          codeforces?: string | null
           created_at?: string
           email?: string | null
           github?: string | null
@@ -220,6 +225,7 @@ export type Database = {
           instagram?: string | null
           linkedin?: string | null
           location?: string | null
+          medium?: string | null
           name?: string
           phone?: string | null
           title?: string

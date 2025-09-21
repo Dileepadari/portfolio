@@ -13,6 +13,8 @@ export interface PersonalInfo {
   website: string;
   linkedin: string;
   github: string;
+  medium?: string;
+  codeforces?: string;
   instagram?: string;
   youtube?: string;
   twitter?: string;
@@ -55,6 +57,14 @@ export interface Project {
   order_index: number;
   created_at: string;
   updated_at: string;
+  is_private?: boolean;
+  stars?: number;
+  forks?: number;
+  language?: string;
+  language_color?: string;
+  tags?: string[];
+  repository_url?: string;
+  updated_at_display?: string;
 }
 
 export interface Skill {
