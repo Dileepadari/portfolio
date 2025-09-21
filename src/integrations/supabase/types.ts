@@ -92,6 +92,39 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string | null
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       education: {
         Row: {
           coursework: string[] | null
@@ -274,42 +307,114 @@ export type Database = {
           created_at: string
           description: string
           featured: boolean | null
+          forks: number | null
           github_url: string | null
           id: string
           image_url: string | null
           images: string[] | null
+          is_private: boolean | null
+          language: string | null
+          language_color: string | null
           live_url: string | null
           order_index: number | null
+          repository_url: string | null
+          stars: number | null
+          tags: string[] | null
           technologies: string[] | null
           title: string
           updated_at: string
+          updated_at_display: string | null
         }
         Insert: {
           created_at?: string
           description: string
           featured?: boolean | null
+          forks?: number | null
           github_url?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
+          is_private?: boolean | null
+          language?: string | null
+          language_color?: string | null
           live_url?: string | null
           order_index?: number | null
+          repository_url?: string | null
+          stars?: number | null
+          tags?: string[] | null
           technologies?: string[] | null
           title: string
           updated_at?: string
+          updated_at_display?: string | null
         }
         Update: {
           created_at?: string
           description?: string
           featured?: boolean | null
+          forks?: number | null
           github_url?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
+          is_private?: boolean | null
+          language?: string | null
+          language_color?: string | null
           live_url?: string | null
           order_index?: number | null
+          repository_url?: string | null
+          stars?: number | null
+          tags?: string[] | null
           technologies?: string[] | null
           title?: string
+          updated_at?: string
+          updated_at_display?: string | null
+        }
+        Relationships: []
+      }
+      schedules: {
+        Row: {
+          attendees: string[] | null
+          created_at: string
+          description: string | null
+          end_time: string
+          id: string
+          is_public: boolean | null
+          location: string | null
+          meeting_url: string | null
+          start_time: string
+          status: string | null
+          title: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          attendees?: string[] | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          is_public?: boolean | null
+          location?: string | null
+          meeting_url?: string | null
+          start_time: string
+          status?: string | null
+          title: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attendees?: string[] | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_public?: boolean | null
+          location?: string | null
+          meeting_url?: string | null
+          start_time?: string
+          status?: string | null
+          title?: string
+          type?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -346,6 +451,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tasks: {
+        Row: {
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          order_index: number | null
+          priority: string | null
+          project_id: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          order_index?: number | null
+          priority?: string | null
+          project_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          order_index?: number | null
+          priority?: string | null
+          project_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -57,6 +57,7 @@ export function Navigation() {
     { path: "/", label: "Overview", icon: User },
     { path: "/projects", label: "Projects", icon: Github },
     { path: "/blog", label: "Blog", icon: BookOpen },
+    { path: "/contact", label: "Contact", icon: UserCircle },
   ];
 
   const adminItems = [

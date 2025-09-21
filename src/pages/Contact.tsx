@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { usePersonalInfo } from "@/hooks/usePortfolioData";
 import { Mail, Phone, MapPin, Send, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useContactMessages } from "@/hooks/useManagement";
 
 const Contact = () => {
   const { data: personalInfo } = usePersonalInfo();
   const { toast } = useToast();
+  const { createMessage } = useContactMessages();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,14 +20,24 @@ const Contact = () => {
     message: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    toast({
-      title: "Message sent!",
-      description: "Thank you for your message. I'll get back to you soon!",
-    });
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    try {
+      const { error } = await createMessage(formData);
+      if (error) throw error;
+      
+      toast({
+        title: "Message sent!",
+        description: "Thank you for your message. I'll get back to you soon!",
+      });
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
