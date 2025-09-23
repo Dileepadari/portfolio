@@ -1,5 +1,139 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+// Color palette options
+const COLOR_PALETTES = [
+  {
+    name: "Common",
+  light: { primary: "#2563eb", accent: "#22c55e", background: "#f7f6f6ff", border: "#d1d5db" },
+  dark: { primary: "#2563eb", accent: "#22c55e", background: "#1a1a1dff", border: "#4b5563" },
+  },
+  {
+    name: "Monokai",
+  light: { primary: "#f92672", accent: "#a6e22e", background: "#fffaf3", border: "#d1d5db" },
+  dark: { primary: "#f92672", accent: "#a6e22e", background: "#18181b", border: "#4b5563" },
+  },
+  {
+    name: "Original (GitHub)",
+  light: { primary: "#24292f", accent: "#e36209", background: "#f8f9fb", border: "#d1d5db" },
+  dark: { primary: "#cfd9e6ff", accent: "#e36209", background: "#0d1117", border: "#4b5563" },
+  },
+  {
+    name: "Material Design",
+  light: { primary: "#6200ea", accent: "#03dac6", background: "#f7f7fa", border: "#d1d5db" },
+  dark: { primary: "#bb86fc", accent: "#03dac6", background: "#0a0a0a", border: "#4b5563" },
+  },
+  {
+    name: "Original",
+  light: { primary: "#3b82f6", accent: "#f59e42", background: "#f7f7fa", border: "#d1d5db" },
+  dark: { primary: "#2563eb", accent: "#f59e42", background: "#18181b", border: "#4b5563" },
+  },
+  {
+    name: "Monokai",
+  light: { primary: "#f92672", accent: "#a6e22e", background: "#fffaf3", border: "#d1d5db" },
+  dark: { primary: "#f92672", accent: "#a6e22e", background: "#18181b", border: "#4b5563" },
+  },
+];
+
+// Helper: Convert hex to HSL string for Tailwind
+function hexToHSL(hex: string) {
+  hex = hex.replace('#', '');
+  let r = parseInt(hex.substring(0,2), 16) / 255;
+  let g = parseInt(hex.substring(2,4), 16) / 255;
+  let b = parseInt(hex.substring(4,6), 16) / 255;
+  let max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  if(max !== min){
+    let d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch(max){
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  h = Math.round(h * 360);
+  s = Math.round(s * 100);
+  l = Math.round(l * 100);
+  return `${h} ${s}% ${l}%`;
+}
+
+function applyPalette(palette: { light: { primary: string; accent: string; background: string; border?: string }, dark: { primary: string; accent: string; background: string; border?: string } }) {
+  // Detect theme
+  const isDark = document.documentElement.classList.contains('dark');
+  // Always set both, so switching theme is instant
+  document.documentElement.style.setProperty('--primary', hexToHSL(palette.light.primary));
+  document.documentElement.style.setProperty('--accent', hexToHSL(palette.light.accent));
+  document.documentElement.style.setProperty('--background', hexToHSL(palette.light.background));
+  document.documentElement.style.setProperty('--border', hexToHSL(palette.light.border || 'transparent'));
+  
+  const darkRoot = document.querySelector('.dark') as HTMLElement | null;
+  if (darkRoot) {
+    darkRoot.style.setProperty('--primary', hexToHSL(palette.dark.primary));
+    darkRoot.style.setProperty('--accent', hexToHSL(palette.dark.accent));
+    darkRoot.style.setProperty('--background', hexToHSL(palette.dark.background));
+    darkRoot.style.setProperty('--border', hexToHSL(palette.dark.border || 'transparent'));
+  }
+}
+
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+
+function ColorPaletteSelector() {
+  const [selected, setSelected] = useState(() => {
+    const saved = localStorage.getItem('color-palette');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    applyPalette(COLOR_PALETTES[selected]);
+    localStorage.setItem('color-palette', String(selected));
+  }, [selected]);
+
+  // Also update palette when theme changes
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      applyPalette(COLOR_PALETTES[selected]);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, [selected]);
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <button
+          className={`w-7 h-7 rounded-full border-2 border-border flex items-center justify-center focus:outline-none transition-all duration-200 ml-2 ${open ? 'ring-2 ring-primary' : ''}`}
+          style={{ background: COLOR_PALETTES[selected][document.documentElement.classList.contains('dark') ? 'dark' : 'light'].primary }}
+          title="Change color palette"
+          onClick={() => setOpen(true)}
+          aria-label="Change color palette"
+        >
+          <span className="w-4 h-4 rounded-full" style={{ background: COLOR_PALETTES[selected][document.documentElement.classList.contains('dark') ? 'dark' : 'light'].accent }} />
+        </button>
+        <DialogContent>
+          <div className="p-4">
+            <h3 className="text-lg font-semibold mb-2">Select Color Palette</h3>
+            <div className="flex flex-wrap gap-3">
+              {COLOR_PALETTES.map((palette, idx) => (
+                <button
+                  key={palette.name}
+                  className={`w-10 h-10 rounded-full border-2 border-border flex items-center justify-center focus:outline-none transition-all duration-200 ${selected === idx ? 'ring-2 ring-primary' : ''}`}
+                  style={{ background: palette[document.documentElement.classList.contains('dark') ? 'dark' : 'light'].primary }}
+                  title={palette.name}
+                  onClick={() => { setSelected(idx); setOpen(false); }}
+                  aria-label={palette.name}
+                >
+                  <span className="w-5 h-5 rounded-full" style={{ background: palette[document.documentElement.classList.contains('dark') ? 'dark' : 'light'].accent }} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -185,8 +319,11 @@ export function Navigation() {
 
             {/* Right side - Desktop & Mobile */}
             <div className="flex items-center space-x-3">
+
               {/* Theme Toggle - Always visible */}
               <ThemeToggle />
+              {/* Color Palette Selector */}
+              <ColorPaletteSelector />
 
               {/* Desktop User Section */}
               <div className="hidden md:block">
