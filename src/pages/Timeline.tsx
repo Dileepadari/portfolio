@@ -29,6 +29,19 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { toast } from "sonner";
 
 export function Timeline() {
+  // Timeline type filter
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const timelineTypes = [
+    { value: 'all', label: 'All' },
+    { value: 'project', label: 'Project' },
+    { value: 'achievement', label: 'Achievement' },
+    { value: 'contribution', label: 'Contribution' },
+    { value: 'education', label: 'Education' },
+    { value: 'work', label: 'Work' },
+    { value: 'commit', label: 'Commit' },
+    { value: 'task', label: 'Task' },
+    { value: 'schedule', label: 'Schedule' },
+  ];
   const { timelineEvents, loading, error, refetch } = useTimelineEvents();
   const { addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, loading: managementLoading } = useTimelineManagement();
   const { stats, loading: statsLoading, error: statsError } = useActivityOverview();
@@ -231,13 +244,30 @@ export function Timeline() {
           </Card>
         </div>
 
+          {/* Timeline Type Filter */}
+          <div className="flex flex-wrap gap-2 mt-6 mb-8">
+            {timelineTypes.map(type => (
+              <Button
+                key={type.value}
+                variant={typeFilter === type.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTypeFilter(type.value)}
+                className="capitalize"
+              >
+                {type.label}
+              </Button>
+            ))}
+          </div>
+   
         {/* Timeline */}
         <div className="relative">
           {/* Timeline line */}
           <div className="absolute left-8 top-0 bottom-0 w-px bg-border"></div>
 
           <div className="space-y-6">
-            {timelineEvents.map((event, index) => (
+            {timelineEvents
+              .filter(event => typeFilter === 'all' || event.type === typeFilter)
+              .map((event, index) => (
               <div key={event.id} className="relative flex items-start gap-6">
                 {/* Timeline dot */}
                 <div className={`relative flex-shrink-0 w-16 h-16 rounded-full border-2 ${getEventColor(event.type)} flex items-center justify-center z-10`}>
