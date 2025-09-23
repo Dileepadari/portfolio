@@ -540,7 +540,7 @@ export function Navigation() {
       {/* Absolute Rocket button at bottom right */}
       <button
         onClick={handleScrollToTop}
-        className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-50 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 flex items-center justify-center"
         aria-label="Take Me Up"
       >
         <Rocket className="w-6 h-6" style={{ transform: 'rotate(-45deg)' }} />
