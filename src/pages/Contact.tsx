@@ -705,14 +705,11 @@ This is an automated task request submission.
               <TabsContent value="task">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CheckSquare className="w-5 h-5" />
-                      Request a Task
-                    </CardTitle>
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">
-                        Need help with a project? Submit a task request and I'll review it for approval.
-                      </p>
+                      <CardTitle className="flex items-center gap-2">
+                        <CheckSquare className="w-5 h-5" />
+                        Request a Task
+                      </CardTitle>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="outline" size="sm" className="ml-2">
