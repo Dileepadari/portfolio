@@ -29,6 +29,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+// Import logo images
+import logoDark from "@/assets/adk_dev_logo_dark.png"; // For light mode
+import logoLight from "@/assets/adk_dev_logo_light.png"; // For dark mode  
+import logoMobile from "@/assets/adk_dev_only_logo_color.png"; // For mobile
+
 export function Navigation() {
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -57,11 +62,11 @@ export function Navigation() {
     { path: "/", label: "Overview", icon: User },
     { path: "/projects", label: "Projects", icon: Github },
     { path: "/blog", label: "Blog", icon: BookOpen },
+    { path: "/timeline", label: "Timeline", icon: Clock },
     { path: "/contact", label: "Contact", icon: UserCircle },
   ];
 
   const adminItems = [
-    { path: "/timeline", label: "Timeline", icon: Clock },
     { path: "/schedule", label: "Schedule", icon: Calendar },
   ];
 
@@ -72,9 +77,28 @@ export function Navigation() {
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-3 flex-shrink-0 group">
+            {/* Desktop & Tablet Logo - constrained to navbar height, 16:9 aspect ratio, clear and centered */}
+            <div className="sm:block relative h-12 w-36 aspect-[16/9] overflow-hidden rounded-lg flex items-center justify-center bg-transparent">
+              <img
+                src={logoDark}
+                alt="ADK Dev Logo"
+                className="w-full h-full object-cover object-center dark:opacity-0"
+                style={{ imageRendering: 'auto' }}
+              />
+              <img
+                src={logoLight}
+                alt="ADK Dev Logo"
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-0 dark:opacity-100"
+                style={{ imageRendering: 'auto' }}
+              />
+            </div>
+          </Link>
+
+          {/* Desktop Navigation - Centered */}
+          <nav className="hidden md:flex space-x-8 lg:space-x-8 md:space-x-4 flex-1 justify-center">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -162,150 +186,152 @@ export function Navigation() {
             )}
           </nav>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2"
-              aria-label="Toggle mobile menu"
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6 transition-transform duration-300 rotate-90" />
-              ) : (
-                <Menu className="w-6 h-6 transition-transform duration-300" />
-              )}
-            </Button>
-          </div>
-          
-          {/* Right side - Desktop */}
-          <div className="hidden md:flex items-center space-x-3">
+          {/* Right side - Desktop & Mobile */}
+          <div className="flex items-center space-x-3">
+            {/* Theme Toggle - Always visible */}
             <ThemeToggle />
-            
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-10 w-10 rounded-full p-0 hover:bg-accent transition-colors duration-200"
-                  >
-                    <Avatar className="h-9 w-9 border-2 border-transparent hover:border-primary/20 transition-colors duration-200">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                        {getUserInitials(user.email || '')}
-                      </AvatarFallback>
-                    </Avatar>
-                    {isAdmin && (
-                      <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
-                        A
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 animate-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                        {getUserInitials(user.email || '')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.email}</p>
-                      {isAdmin && (
-                        <p className="text-xs text-primary font-medium">Administrator</p>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Button
-                      variant="ghost"
-                      onClick={handleSignOut}
-                      className="w-full justify-start text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="ghost" size="sm" asChild>
-                <Link 
-                  to="/auth" 
-                  className="group inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-300 hover:bg-green-500/10 hover:text-green-600 border border-transparent hover:border-green-200 rounded-lg"
-                >
-                  <LogIn className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110 group-hover:translate-x-1" />
-                  Sign In
-                </Link>
-              </Button>
-            )}
-          </div>
 
-          {/* Right side - Mobile */}
-          <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
-            
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-9 w-9 rounded-full p-0 hover:bg-accent transition-colors duration-200"
-                  >
-                    <Avatar className="h-8 w-8 border-2 border-transparent hover:border-primary/20 transition-colors duration-200">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                        {getUserInitials(user.email || '')}
-                      </AvatarFallback>
-                    </Avatar>
-                    {isAdmin && (
-                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
-                        A
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52 animate-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                        {getUserInitials(user.email || '')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none truncate">{user.email}</p>
-                      {isAdmin && (
-                        <p className="text-xs text-primary font-medium">Administrator</p>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
+            {/* Desktop User Section */}
+            <div className="hidden md:block">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      onClick={handleSignOut}
-                      className="w-full justify-start text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
+                      className="relative h-10 w-10 rounded-full p-0 hover:bg-accent transition-colors duration-200"
                     >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
+                      <Avatar className="h-9 w-9 border-2 border-transparent hover:border-primary/20 transition-colors duration-200">
+                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                          {getUserInitials(user.email || '')}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isAdmin && (
+                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
+                          A
+                        </span>
+                      )}
                     </Button>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="ghost" size="sm" asChild>
-                <Link 
-                  to="/auth"
-                  className="inline-flex items-center justify-center h-9 w-9 rounded-full text-muted-foreground hover:text-foreground transition-all duration-300 hover:bg-green-500/10 hover:text-green-600"
-                >
-                  <LogIn className="w-5 h-5" />
-                </Link>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                          {getUserInitials(user.email || '')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.email}</p>
+                        {isAdmin && (
+                          <p className="text-xs text-primary font-medium">Administrator</p>
+                        )}
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Button
+                        variant="ghost"
+                        onClick={handleSignOut}
+                        className="w-full justify-start text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link 
+                    to="/auth" 
+                    className="group inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-300 hover:bg-green-500/10 hover:text-green-600 border border-transparent hover:border-green-200 rounded-lg"
+                  >
+                    <LogIn className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110 group-hover:translate-x-1" />
+                    Sign In
+                  </Link>
+                </Button>
+              )}
+            </div>
+
+            {/* Mobile User Section */}
+            <div className="md:hidden">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-9 w-9 rounded-full p-0 hover:bg-accent transition-colors duration-200"
+                    >
+                      <Avatar className="h-8 w-8 border-2 border-transparent hover:border-primary/20 transition-colors duration-200">
+                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                          {getUserInitials(user.email || '')}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isAdmin && (
+                        <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
+                          A
+                        </span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52 animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                          {getUserInitials(user.email || '')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none truncate">{user.email}</p>
+                        {isAdmin && (
+                          <p className="text-xs text-primary font-medium">Administrator</p>
+                        )}
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Button
+                        variant="ghost"
+                        onClick={handleSignOut}
+                        className="w-full justify-start text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link 
+                    to="/auth"
+                    className="inline-flex items-center justify-center h-9 w-9 rounded-full text-muted-foreground hover:text-foreground transition-all duration-300 hover:bg-green-500/10 hover:text-green-600"
+                  >
+                    <LogIn className="w-5 h-5" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2"
+                aria-label="Toggle mobile menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6 transition-transform duration-300 rotate-90" />
+                ) : (
+                  <Menu className="w-6 h-6 transition-transform duration-300" />
+                )}
               </Button>
-            )}
+            </div>
           </div>
         </div>
 

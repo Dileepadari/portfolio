@@ -82,52 +82,45 @@ export function Auth() {
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        backgroundColor: '#0d1117',
-        color: '#e6edf3',
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif'
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
-            className="mb-4 text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#30363d]"
+            className="mb-4 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Portfolio
           </Button>
           <div className="flex items-center justify-center mb-2">
-            <Github className="w-8 h-8 text-[#e6edf3]" />
+            <Github className="w-8 h-8 text-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-[#e6edf3]">
+          <h1 className="text-2xl font-bold text-foreground">
             Dileep's Portfolio
           </h1>
-          <p className="text-[#8b949e] mt-2">
+          <p className="text-muted-foreground mt-2">
             Sign in to access admin features
           </p>
         </div>
 
-        <Card className="bg-[#21262d] border-[#30363d]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-[#e6edf3] text-center">Authentication</CardTitle>
+            <CardTitle className="text-foreground text-center">Authentication</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-[#30363d]">
+              <TabsList className="grid w-full grid-cols-2 bg-muted">
                 <TabsTrigger 
                   value="signin" 
-                  className="text-[#8b949e] data-[state=active]:text-[#e6edf3] data-[state=active]:bg-[#0d1117]"
+                  className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup"
-                  className="text-[#8b949e] data-[state=active]:text-[#e6edf3] data-[state=active]:bg-[#0d1117]"
+                  className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Sign Up
@@ -135,8 +128,8 @@ export function Auth() {
               </TabsList>
 
               {error && (
-                <Alert className="mt-4 bg-[#f85149]/10 border-[#f85149]/20">
-                  <AlertDescription className="text-[#f85149]">
+                <Alert className="mt-4 bg-destructive/10 border-destructive/20">
+                  <AlertDescription className="text-destructive">
                     {error}
                   </AlertDescription>
                 </Alert>
@@ -145,7 +138,7 @@ export function Auth() {
               <TabsContent value="signin" className="space-y-4 mt-4">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div>
-                    <Label htmlFor="signin-email" className="text-[#e6edf3]">
+                    <Label htmlFor="signin-email" className="text-foreground">
                       Email
                     </Label>
                     <Input
@@ -153,12 +146,12 @@ export function Auth() {
                       name="email"
                       type="email"
                       required
-                      className="mt-1 bg-[#0d1117] border-[#30363d] text-[#e6edf3] placeholder-[#8b949e]"
+                      className="mt-1 bg-background border-border text-foreground placeholder-muted-foreground"
                       placeholder="Enter your email"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="signin-password" className="text-[#e6edf3]">
+                    <Label htmlFor="signin-password" className="text-foreground">
                       Password
                     </Label>
                     <Input
@@ -166,14 +159,14 @@ export function Auth() {
                       name="password"
                       type="password"
                       required
-                      className="mt-1 bg-[#0d1117] border-[#30363d] text-[#e6edf3] placeholder-[#8b949e]"
+                      className="mt-1 bg-background border-border text-foreground placeholder-muted-foreground"
                       placeholder="Enter your password"
                     />
                   </div>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#238636] hover:bg-[#2ea043] text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {loading ? 'Signing in...' : 'Sign In'}
                   </Button>
@@ -183,7 +176,7 @@ export function Auth() {
               <TabsContent value="signup" className="space-y-4 mt-4">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div>
-                    <Label htmlFor="signup-name" className="text-[#e6edf3]">
+                    <Label htmlFor="signup-name" className="text-foreground">
                       Full Name
                     </Label>
                     <Input
@@ -191,12 +184,12 @@ export function Auth() {
                       name="fullName"
                       type="text"
                       required
-                      className="mt-1 bg-[#0d1117] border-[#30363d] text-[#e6edf3] placeholder-[#8b949e]"
+                      className="mt-1 bg-background border-border text-foreground placeholder-muted-foreground"
                       placeholder="Enter your full name"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="signup-email" className="text-[#e6edf3]">
+                    <Label htmlFor="signup-email" className="text-foreground">
                       Email
                     </Label>
                     <Input
@@ -204,12 +197,12 @@ export function Auth() {
                       name="email"
                       type="email"
                       required
-                      className="mt-1 bg-[#0d1117] border-[#30363d] text-[#e6edf3] placeholder-[#8b949e]"
+                      className="mt-1 bg-background border-border text-foreground placeholder-muted-foreground"
                       placeholder="Enter your email"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="signup-password" className="text-[#e6edf3]">
+                    <Label htmlFor="signup-password" className="text-foreground">
                       Password
                     </Label>
                     <Input
@@ -218,14 +211,14 @@ export function Auth() {
                       type="password"
                       required
                       minLength={6}
-                      className="mt-1 bg-[#0d1117] border-[#30363d] text-[#e6edf3] placeholder-[#8b949e]"
+                      className="mt-1 bg-background border-border text-foreground placeholder-muted-foreground"
                       placeholder="Choose a password (min. 6 characters)"
                     />
                   </div>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#238636] hover:bg-[#2ea043] text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
@@ -235,7 +228,7 @@ export function Auth() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-[#8b949e]">
+        <p className="text-center text-sm text-muted-foreground">
           This is Dileep Adari's portfolio. Only authorized users can access admin features.
         </p>
       </div>

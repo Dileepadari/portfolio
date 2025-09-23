@@ -52,6 +52,7 @@ export type Database = {
           content: string
           created_at: string
           excerpt: string | null
+          external_link: string | null
           id: string
           image_url: string | null
           images: string[] | null
@@ -66,6 +67,7 @@ export type Database = {
           content: string
           created_at?: string
           excerpt?: string | null
+          external_link?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
@@ -80,6 +82,7 @@ export type Database = {
           content?: string
           created_at?: string
           excerpt?: string | null
+          external_link?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
@@ -91,6 +94,148 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      blog_comments: {
+        Row: {
+          author_email: string | null
+          author_name: string
+          blog_post_id: string
+          content: string
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          parent_comment_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          author_email?: string | null
+          author_name: string
+          blog_post_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          author_email?: string | null
+          author_name?: string
+          blog_post_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "blog_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      blog_likes: {
+        Row: {
+          blog_post_id: string
+          created_at: string
+          id: string
+          user_id: string | null
+          user_ip: string | null
+        }
+        Insert: {
+          blog_post_id: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Update: {
+          blog_post_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_likes_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      blog_shares: {
+        Row: {
+          blog_post_id: string
+          created_at: string
+          id: string
+          share_type: string
+          user_id: string | null
+          user_ip: string | null
+        }
+        Insert: {
+          blog_post_id: string
+          created_at?: string
+          id?: string
+          share_type: string
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Update: {
+          blog_post_id?: string
+          created_at?: string
+          id?: string
+          share_type?: string
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_shares_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_shares_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       contact_messages: {
         Row: {
@@ -121,6 +266,45 @@ export type Database = {
           name?: string
           status?: string | null
           subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      courses: {
+        Row: {
+          certificate_url: string | null
+          completion_date: string | null
+          created_at: string
+          description: string | null
+          id: string
+          institution: string | null
+          is_favorite: boolean | null
+          name: string
+          order_index: number | null
+          updated_at: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          completion_date?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          institution?: string | null
+          is_favorite?: boolean | null
+          name: string
+          order_index?: number | null
+          updated_at?: string
+        }
+        Update: {
+          certificate_url?: string | null
+          completion_date?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          institution?: string | null
+          is_favorite?: boolean | null
+          name?: string
+          order_index?: number | null
           updated_at?: string
         }
         Relationships: []

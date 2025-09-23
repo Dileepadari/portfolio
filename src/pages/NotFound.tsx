@@ -3,13 +3,12 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft, Code, Coffee, Bug, Music, Pizza, Zap, Flame } from "lucide-react";
 
-const NotFound = () => {
+export default function NotFound() {
   const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
   const [bubbleTransform, setBubbleTransform] = useState("rotate(0deg)");
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
     setIsAnimating(true);
   }, [location.pathname]);
 
@@ -202,5 +201,3 @@ const NotFound = () => {
     </div>
   );
 };
-
-export default NotFound;
