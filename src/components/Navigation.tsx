@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 const COLOR_PALETTES = [
   {
     name: "Common",
-  light: { primary: "#2563eb", accent: "#22c55e", background: "#f7f6f6ff", border: "#d1d5db" },
-  dark: { primary: "#2563eb", accent: "#22c55e", background: "#1a1a1dff", border: "#4b5563" },
+  light: { primary: "#2563eb", accent: "#22c55e", background: "#fdfdfdff", border: "#d1d5db" },
+  dark: { primary: "#2563eb", accent: "#22c55e", background: "#1a1a1bff", border: "#4b5563" },
   },
   {
     name: "Monokai",
@@ -26,12 +26,7 @@ const COLOR_PALETTES = [
     name: "Original",
   light: { primary: "#3b82f6", accent: "#f59e42", background: "#f7f7fa", border: "#d1d5db" },
   dark: { primary: "#2563eb", accent: "#f59e42", background: "#18181b", border: "#4b5563" },
-  },
-  {
-    name: "Monokai",
-  light: { primary: "#f92672", accent: "#a6e22e", background: "#fffaf3", border: "#d1d5db" },
-  dark: { primary: "#f92672", accent: "#a6e22e", background: "#18181b", border: "#4b5563" },
-  },
+  }
 ];
 
 // Helper: Convert hex to HSL string for Tailwind
@@ -112,8 +107,8 @@ function ColorPaletteSelector() {
           <span className="w-4 h-4 rounded-full" style={{ background: COLOR_PALETTES[selected][document.documentElement.classList.contains('dark') ? 'dark' : 'light'].accent }} />
         </button>
         <DialogContent>
+          <DialogTitle className="text-lg font-semibold mb-2">Select Color Palette</DialogTitle>
           <div className="p-4">
-            <h3 className="text-lg font-semibold mb-2">Select Color Palette</h3>
             <div className="flex flex-wrap gap-3">
               {COLOR_PALETTES.map((palette, idx) => (
                 <button
@@ -168,6 +163,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import logoDark from "@/assets/adk_dev_logo_dark.png"; // For light mode
 import logoLight from "@/assets/adk_dev_logo_light.png"; // For dark mode  
 import logoMobile from "@/assets/adk_dev_only_logo_color.png"; // For mobile
+import { DialogTitle } from "@radix-ui/react-dialog";
 
 export function Navigation() {
   const location = useLocation();
@@ -215,23 +211,23 @@ export function Navigation() {
 
   return (
     <>
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="flex items-center justify-between h-16 w-full">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 flex-shrink-0 group">
-              {/* Desktop & Tablet Logo - constrained to navbar height, 16:9 aspect ratio, clear and centered */}
-              <div className="sm:block relative h-12 w-36 aspect-[16/9] overflow-hidden rounded-lg flex items-center justify-center bg-transparent">
+              {/* Responsive Logo - full size on desktop, medium on tablet, small on mobile */}
+              <div className="relative h-20 md:h-24 lg:h-28 w-auto max-w-56 md:max-w-64 lg:max-w-72 overflow-hidden rounded-lg flex items-center justify-center bg-transparent">
                 <img
                   src={logoDark}
                   alt="ADK Dev Logo"
-                  className="w-full h-full object-cover object-center dark:opacity-0"
+                  className="h-full w-auto object-contain object-center dark:opacity-0"
                   style={{ imageRendering: 'auto' }}
                 />
                 <img
                   src={logoLight}
                   alt="ADK Dev Logo"
-                  className="absolute inset-0 w-full h-full object-cover object-center opacity-0 dark:opacity-100"
+                  className="absolute inset-0 h-full w-auto object-contain object-center opacity-0 dark:opacity-100"
                   style={{ imageRendering: 'auto' }}
                 />
               </div>
@@ -320,10 +316,14 @@ export function Navigation() {
             {/* Right side - Desktop & Mobile */}
             <div className="flex items-center space-x-3">
 
-              {/* Theme Toggle - Always visible */}
-              <ThemeToggle />
-              {/* Color Palette Selector */}
-              <ColorPaletteSelector />
+              {/* Theme Toggle - Desktop only */}
+              <div className="hidden md:block">
+                <ThemeToggle />
+              </div>
+              {/* Color Palette Selector - Desktop only */}
+              <div className="hidden md:block">
+                <ColorPaletteSelector />
+              </div>
 
               {/* Desktop User Section */}
               <div className="hidden md:block">
@@ -388,66 +388,9 @@ export function Navigation() {
                 )}
               </div>
 
-              {/* Mobile User Section */}
-              <div className="md:hidden">
-                {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="relative h-9 w-9 rounded-full p-0 hover:bg-accent transition-colors duration-200"
-                      >
-                        <Avatar className="h-8 w-8 border-2 border-transparent hover:border-primary/20 transition-colors duration-200">
-                          <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                            {getUserInitials(user.email || '')}
-                          </AvatarFallback>
-                        </Avatar>
-                        {isAdmin && (
-                          <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
-                            A
-                          </span>
-                        )}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52 animate-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-center justify-start gap-2 p-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                            {getUserInitials(user.email || '')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none truncate">{user.email}</p>
-                          {isAdmin && (
-                            <p className="text-xs text-primary font-medium">Administrator</p>
-                          )}
-                        </div>
-                      </div>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Button
-                          variant="ghost"
-                          onClick={handleSignOut}
-                          className="w-full justify-start text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
-                        >
-                          <LogOut className="w-4 h-4 mr-2" />
-                          Sign Out
-                        </Button>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link
-                      to="/auth"
-                      className="inline-flex items-center justify-center h-9 w-9 rounded-full text-muted-foreground hover:text-foreground transition-all duration-300 hover:bg-green-500/10 hover:text-green-600"
-                    >
-                      <LogIn className="w-5 h-5" />
-                    </Link>
-                  </Button>
-                )}
+              {/* Mobile User Section - Hidden */}
+              <div className="hidden">
+                {/* Profile icon hidden in mobile - user info is now in mobile menu */}
               </div>
 
               {/* Mobile menu button */}
@@ -470,11 +413,47 @@ export function Navigation() {
           </div>
 
           {/* Mobile Menu */}
-          <div className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen
+          <div className={`md:hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen
             ? "max-h-screen opacity-100 pb-4"
-            : "max-h-0 opacity-0"
+            : "max-h-0 opacity-0 overflow-hidden"
             }`}>
-            <nav className="flex flex-col space-y-2 pt-4 border-t border-border">
+            <div className="w-full max-h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden scrollbar-hide">
+              <nav className="flex flex-col space-y-2 pt-4 border-t border-border w-full">
+              {/* Mobile Profile Section */}
+              {user && (
+                <div className="px-4 py-3 mb-2 bg-accent/20 rounded-lg mx-2 overflow-hidden">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="h-10 w-10 border-2 border-primary/20 flex-shrink-0">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                        {getUserInitials(user.email || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="text-sm font-medium leading-none truncate flex-1 min-w-0">{user.email}</p>
+                        {isAdmin && (
+                          <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full flex-shrink-0">
+                            Admin
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 truncate">Welcome back!</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 flex-shrink-0"
+                      onClick={closeMobileMenu}
+                      asChild
+                    >
+                      <Link to="/profile">
+                        <Settings className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -498,6 +477,23 @@ export function Navigation() {
                   </Link>
                 );
               })}
+
+              {/* Mobile Theme and Color Settings */}
+              <div className="pt-2 border-t border-border">
+                <div className="px-4 py-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Appearance
+                  </span>
+                </div>
+                <div className="flex items-center justify-between px-6 py-3">
+                  <span className="text-sm font-medium text-muted-foreground">Theme</span>
+                  <ThemeToggle />
+                </div>
+                <div className="flex items-center justify-between px-6 py-3">
+                  <span className="text-sm font-medium text-muted-foreground">Color Palette</span>
+                  <ColorPaletteSelector />
+                </div>
+              </div>
 
               {/* Mobile Admin Section */}
               {isAdmin && (
@@ -532,7 +528,8 @@ export function Navigation() {
                   })}
                 </div>
               )}
-            </nav>
+              </nav>
+            </div>
           </div>
         </div>
       </header>

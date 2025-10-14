@@ -38,7 +38,8 @@ import {
   Save,
   X,
   Plus,
-  Trash2
+  Trash2,
+  Settings
 } from "lucide-react";
 import { usePersonalInfo, useEducation, useExperience, useSkills, useAchievements, useCourses, PersonalInfo, Education, Experience, Skill, Achievement, Course } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -490,7 +491,7 @@ export function Profile() {
                 <img 
                   src={personalInfo?.avatar_url || profileAvatar} 
                   alt={personalInfo?.name}
-                  className="w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full object-cover border-4 border-border"
+                  className="w-24 h-24 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full object-cover border-4 border-border"
                 />
               </div>
               
@@ -501,16 +502,18 @@ export function Profile() {
                       {personalInfo?.name}
                     </h1>
                   </div>
-                  {isAdmin && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingPersonalInfo(!editingPersonalInfo)}
-                      className="ml-4 shrink-0"
-                    >
-                      {editingPersonalInfo ? <X className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2 ml-4 shrink-0">
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingPersonalInfo(!editingPersonalInfo)}
+                        title={editingPersonalInfo ? "Cancel Edit" : "Edit Profile"}
+                      >
+                        {editingPersonalInfo ? <X className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-sm sm:text-base md:text-lg lg:text-lg text-muted-foreground mb-4 leading-relaxed">
                   {personalInfo?.title}
