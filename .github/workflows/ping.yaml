@@ -2,52 +2,28 @@ name: Ping Supabase to Prevent Pausing
 
 on:
   schedule:
-    - cron: '0 9 * * 1,4' # Runs at 9:00 AM UTC every Monday and Thursday
-  workflow_dispatch: # Allows manual triggering from the GitHub UI
+    # 9:00am (`0, 9`), every day (`*`), every month (`*`), monday and thursday (`1, 4`)
+    - cron: '0 9 * * 1,4'
+  workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18' # Use Node.js 18
-
-      # Step 3: Install Supabase Client
-      - name: Install Supabase Client
-        run: npm install @supabase/supabase-js --force
-
-      # Step 4: Ping Supabase
-      - name: Ping Supabase
+      - name: Ping Supabase via PostgREST
         env:
-          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} # Supabase project URL
-          SUPABASE_KEY: ${{ secrets.NEXT_SERVICE_ROLE_KEY }} # Supabase service role key
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          node -e "
-          (async () => {
-            try {
-              // Import Supabase client
-              const { createClient } = require('@supabase/supabase-js');
-              const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+          response=$(curl -s \
+            -X GET "${SUPABASE_URL}/rest/v1/" \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}")
+          if [ -z "$response" ]; then
+            echo "Error: empty response when pinging." >&2
+            exit 1
+          fi
+          echo "Successful ping: $response"
 
-              // Ping Supabase by querying a table (e.g., 'songs')
-              const { data, error } = await supabase.from('education').select('*').limit(10);
 
-              // Handle errors
-              if (error) throw error;
-
-              // Log success
-              console.log('Ping successful:', data);
-            } catch (err) {
-              // Log and exit with error
-              console.error('Error pinging Supabase:', err.message);
-              process.exit(1);
-            }
-          })();
