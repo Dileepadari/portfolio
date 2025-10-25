@@ -9,12 +9,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { 
-  MapPin, 
-  Mail, 
-  Globe, 
-  Linkedin, 
-  Github, 
+import {
+  MapPin,
+  Mail,
+  Globe,
+  Linkedin,
+  Github,
   Twitter,
   Download,
   Phone,
@@ -56,14 +56,14 @@ export function Profile() {
   const { data: courses, refetch: refetchCourses } = useCourses();
   const { isAdmin } = useAdmin();
   const { toast } = useToast();
-  
+
   const [editingPersonalInfo, setEditingPersonalInfo] = useState(false);
   const [editingEducation, setEditingEducation] = useState<string | null>(null);
   const [editingExperience, setEditingExperience] = useState<string | null>(null);
   const [editingSkill, setEditingSkill] = useState<string | null>(null);
   const [editingAchievement, setEditingAchievement] = useState<string | null>(null);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  
+
   // Add New states
   const [addingExperience, setAddingExperience] = useState(false);
   const [addingSkill, setAddingSkill] = useState(false);
@@ -78,14 +78,14 @@ export function Profile() {
         .from('personal_info')
         .update(updatedInfo)
         .eq('id', personalInfo.id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Personal information updated successfully!",
       });
-      
+
       refetchPersonalInfo();
       setEditingPersonalInfo(false);
     } catch (error) {
@@ -103,14 +103,14 @@ export function Profile() {
         .from('education')
         .update(updatedEducation)
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Education updated successfully!",
       });
-      
+
       refetchEducation();
       setEditingEducation(null);
     } catch (error) {
@@ -128,14 +128,14 @@ export function Profile() {
         .from('experience')
         .update(updatedExperience)
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Experience updated successfully!",
       });
-      
+
       refetchExperience();
       setEditingExperience(null);
     } catch (error) {
@@ -153,14 +153,14 @@ export function Profile() {
         .from('skills')
         .update(updatedSkill)
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Skill updated successfully!",
       });
-      
+
       refetchSkills();
       setEditingSkill(null);
     } catch (error) {
@@ -178,14 +178,14 @@ export function Profile() {
         .from('achievements')
         .update(updatedAchievement)
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Achievement updated successfully!",
       });
-      
+
       refetchAchievements();
       setEditingAchievement(null);
     } catch (error) {
@@ -203,14 +203,14 @@ export function Profile() {
         .from('courses')
         .update(updatedCourse)
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Course updated successfully!",
       });
-      
+
       refetchCourses();
       setEditingCourse(null);
     } catch (error) {
@@ -228,14 +228,14 @@ export function Profile() {
       const { error } = await supabase
         .from('experience')
         .insert([newExperience]);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Experience added successfully!",
       });
-      
+
       refetchExperience();
       setAddingExperience(false);
     } catch (error) {
@@ -252,14 +252,14 @@ export function Profile() {
       const { error } = await supabase
         .from('skills')
         .insert([newSkill]);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Skill added successfully!",
       });
-      
+
       refetchSkills();
       setAddingSkill(false);
     } catch (error) {
@@ -276,14 +276,14 @@ export function Profile() {
       const { error } = await supabase
         .from('education')
         .insert([newEducation]);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Education added successfully!",
       });
-      
+
       refetchEducation();
       setAddingEducation(false);
     } catch (error) {
@@ -300,14 +300,14 @@ export function Profile() {
       const { error } = await supabase
         .from('achievements')
         .insert([newAchievement]);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Achievement added successfully!",
       });
-      
+
       refetchAchievements();
       setAddingAchievement(false);
     } catch (error) {
@@ -324,14 +324,14 @@ export function Profile() {
       const { error } = await supabase
         .from('courses')
         .insert([newCourse]);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Course added successfully!",
       });
-      
+
       refetchCourses();
       setAddingCourse(false);
     } catch (error) {
@@ -350,14 +350,14 @@ export function Profile() {
         .from('experience')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Experience deleted successfully!",
       });
-      
+
       refetchExperience();
     } catch (error) {
       toast({
@@ -374,14 +374,14 @@ export function Profile() {
         .from('skills')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Skill deleted successfully!",
       });
-      
+
       refetchSkills();
     } catch (error) {
       toast({
@@ -398,14 +398,14 @@ export function Profile() {
         .from('education')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Education deleted successfully!",
       });
-      
+
       refetchEducation();
     } catch (error) {
       toast({
@@ -422,14 +422,14 @@ export function Profile() {
         .from('achievements')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Achievement deleted successfully!",
       });
-      
+
       refetchAchievements();
     } catch (error) {
       toast({
@@ -446,14 +446,14 @@ export function Profile() {
         .from('courses')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Course deleted successfully!",
       });
-      
+
       refetchCourses();
     } catch (error) {
       toast({
@@ -483,95 +483,99 @@ export function Profile() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-6xl mx-auto p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto p-3 sm:p-6">
         {/* Header */}
-        <Card className="mb-6 sm:mb-8 bg-card border-border">
+        <Card className="mb-6 sm:mb-4 bg-card border-border">
           <CardContent className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 items-center lg:items-start">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 items-center lg:items-center justify-center">
               <div className="relative self-center shrink-0">
-                <img 
-                  src={personalInfo?.avatar_url || profileAvatar} 
+                <img
+                  src={personalInfo?.avatar_url || profileAvatar}
                   alt={personalInfo?.name}
-                  className="w-24 h-24 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full object-cover border-4 border-border"
+                  className="w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full object-cover border-4 border-border transform -scale-x-100"
                 />
               </div>
-              
-              <div className="flex-1 w-full text-center lg:text-left">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
+              <div className="w-max text-center lg:text-left">
+                <div className="flex items-start justify-between mb-2 w-max mx-auto lg:mx-0">
+                  <div className="w-max">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground w-max">
                       {personalInfo?.name}
                     </h1>
                   </div>
-                  <div className="flex items-center gap-2 ml-4 shrink-0">
+                  <div className="flex items-center gap-2 ml-4 shrink-0 w-max">
                     {isAdmin && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setEditingPersonalInfo(!editingPersonalInfo)}
                         title={editingPersonalInfo ? "Cancel Edit" : "Edit Profile"}
+                        className="w-max"
                       >
                         {editingPersonalInfo ? <X className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
                       </Button>
                     )}
                   </div>
                 </div>
-                <p className="text-sm sm:text-base md:text-lg lg:text-lg text-muted-foreground mb-4 leading-relaxed">
+
+                <p className="text-sm sm:text-base md:text-lg lg:text-lg text-muted-foreground mb-4 leading-relaxed w-80 md:w-max mx-auto lg:mx-0">
                   {personalInfo?.title}
                 </p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
-                  <a 
-                    href={`tel:${personalInfo?.phone}`} 
-                    className="flex items-center lg:justify-start justify-center text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 w-max mx-auto lg:mx-0">
+                  <a
+                    href={`tel:${personalInfo?.phone}`}
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max"
                   >
                     <Phone className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     {personalInfo?.phone}
                   </a>
-                  <a 
-                    href={`mailto:${personalInfo?.email}`} 
-                    className="flex items-center lg:justify-start justify-center text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer break-all"
+                  <a
+                    href={`mailto:${personalInfo?.email}`}
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max break-all"
                   >
                     <Mail className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     <span className="truncate">{personalInfo?.email}</span>
                   </a>
-                  <a 
-                    href={`${personalInfo?.website}`} 
-                    target="_blank" 
+                  <a
+                    href={`${personalInfo?.website}`}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center lg:justify-start justify-center text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max"
                   >
                     <Globe className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     <span className="truncate">{personalInfo?.website}</span>
                   </a>
-                  <a 
-                    href={`https://maps.google.com/?q=${encodeURIComponent(personalInfo?.location || '')}`} 
-                    target="_blank" 
+                  <a
+                    href={`https://maps.google.com/?q=${encodeURIComponent(personalInfo?.location || '')}`}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center lg:justify-start justify-center text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max"
                   >
                     <MapPin className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     <span className="truncate">{personalInfo?.location}</span>
                   </a>
                 </div>
 
-                <div className="flex flex-wrap lg:justify-start justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                  <Button variant="outline" size="sm" className="text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
+                <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 mb-4 sm:mb-6 w-max mx-auto lg:mx-0">
+                  {/* Buttons */}
+                  <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
                     <a href={personalInfo?.linkedin} target="_blank" rel="noopener noreferrer">
                       <Linkedin className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline sm:hidden md:inline">LinkedIn</span>
                       <span className="hidden sm:inline md:hidden">LI</span>
                     </a>
                   </Button>
-                  <Button variant="outline" size="sm" className="text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
+
+                  <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
                     <a href={personalInfo?.github} target="_blank" rel="noopener noreferrer">
                       <Github className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline sm:hidden md:inline">GitHub</span>
                       <span className="hidden sm:inline md:hidden">GH</span>
                     </a>
                   </Button>
+
                   {personalInfo?.medium && (
-                    <Button variant="outline" size="sm" className="text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
+                    <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
                       <a href={personalInfo?.medium} target="_blank" rel="noopener noreferrer">
                         <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                         <span className="hidden xs:inline sm:hidden md:inline">Medium</span>
@@ -579,8 +583,9 @@ export function Profile() {
                       </a>
                     </Button>
                   )}
+
                   {personalInfo?.codeforces && (
-                    <Button variant="outline" size="sm" className="text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
+                    <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
                       <a href={personalInfo?.codeforces} target="_blank" rel="noopener noreferrer">
                         <Trophy className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                         <span className="hidden xs:inline sm:hidden md:inline">Codeforces</span>
@@ -588,7 +593,8 @@ export function Profile() {
                       </a>
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" className="text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
+
+                  <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
                     <a href={personalInfo?.website} target="_blank" rel="noopener noreferrer">
                       <Globe className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline sm:hidden md:inline">Portfolio</span>
@@ -597,16 +603,20 @@ export function Profile() {
                   </Button>
                 </div>
 
-                <div className="flex flex-row xs:flex-row lg:justify-start justify-center gap-2 sm:gap-3">
-                  <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6" asChild>
+                <div className="flex flex-row xs:flex-row justify-center lg:justify-start gap-2 sm:gap-3 w-max mx-auto lg:mx-0">
+                  <Button
+                    variant="outline"
+                    className="w-max border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6"
+                    asChild
+                  >
                     <Link to="/projects">
                       <FolderOpen className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline sm:hidden md:inline">View All Projects</span>
                       <span className="sm:inline md:hidden">Projects</span>
                     </Link>
                   </Button>
-                  
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6">
+
+                  <Button className="w-max bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6">
                     <Link to={portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center">
                       <Download className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline sm:hidden md:inline">Download Resume</span>
@@ -620,8 +630,8 @@ export function Profile() {
         </Card>
 
         {/* Introduction Section */}
-        <Card className="mb-6 sm:mb-8 bg-card border-border">
-          <CardHeader className="p-4 sm:p-6">
+        <Card className="mb-6 sm:mb-4 bg-card border-border">
+          <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
             <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
               <User className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               About Me
@@ -629,74 +639,74 @@ export function Profile() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             {editingPersonalInfo && isAdmin ? (
-              <PersonalInfoEditForm 
-                personalInfo={personalInfo} 
+              <PersonalInfoEditForm
+                personalInfo={personalInfo}
                 onSave={updatePersonalInfo}
                 onCancel={() => setEditingPersonalInfo(false)}
               />
             ) : (
               <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
-              <p>
-                {personalInfo?.bio || "Hello! I'm a passionate developer with a keen interest in building innovative solutions that make a difference."}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div className="flex items-start space-x-3">
-                  <Layers className="w-5 h-5 text-primary mt-1 shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">FullStack Development</h3>
-                    <p className="text-sm">Strong foundation in web development, creating user-friendly and scalable web applications.</p>
+                <p>
+                  {personalInfo?.bio || "Hello! I'm a passionate developer with a keen interest in building innovative solutions that make a difference."}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                  <div className="flex items-start space-x-3">
+                    <Layers className="w-5 h-5 text-primary mt-1 shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">FullStack Development</h3>
+                      <p className="text-sm">Strong foundation in web development, creating user-friendly and scalable web applications.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <Palette className="w-5 h-5 text-primary mt-1 shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Design Thinking</h3>
+                      <p className="text-sm">Incorporating design principles and user-centric methodologies to create innovative solutions.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <Monitor className="w-5 h-5 text-primary mt-1 shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">UI/UX</h3>
+                      <p className="text-sm">Crafting intuitive and visually appealing interfaces, focusing on usability and responsive design.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <GitBranch className="w-5 h-5 text-primary mt-1 shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Exploring Open Source</h3>
+                      <p className="text-sm">Rebuilding open-source projects and exploring new technologies to enhance development skills.</p>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-start space-x-3">
-                  <Palette className="w-5 h-5 text-primary mt-1 shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">Design Thinking</h3>
-                    <p className="text-sm">Incorporating design principles and user-centric methodologies to create innovative solutions.</p>
-                  </div>
+
+                <p className="text-center pt-4 border-t border-border">
+                  <span className="text-foreground font-medium">Ready to collaborate</span> on impactful projects and contribute to forward-thinking teams.
+                </p>
+
+                <div className="flex justify-center pt-1">
+                  <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                    <Link to="/contact" className="flex items-center">
+                      <Mail className="w-4 h-4 mr-2" />
+                      Contact Me
+                    </Link>
+                  </Button>
                 </div>
-                
-                <div className="flex items-start space-x-3">
-                  <Monitor className="w-5 h-5 text-primary mt-1 shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">UI/UX</h3>
-                    <p className="text-sm">Crafting intuitive and visually appealing interfaces, focusing on usability and responsive design.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <GitBranch className="w-5 h-5 text-primary mt-1 shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">Exploring Open Source</h3>
-                    <p className="text-sm">Rebuilding open-source projects and exploring new technologies to enhance development skills.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <p className="text-center pt-4 border-t border-border">
-                <span className="text-foreground font-medium">Ready to collaborate</span> on impactful projects and contribute to forward-thinking teams.
-              </p>
-              
-              <div className="flex justify-center pt-1">
-                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                  <Link to="/contact" className="flex items-center">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Contact Me
-                  </Link>
-                </Button>
-              </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 sm:gap-6 lg:gap-4">
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
+          <div className="lg:col-span-2 mb-6 sm:mb-4">
             {/* Experience */}
-            <Card className="bg-card border-border">
-              <CardHeader className="p-4 sm:p-6">
+            <Card className="bg-card border-border mb-6 sm:mb-4">
+              <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
                     <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
@@ -717,7 +727,7 @@ export function Profile() {
                 <div className="relative">
                   {/* Timeline line */}
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border"></div>
-                  
+
                   <div className="space-y-6">
                     {addingExperience && isAdmin && (
                       <div className="relative flex items-start">
@@ -748,7 +758,7 @@ export function Profile() {
                         <div className="relative z-10 flex items-center justify-center w-8 h-8 bg-primary rounded-full border-4 border-background shrink-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/30">
                           <div className="w-2 h-2 bg-primary-foreground rounded-full transition-all duration-300 hover:scale-125"></div>
                         </div>
-                        
+
                         {/* Content */}
                         <div className="ml-6 flex-1">
                           {editingExperience === exp.id && isAdmin ? (
@@ -818,21 +828,21 @@ export function Profile() {
                               {exp.technologies && (
                                 <div className="flex flex-wrap gap-2">
                                   {exp.technologies.map((tech, techIndex) => (
-                                    <Badge 
-                                  key={tech} 
-                                  variant="secondary" 
-                                  className="text-xs rounded-md px-3 py-1 transition-all duration-300 hover:scale-105 hover:shadow-md hover:bg-primary hover:text-primary-foreground transform hover:-translate-y-0.5 cursor-default animate-in fade-in-0 slide-in-from-bottom-1"
-                                  style={{
-                                    animationDelay: `${techIndex * 100}ms`,
-                                    animationDuration: '600ms'
-                                  }}
-                                >
-                                  {tech}
-                                </Badge>
-                              ))}
+                                    <Badge
+                                      key={tech}
+                                      variant="secondary"
+                                      className="text-xs rounded-md px-3 py-1 transition-all duration-300 hover:scale-105 hover:shadow-md hover:bg-primary hover:text-primary-foreground transform hover:-translate-y-0.5 cursor-default animate-in fade-in-0 slide-in-from-bottom-1"
+                                      style={{
+                                        animationDelay: `${techIndex * 100}ms`,
+                                        animationDuration: '600ms'
+                                      }}
+                                    >
+                                      {tech}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                          )}
-                          </div>
                           )}
                         </div>
                       </div>
@@ -843,8 +853,8 @@ export function Profile() {
             </Card>
 
             {/* Education */}
-            <Card className="bg-card border-border">
-              <CardHeader className="p-4 sm:p-6">
+            <Card className="bg-card border-border mb-6 sm:mb-4">
+              <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
                     <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
@@ -865,7 +875,7 @@ export function Profile() {
                 <div className="relative">
                   {/* Timeline line */}
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border"></div>
-                  
+
                   <div className="space-y-6">
                     {addingEducation && isAdmin && (
                       <div className="relative flex items-start">
@@ -896,7 +906,7 @@ export function Profile() {
                         <div className="relative z-10 flex items-center justify-center w-8 h-8 bg-primary rounded-full border-4 border-background shrink-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/30">
                           <GraduationCap className="w-3 h-3 text-primary-foreground transition-all duration-300 hover:scale-110" />
                         </div>
-                        
+
                         {/* Content */}
                         <div className="ml-6 flex-1">
                           {editingEducation === edu.id ? (
@@ -973,8 +983,8 @@ export function Profile() {
             </Card>
 
             {/* Courses */}
-            <Card className="bg-card border-border">
-              <CardHeader className="p-4 sm:p-6">
+            <Card className="bg-card border-border mb-2 sm:mb-4">
+              <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
                     <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
@@ -994,7 +1004,7 @@ export function Profile() {
               <CardContent className="p-4 sm:p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {courses.map((course, index) => (
-                    <div 
+                    <div
                       key={course.id}
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-all duration-300 hover:scale-105 cursor-default animate-in fade-in-0 slide-in-from-bottom-1 group"
                       style={{
@@ -1058,10 +1068,10 @@ export function Profile() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+          <div className="mb-6 sm:mb-4">
             {/* Skills */}
-            <Card className="bg-card border-border">
-              <CardHeader className="p-4 sm:p-6">
+            <Card className="bg-card border-border mb-6 sm:mb-4">
+              <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
                     <Code className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
@@ -1214,8 +1224,8 @@ export function Profile() {
             </Card>
 
             {/* Achievements */}
-            <Card className="bg-card border-border">
-              <CardHeader className="p-4 sm:p-6">
+            <Card className="bg-card border-border mb-6 sm:mb-4">
+              <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
                     <Award className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
@@ -1268,7 +1278,10 @@ export function Profile() {
                             {achievement.date_achieved && (
                               <p className="text-xs text-muted-foreground mt-2">
                                 <Calendar className="w-3 h-3 inline mr-1" />
-                                {new Date(achievement.date_achieved).toLocaleDateString()}
+                                {new Date(achievement.date_achieved).toLocaleDateString(undefined, {
+                                  month: 'long',
+                                  year: 'numeric',
+                                })}
                               </p>
                             )}
                           </div>
@@ -1319,7 +1332,7 @@ export function Profile() {
 
             {/* Languages */}
             <Card className="bg-card border-border">
-              <CardHeader className="p-4 sm:p-6">
+              <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
                   <Languages className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Languages
@@ -1338,9 +1351,9 @@ export function Profile() {
                         <span className="text-xs text-muted-foreground">{language.level}</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-primary h-2 rounded-full transition-all duration-1000 ease-out"
-                          style={{ 
+                          style={{
                             width: `${language.proficiency}%`,
                             animationDelay: `${index * 200}ms`
                           }}
@@ -1456,7 +1469,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
           />
         </div>
       </div>
-      
+
       <div>
         <Label htmlFor="bio">Bio</Label>
         <Textarea
@@ -1468,7 +1481,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
           rows={4}
         />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="email">Email</Label>
@@ -1492,7 +1505,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="location">Location</Label>
@@ -1515,7 +1528,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="linkedin">LinkedIn</Label>
@@ -1548,7 +1561,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
           />
         </div>
       </div>
-      
+
       <div className="flex gap-2 pt-4">
         <Button type="submit" className="flex items-center gap-2">
           <Save className="w-4 h-4" />
@@ -1622,7 +1635,7 @@ function ExperienceEditForm({ experience, onSave, onCancel }: ExperienceEditForm
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="duration">Duration</Label>
@@ -1646,7 +1659,7 @@ function ExperienceEditForm({ experience, onSave, onCancel }: ExperienceEditForm
           />
         </div>
       </div>
-      
+
       <div>
         <Label htmlFor="description">Description (one line per bullet point)</Label>
         <Textarea
@@ -1658,7 +1671,7 @@ function ExperienceEditForm({ experience, onSave, onCancel }: ExperienceEditForm
           rows={4}
         />
       </div>
-      
+
       <div>
         <Label htmlFor="technologies">Technologies (comma-separated)</Label>
         <Input
@@ -1669,7 +1682,7 @@ function ExperienceEditForm({ experience, onSave, onCancel }: ExperienceEditForm
           placeholder="React, TypeScript, Node.js, PostgreSQL"
         />
       </div>
-      
+
       <div className="flex gap-2 pt-2">
         <Button type="submit" size="sm" className="flex items-center gap-2">
           <Save className="w-4 h-4" />
@@ -1745,7 +1758,7 @@ function EducationEditForm({ education, onSave, onCancel }: EducationEditFormPro
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="duration">Duration</Label>
@@ -1769,7 +1782,7 @@ function EducationEditForm({ education, onSave, onCancel }: EducationEditFormPro
           />
         </div>
       </div>
-      
+
       <div>
         <Label htmlFor="gpa">GPA (optional)</Label>
         <Input
@@ -1780,7 +1793,7 @@ function EducationEditForm({ education, onSave, onCancel }: EducationEditFormPro
           placeholder="3.8/4.0"
         />
       </div>
-      
+
       <div>
         <Label htmlFor="description">Description (optional)</Label>
         <Textarea
@@ -1792,7 +1805,7 @@ function EducationEditForm({ education, onSave, onCancel }: EducationEditFormPro
           rows={3}
         />
       </div>
-      
+
       <div className="flex gap-2 pt-2">
         <Button type="submit" size="sm" className="flex items-center gap-2">
           <Save className="w-4 h-4" />
@@ -1851,7 +1864,7 @@ function AchievementEditForm({ achievement, onSave, onCancel }: AchievementEditF
           required
         />
       </div>
-      
+
       <div>
         <Label htmlFor="description">Description (optional)</Label>
         <Textarea
@@ -1863,7 +1876,7 @@ function AchievementEditForm({ achievement, onSave, onCancel }: AchievementEditF
           rows={3}
         />
       </div>
-      
+
       <div>
         <Label htmlFor="date_achieved">Date Achieved (optional)</Label>
         <Input
@@ -1874,7 +1887,7 @@ function AchievementEditForm({ achievement, onSave, onCancel }: AchievementEditF
           onChange={handleChange}
         />
       </div>
-      
+
       <div className="flex gap-2 pt-2">
         <Button type="submit" size="sm" className="flex items-center gap-2">
           <Save className="w-4 h-4" />
@@ -1900,9 +1913,12 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
   const [formData, setFormData] = useState({
     name: course.name || '',
     description: course.description || '',
-    institution: course.institution || '',
-    completion_date: course.completion_date ? new Date(course.completion_date).toISOString().split('T')[0] : '',
     certificate_url: course.certificate_url || '',
+    institution: course.institution || '',
+    completion_date: course.completion_date
+      ? new Date(course.completion_date).toISOString().split('T')[0]
+      : '',
+    order_index: course.order_index ?? 0,
     is_favorite: course.is_favorite || false,
   });
 
@@ -1920,38 +1936,33 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]:
+        type === 'checkbox'
+          ? (e.target as HTMLInputElement).checked
+          : name === 'order_index'
+            ? parseInt(value) || 0
+            : value,
     }));
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-muted rounded-lg">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="name">Course Name</Label>
-          <Input
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Data Structures & Algorithms"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="institution">Institution (optional)</Label>
-          <Input
-            id="institution"
-            name="institution"
-            value={formData.institution}
-            onChange={handleChange}
-            placeholder="University/Platform"
-          />
-        </div>
+      {/* Course Name */}
+      <div>
+        <Label htmlFor="name">Course Name</Label>
+        <Input
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Data Structures & Algorithms"
+          required
+        />
       </div>
-      
+
+      {/* Description */}
       <div>
         <Label htmlFor="description">Description (optional)</Label>
         <Textarea
@@ -1963,7 +1974,32 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
           rows={3}
         />
       </div>
-      
+
+      {/* Certificate URL & Institution */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="certificate_url">Certificate URL (optional)</Label>
+          <Input
+            id="certificate_url"
+            name="certificate_url"
+            value={formData.certificate_url}
+            onChange={handleChange}
+            placeholder="https://..."
+          />
+        </div>
+        <div>
+          <Label htmlFor="institution">Institution (optional)</Label>
+          <Input
+            id="institution"
+            name="institution"
+            value={formData.institution}
+            onChange={handleChange}
+            placeholder="University / Platform"
+          />
+        </div>
+      </div>
+
+      {/* 4️⃣ Completion Date & Order Index */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="completion_date">Completion Date (optional)</Label>
@@ -1976,17 +2012,20 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
           />
         </div>
         <div>
-          <Label htmlFor="certificate_url">Certificate URL (optional)</Label>
+          <Label htmlFor="order_index">Order Index</Label>
           <Input
-            id="certificate_url"
-            name="certificate_url"
-            value={formData.certificate_url}
+            id="order_index"
+            name="order_index"
+            type="number"
+            min={0}
+            value={formData.order_index}
             onChange={handleChange}
-            placeholder="https://..."
+            placeholder="0"
           />
         </div>
       </div>
-      
+
+      {/* Favorite Toggle */}
       <div className="flex items-center space-x-2">
         <input
           type="checkbox"
@@ -1998,7 +2037,8 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
         />
         <Label htmlFor="is_favorite">Mark as favorite</Label>
       </div>
-      
+
+      {/* Buttons */}
       <div className="flex gap-2 pt-2">
         <Button type="submit" size="sm" className="flex items-center gap-2">
           <Save className="w-4 h-4" />
@@ -2012,6 +2052,7 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
     </form>
   );
 }
+
 
 // Skill Edit Form Component
 interface SkillEditFormProps {
