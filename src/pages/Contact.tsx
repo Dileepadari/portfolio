@@ -379,7 +379,7 @@ This is an automated task request submission.
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Admin Panel */}
         {isAdmin && (
           <div className="mb-8 space-y-6">
