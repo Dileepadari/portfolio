@@ -1999,7 +1999,7 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
         </div>
       </div>
 
-      {/* 4️⃣ Completion Date & Order Index */}
+      {/* Completion Date & Order Index */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="completion_date">Completion Date (optional)</Label>
