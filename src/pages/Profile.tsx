@@ -45,6 +45,7 @@ import { usePersonalInfo, useEducation, useExperience, useSkills, useAchievement
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import profileAvatar from "@/assets/dileepadari.png";
+import portfolio from "@/assets/portfolio.pdf";
 
 export function Profile() {
   const { data: personalInfo, refetch: refetchPersonalInfo } = usePersonalInfo();
@@ -606,9 +607,11 @@ export function Profile() {
                   </Button>
                   
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6">
-                    <Download className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
-                    <span className="hidden xs:inline sm:hidden md:inline">Download Resume</span>
-                    <span className="sm:inline md:hidden">Resume</span>
+                    <Link to={portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                      <Download className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
+                      <span className="hidden xs:inline sm:hidden md:inline">Download Resume</span>
+                      <span className="sm:inline md:hidden">Resume</span>
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -634,7 +637,7 @@ export function Profile() {
             ) : (
               <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
               <p>
-                Passionate <span className="text-foreground font-medium">software engineer</span> focused on transforming complex problems into elegant, scalable solutions. I bridge technical excellence with business impact, delivering meaningful outcomes through innovative development.
+                {personalInfo?.bio || "Hello! I'm a passionate developer with a keen interest in building innovative solutions that make a difference."}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
@@ -806,9 +809,11 @@ export function Profile() {
                                 <p className="text-xs sm:text-sm text-muted-foreground mb-3">{exp.location}</p>
                               )}
                               {exp.description && (
-                                <p className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed">
-                                  {exp.description.join(' ')}
-                                </p>
+                                <ul className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed list-disc list-inside">
+                                  {exp.description.map((desc, index) => (
+                                    <li key={index}>{desc}</li>
+                                  ))}
+                                </ul>
                               )}
                               {exp.technologies && (
                                 <div className="flex flex-wrap gap-2">

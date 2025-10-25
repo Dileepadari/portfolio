@@ -193,7 +193,7 @@ export function Navigation() {
     { path: "/", label: "Overview", icon: User },
     { path: "/projects", label: "Projects", icon: Github },
     { path: "/blog", label: "Blog", icon: BookOpen },
-    { path: "/timeline", label: "Timeline", icon: Clock },
+    // { path: "/timeline", label: "Timeline", icon: Clock },
     { path: "/contact", label: "Contact", icon: UserCircle },
   ];
 
