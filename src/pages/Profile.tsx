@@ -772,7 +772,7 @@ export function Profile() {
                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-1 sm:gap-0">
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-foreground text-sm sm:text-base">{exp.title}</h3>
-                                  <p className="text-primary font-medium text-sm sm:text-base">{exp.company}</p>
+                                  <p className="text-primary font-medium text-sm sm:text-base">{exp.company} ({exp.location})</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs sm:text-sm text-muted-foreground shrink-0 bg-muted px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:scale-105 cursor-default">{exp.duration}</span>
@@ -815,9 +815,6 @@ export function Profile() {
                                   )}
                                 </div>
                               </div>
-                              {exp.location && (
-                                <p className="text-xs sm:text-sm text-muted-foreground mb-3">{exp.location}</p>
-                              )}
                               {exp.description && (
                                 <ul className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed list-disc list-inside">
                                   {exp.description.map((desc, index) => (
@@ -963,12 +960,14 @@ export function Profile() {
                                   )}
                                 </div>
                               </div>
-                              {edu.location && (
-                                <p className="text-xs sm:text-sm text-muted-foreground mb-2">{edu.location}</p>
-                              )}
-                              {edu.gpa && (
-                                <p className="text-xs sm:text-sm text-muted-foreground mb-2">GPA: {edu.gpa}</p>
-                              )}
+                              <div className="flex justify-between items-center">
+                                {edu.location && (
+                                  <p className="text-xs sm:text-sm text-muted-foreground mb-2">{edu.location}</p>
+                                )}
+                                {edu.gpa && (
+                                  <p className="text-xs sm:text-sm text-muted-foreground mb-2">GPA: {edu.gpa}</p>
+                                )}
+                              </div>
                               {edu.description && (
                                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{edu.description}</p>
                               )}
@@ -1275,6 +1274,7 @@ export function Profile() {
                             {achievement.description && (
                               <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">{achievement.description}</p>
                             )}
+                            <div className="flex justify-between items-center">
                             {achievement.date_achieved && (
                               <p className="text-xs text-muted-foreground mt-2">
                                 <Calendar className="w-3 h-3 inline mr-1" />
@@ -1284,6 +1284,12 @@ export function Profile() {
                                 })}
                               </p>
                             )}
+                            {achievement?.certificate_url && (
+                              <a href={achievement.certificate_url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground mt-2">
+                                View Certificate
+                              </a>
+                            )}
+                            </div>
                           </div>
                           {isAdmin && (
                             <div className="flex gap-1 ml-2">
