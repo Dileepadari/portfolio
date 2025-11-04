@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/providers/ThemeProvider";
 import { 
   Search, 
   ExternalLink, 
@@ -432,8 +433,20 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDelete }: ProjectCardProps) {
-  // Use provided image or fallback to logo
-  const imageUrl = project.images?.[0] || project.image_url || '/adk_dev_logo_color.png';
+  const { theme } = useTheme();
+  
+  // Use provided image or fallback to logo based on theme
+  const getImageUrl = () => {
+    if (project.images?.[0]) return project.images[0];
+    if (project.image_url) return project.image_url;
+    
+    // Fallback to logo based on theme
+    if (theme === 'light') return '/adk_dev_logo_dark.png';
+    if (theme === 'dark') return '/adk_dev_logo_light.png';
+    return '/adk_dev_logo_color.png'; // system default
+  };
+  
+  const imageUrl = getImageUrl();
   
   return (
     <Card className={`bg-card border-border hover:border-primary transition-all duration-200 group ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
