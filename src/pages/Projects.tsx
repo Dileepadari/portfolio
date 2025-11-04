@@ -33,6 +33,20 @@ import { useProjects } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 
+// Helper function to convert timestamp to human-readable format
+const getTimeAgo = (timestamp: string): string => {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`;
+  return `${Math.floor(diffInSeconds / 31536000)} years ago`;
+};
+
 // Project categories
 const projectCategories = [
   "all",
@@ -141,7 +155,6 @@ export function Projects() {
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (project.technologies && project.technologies.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))) ||
                          (project.tags && project.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     
     const matchesFilter = selectedFilter === "all" || 
@@ -154,10 +167,6 @@ export function Projects() {
                            (project.tags && project.tags.some(tag => 
                              tag.toLowerCase().includes(selectedCategory.toLowerCase()) ||
                              selectedCategory.toLowerCase().includes(tag.toLowerCase())
-                           )) ||
-                           (project.technologies && project.technologies.some(tech => 
-                             tech.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-                             selectedCategory.toLowerCase().includes(tech.toLowerCase())
                            )) ||
                            project.description.toLowerCase().includes(selectedCategory.toLowerCase());
     
@@ -372,7 +381,6 @@ export function Projects() {
                 id: '',
                 title: '',
                 description: '',
-                technologies: [],
                 github_url: '',
                 live_url: '',
                 image_url: '',
@@ -387,8 +395,7 @@ export function Projects() {
                 language: '',
                 language_color: '',
                 tags: [],
-                repository_url: '',
-                updated_at_display: ''
+                category: ''
               }}
               onSave={(data) => addProject(data as Omit<Project, 'id'>)}
               onCancel={() => setAddingProject(false)}
@@ -425,17 +432,19 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDelete }: ProjectCardProps) {
+  // Use provided image or fallback to logo
+  const imageUrl = project.images?.[0] || project.image_url || '/adk_dev_logo_color.png';
+  
   return (
     <Card className={`bg-card border-border hover:border-primary transition-all duration-200 group ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
-      {(project.image_url || (project.images && project.images.length > 0)) && (
-        <div className="aspect-video w-full overflow-hidden rounded-t-lg relative">
-          <img 
-            src={project.images?.[0] || project.image_url} 
-            alt={project.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-          />
-          {isAdmin && (
-            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="aspect-video w-full overflow-hidden rounded-t-lg relative">
+        <img 
+          src={imageUrl}
+          alt={project.title}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+        />
+        {isAdmin && (
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="sm"
@@ -475,7 +484,6 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
             </div>
           )}
         </div>
-      )}
       
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -516,67 +524,20 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
                 </div>
               )}
               
-              {project.updated_at_display ? (
-                <div className="flex items-center gap-1">
-                  <Dot className="w-3 h-3" />
-                  <span>Updated {project.updated_at_display}</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <Dot className="w-3 h-3" />
-                  <span>Updated {new Date(project.updated_at).toLocaleDateString()}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-1">
+                <Dot className="w-3 h-3" />
+                <span>Updated {getTimeAgo(project.updated_at)}</span>
+              </div>
             </div>
           </div>
-          {isAdmin && !(project.image_url || (project.images && project.images.length > 0)) && (
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-muted-foreground/20"
-                onClick={onEdit}
-              >
-                <Edit2 className="w-3 h-3" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-destructive/20 text-destructive"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete "{project.title}"? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={onDelete}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          )}
         </div>
 
-        {(project.technologies || project.tags) && (
+        {(project.tags) && (
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {(project.tags || project.technologies || []).map((tag) => (
-              <Badge 
-                key={tag} 
-                variant="secondary" 
+            {(project.tags || []).map((tag) => (
+              <Badge
+                key={tag}
+                variant="secondary"
                 className="bg-primary/10 text-primary border-primary/20 text-xs"
               >
                 {tag}
@@ -588,14 +549,14 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
 
       <CardContent className="pt-0">
         <div className="flex gap-2 justify-end">
-          {(project.github_url || project.repository_url) && (
+          {(project.github_url) && (
             <Button
               variant="ghost"
               size="sm"
               className="h-7 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
               asChild
             >
-              <a href={project.repository_url || project.github_url} target="_blank" rel="noopener noreferrer">
+              <a href={project.github_url} target="_blank" rel="noopener noreferrer">
                 <Github className="w-3 h-3" />
               </a>
             </Button>
@@ -633,35 +594,37 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     github_url: project.github_url || '',
     live_url: project.live_url || '',
     image_url: project.image_url || '',
+    images: project.images?.join(', ') || '',
     language: project.language || '',
     language_color: project.language_color || '',
     featured: project.featured || false,
     is_private: project.is_private || false,
-    technologies: project.technologies?.join(', ') || '',
     tags: project.tags?.join(', ') || '',
-    category: project.tags?.find(tag => projectCategories.includes(tag.toLowerCase())) || '',
+    category: project.category || '',
+    order_index: project.order_index || 0,
+    stars: project.stars || 0,
+    forks: project.forks || 0,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Combine existing tags with category
-    const existingTags = formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : [];
-    const allTags = formData.category ? 
-      [...existingTags.filter(tag => !projectCategories.includes(tag.toLowerCase())), formData.category] :
-      existingTags;
-    
+
+    // Clean up list-type fields
+    const parseList = (str: string) =>
+      str ? str.split(',').map(s => s.trim()).filter(Boolean) : [];
+
     const submissionData = {
       ...formData,
-      technologies: formData.technologies ? formData.technologies.split(',').map(t => t.trim()).filter(t => t) : [],
-      tags: allTags,
+      tags: parseList(formData.tags),
+      images: parseList(formData.images),
       github_url: formData.github_url || null,
       live_url: formData.live_url || null,
       image_url: formData.image_url || null,
+      category: formData.category || null,
       language: formData.language || null,
       language_color: formData.language_color || null,
     };
-    
+
     onSave(submissionData);
   };
 
@@ -669,13 +632,18 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
-               type === 'number' ? parseInt(value) || 0 : value
+      [name]:
+        type === 'checkbox'
+          ? (e.target as HTMLInputElement).checked
+          : type === 'number'
+          ? parseInt(value) || 0
+          : value,
     }));
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4">
+      {/* Title + Language */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="title">Project Title</Label>
@@ -699,7 +667,8 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           />
         </div>
       </div>
-      
+
+      {/* Description */}
       <div>
         <Label htmlFor="description">Description</Label>
         <Textarea
@@ -712,7 +681,8 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           required
         />
       </div>
-      
+
+      {/* URLs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="github_url">GitHub URL</Label>
@@ -735,10 +705,11 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           />
         </div>
       </div>
-      
+
+      {/* Images */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="image_url">Image URL</Label>
+          <Label htmlFor="image_url">Main Image URL</Label>
           <Input
             id="image_url"
             name="image_url"
@@ -748,28 +719,40 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           />
         </div>
         <div>
-          <Label htmlFor="language_color">Language Color</Label>
+          <Label htmlFor="images">Additional Images (comma-separated)</Label>
           <Input
-            id="language_color"
-            name="language_color"
-            value={formData.language_color}
+            id="images"
+            name="images"
+            value={formData.images}
             onChange={handleChange}
-            placeholder="#3178c6"
+            placeholder="https://img1.jpg, https://img2.jpg"
           />
         </div>
       </div>
-      
+
+      {/* Language Color */}
       <div>
-        <Label htmlFor="technologies">Technologies (comma-separated)</Label>
-        <Input
-          id="technologies"
-          name="technologies"
-          value={formData.technologies}
-          onChange={handleChange}
-          placeholder="React, TypeScript, Node.js"
-        />
+        <Label htmlFor="language_color">Language Color</Label>
+        <div className="flex gap-2 items-center">
+          <Input
+            type="color"
+            id="language_color"
+            name="language_color"
+            value={formData.language_color || '#3178c6'}
+            onChange={handleChange}
+            className="w-20 h-10 p-1 cursor-pointer"
+          />
+          <Input
+            type="text"
+            value={formData.language_color}
+            onChange={handleChange}
+            name="language_color"
+            placeholder="#3178c6"
+            className="flex-1"
+          />
+        </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="tags">Tags (comma-separated)</Label>
@@ -783,8 +766,8 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
         </div>
         <div>
           <Label htmlFor="category">Project Category</Label>
-          <Select 
-            value={formData.category || ''} 
+          <Select
+            value={formData.category || ''}
             onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
           >
             <SelectTrigger>
@@ -794,16 +777,54 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
               {projectCategories.slice(1).map((category) => (
                 <SelectItem key={category} value={category}>
                   {category === "iot" ? "IoT" :
-                   category.split(' ').map(word => 
-                     word.charAt(0).toUpperCase() + word.slice(1)
-                   ).join(' ')}
+                    category.split(' ').map(word =>
+                      word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ')}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       </div>
-      
+
+      {/* Order Index, Stars, Forks */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="order_index">Order Index</Label>
+          <Input
+            type="number"
+            id="order_index"
+            name="order_index"
+            value={formData.order_index}
+            onChange={handleChange}
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <Label htmlFor="stars">Stars</Label>
+          <Input
+            type="number"
+            id="stars"
+            name="stars"
+            value={formData.stars}
+            onChange={handleChange}
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <Label htmlFor="forks">Forks</Label>
+          <Input
+            type="number"
+            id="forks"
+            name="forks"
+            value={formData.forks}
+            onChange={handleChange}
+            placeholder="0"
+          />
+        </div>
+      </div>
+
+      {/* Toggles */}
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <input
@@ -816,7 +837,7 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           />
           <Label htmlFor="featured">Featured project</Label>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <input
             type="checkbox"
@@ -829,7 +850,8 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           <Label htmlFor="is_private">Private repository</Label>
         </div>
       </div>
-      
+
+      {/* Buttons */}
       <div className="flex gap-2 pt-4">
         <Button type="submit" size="sm" className="flex items-center gap-2">
           <Save className="w-4 h-4" />

@@ -70,7 +70,6 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  technologies?: string[];
   github_url?: string;
   live_url?: string;
   image_url?: string;
@@ -85,8 +84,7 @@ export interface Project {
   language?: string;
   language_color?: string;
   tags?: string[];
-  repository_url?: string;
-  updated_at_display?: string;
+  category?: string;
 }
 
 export interface Skill {
