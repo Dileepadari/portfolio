@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -15,21 +15,17 @@ import {
   ExternalLink, 
   Github, 
   Star, 
-  GitFork, 
-  Eye,
-  Calendar,
-  Users,
-  Code,
-  Zap,
+  Cloud,
   Plus,
   FolderOpen,
   Lock,
-  Globe,
   Dot,
   Edit2,
   Trash2,
   Save,
-  X
+  X,
+  User,
+  Users
 } from "lucide-react";
 
 import { Project } from "@/hooks/usePortfolioData";
@@ -82,7 +78,7 @@ export function Projects() {
       
       refetchProjects();
       setEditingProject(null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update project.",
@@ -106,7 +102,7 @@ export function Projects() {
       
       refetchProjects();
       setAddingProject(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add project.",
@@ -130,7 +126,7 @@ export function Projects() {
       });
       
       refetchProjects();
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete project.",
@@ -149,9 +145,9 @@ export function Projects() {
                          (project.tags && project.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     
     const matchesFilter = selectedFilter === "all" || 
-                         (selectedFilter === "featured" && project.featured) ||
-                         (selectedFilter === "public" && !project.is_private) ||
-                         (selectedFilter === "private" && project.is_private) ||
+                         (selectedFilter === "mine" && !project.is_private) ||
+                         (selectedFilter === "contributed" && project.is_private) ||
+                         (selectedFilter === "deployed" && project.live_url) ||
                          (selectedFilter === project.language);
     
     const matchesCategory = selectedCategory === "all" ||
@@ -170,8 +166,6 @@ export function Projects() {
     switch (sortBy) {
       case "name":
         return a.title.localeCompare(b.title);
-      case "stars":
-        return (b.stars || 0) - (a.stars || 0);
       case "updated":
       default:
         return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
@@ -181,7 +175,7 @@ export function Projects() {
   const featuredProjects = projects.filter(p => p.featured);
   const publicProjects = projects.filter(p => !p.is_private).length;
   const privateProjects = projects.filter(p => p.is_private).length;
-  const totalStars = projects.reduce((sum, p) => sum + (p.stars || 0), 0);
+  const totalDeployed = projects.filter(p => p.live_url).length;
 
   if (loading) {
     return (
@@ -205,21 +199,21 @@ export function Projects() {
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <FolderOpen className="w-4 h-4" />
-                  <span>{projects.length} repositories</span>
+                  <span>{projects.length} Projects</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Globe className="w-4 h-4" />
-                  <span>{publicProjects} public</span>
+                  <User className="w-4 h-4" />
+                  <span>{publicProjects} Owned</span>
                 </div>
                 {privateProjects > 0 && (
                   <div className="flex items-center gap-1">
-                    <Lock className="w-4 h-4" />
-                    <span>{privateProjects} private</span>
+                    <Users className="w-4 h-4" />
+                    <span>{privateProjects} Contributed</span>
                   </div>
                 )}
                 <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4" />
-                  <span>{totalStars} stars</span>
+                  <Cloud className="w-4 h-4" />
+                  <span>{totalDeployed} deployed</span>
                 </div>
               </div>
             </div>
@@ -300,11 +294,10 @@ export function Projects() {
                     <SelectValue placeholder="Filter" />
                   </SelectTrigger>
                   <SelectContent className="max-h-80">
-                    {/* General Filters */}
-                    <SelectItem value="all">All repositories</SelectItem>
-                    <SelectItem value="featured">Featured</SelectItem>
-                    <SelectItem value="public">Public only</SelectItem>
-                    <SelectItem value="private">Private only</SelectItem>
+                    <SelectItem value="all">All Projects</SelectItem>
+                    <SelectItem value="mine">Mine (Owned)</SelectItem>
+                    <SelectItem value="contributed">Contributed</SelectItem>
+                    <SelectItem value="deployed">Deployed</SelectItem>
                     
                     {/* Languages */}
                     {availableLanguages.length > 0 && (
@@ -337,7 +330,6 @@ export function Projects() {
                   <SelectContent>
                     <SelectItem value="updated">Last updated</SelectItem>
                     <SelectItem value="name">Name</SelectItem>
-                    <SelectItem value="stars">Stars</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -512,20 +504,18 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
                 </div>
               )}
               
-              {(project.stars || 0) > 0 && (
+              {(project.is_private === false) ? (
                 <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3" />
-                  <span>{project.stars}</span>
+                  <User className="w-3 h-3" />
+                  <span>Owned by me</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  <span>Contributed</span>
                 </div>
               )}
               
-              {(project.forks || 0) > 0 && (
-                <div className="flex items-center gap-1">
-                  <GitFork className="w-3 h-3" />
-                  <span>{project.forks}</span>
-                </div>
-              )}
-
               {project.updated_at_display ? (
                 <div className="flex items-center gap-1">
                   <Dot className="w-3 h-3" />
@@ -647,8 +637,6 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     language_color: project.language_color || '',
     featured: project.featured || false,
     is_private: project.is_private || false,
-    stars: project.stars || 0,
-    forks: project.forks || 0,
     technologies: project.technologies?.join(', ') || '',
     tags: project.tags?.join(', ') || '',
     category: project.tags?.find(tag => projectCategories.includes(tag.toLowerCase())) || '',
@@ -674,9 +662,7 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
       language_color: formData.language_color || null,
     };
     
-    // Remove category from submission data as it's now in tags
-    const { category, ...finalData } = submissionData;
-    onSave(finalData);
+    onSave(submissionData);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -815,31 +801,6 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
               ))}
             </SelectContent>
           </Select>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="stars">Stars</Label>
-          <Input
-            id="stars"
-            name="stars"
-            type="number"
-            min="0"
-            value={formData.stars}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <Label htmlFor="forks">Forks</Label>
-          <Input
-            id="forks"
-            name="forks"
-            type="number"
-            min="0"
-            value={formData.forks}
-            onChange={handleChange}
-          />
         </div>
       </div>
       

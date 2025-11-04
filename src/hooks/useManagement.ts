@@ -18,7 +18,7 @@ export interface Task {
   assignee_email?: string;
   notes?: string;
   is_recurring: boolean;
-  recurrence_pattern?: any;
+  recurrence_pattern?: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +42,7 @@ export interface Schedule {
   tags: string[];
   task_id?: string;
   is_recurring: boolean;
-  recurrence_rule?: any;
+  recurrence_rule?: unknown;
   recurrence_end_date?: string;
   parent_event_id?: string;
   original_start_time?: string;
@@ -84,7 +84,7 @@ export interface QuickAction {
   id: string;
   name: string;
   type: 'task' | 'schedule';
-  template_data: any;
+  template_data: unknown;
   icon: string;
   color: string;
   sort_order: number;

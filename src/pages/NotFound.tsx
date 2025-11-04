@@ -49,7 +49,7 @@ export default function NotFound() {
       setCurrentSnippet((prev) => (prev + 1) % codeSnippets.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [codeSnippets.length]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-purple-900 dark:via-blue-900 dark:to-indigo-900 relative overflow-hidden">

@@ -44,7 +44,7 @@ export function Timeline() {
   ];
   const { timelineEvents, loading, error, refetch } = useTimelineEvents();
   const { addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, loading: managementLoading } = useTimelineManagement();
-  const { stats, loading: statsLoading, error: statsError } = useActivityOverview();
+  const { stats, loading: statsLoading, error: _statsError } = useActivityOverview();
   const { isAdmin } = useAdmin();
 
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | null>(null);
@@ -119,8 +119,9 @@ export function Timeline() {
 
       // Refresh data
       refetch();
-    } catch (error: any) {
-      toast.error(`Failed to save timeline event: ${error.message || error}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to save timeline event: ${message}`);
     }
   };
 
@@ -134,8 +135,9 @@ export function Timeline() {
       setTimeout(() => {
         refetch();
       }, 100);
-    } catch (error: any) {
-      toast.error(`Failed to delete timeline event: ${error.message || error}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Failed to delete timeline event: ${message}`);
     }
   };
 
@@ -267,7 +269,7 @@ export function Timeline() {
           <div className="space-y-6">
             {timelineEvents
               .filter(event => typeFilter === 'all' || event.type === typeFilter)
-              .map((event, index) => (
+              .map((event, _index) => (
               <div key={event.id} className="relative flex items-start gap-6">
                 {/* Timeline dot */}
                 <div className={`relative flex-shrink-0 w-16 h-16 rounded-full border-2 ${getEventColor(event.type)} flex items-center justify-center z-10`}>
@@ -599,7 +601,7 @@ export function Timeline() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="type">Type</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}>
+                  <Select value={formData.type} onValueChange={(value: TimelineEvent['type']) => setFormData(prev => ({ ...prev, type: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>

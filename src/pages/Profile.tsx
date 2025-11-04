@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -15,7 +15,6 @@ import {
   Globe,
   Linkedin,
   Github,
-  Twitter,
   Download,
   Phone,
   Calendar,
@@ -39,7 +38,6 @@ import {
   X,
   Plus,
   Trash2,
-  Settings
 } from "lucide-react";
 import { usePersonalInfo, useEducation, useExperience, useSkills, useAchievements, useCourses, PersonalInfo, Education, Experience, Skill, Achievement, Course } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -88,7 +86,7 @@ export function Profile() {
 
       refetchPersonalInfo();
       setEditingPersonalInfo(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update personal information.",
@@ -113,7 +111,7 @@ export function Profile() {
 
       refetchEducation();
       setEditingEducation(null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update education.",
@@ -138,7 +136,7 @@ export function Profile() {
 
       refetchExperience();
       setEditingExperience(null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update experience.",
@@ -163,7 +161,7 @@ export function Profile() {
 
       refetchSkills();
       setEditingSkill(null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update skill.",
@@ -188,7 +186,7 @@ export function Profile() {
 
       refetchAchievements();
       setEditingAchievement(null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update achievement.",
@@ -213,7 +211,7 @@ export function Profile() {
 
       refetchCourses();
       setEditingCourse(null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update course.",
@@ -238,7 +236,7 @@ export function Profile() {
 
       refetchExperience();
       setAddingExperience(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add experience.",
@@ -262,7 +260,7 @@ export function Profile() {
 
       refetchSkills();
       setAddingSkill(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add skill.",
@@ -286,7 +284,7 @@ export function Profile() {
 
       refetchEducation();
       setAddingEducation(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add education.",
@@ -310,7 +308,7 @@ export function Profile() {
 
       refetchAchievements();
       setAddingAchievement(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add achievement.",
@@ -334,7 +332,7 @@ export function Profile() {
 
       refetchCourses();
       setAddingCourse(false);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to add course.",
@@ -359,7 +357,7 @@ export function Profile() {
       });
 
       refetchExperience();
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete experience.",
@@ -383,7 +381,7 @@ export function Profile() {
       });
 
       refetchSkills();
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete skill.",
@@ -407,7 +405,7 @@ export function Profile() {
       });
 
       refetchEducation();
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete education.",
@@ -431,7 +429,7 @@ export function Profile() {
       });
 
       refetchAchievements();
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete achievement.",
@@ -455,7 +453,7 @@ export function Profile() {
       });
 
       refetchCourses();
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete course.",
@@ -752,7 +750,7 @@ export function Profile() {
                         </div>
                       </div>
                     )}
-                    {experience.map((exp, index) => (
+                    {experience.map((exp, _index) => (
                       <div key={exp.id} className="relative flex items-start">
                         {/* Timeline dot */}
                         <div className="relative z-10 flex items-center justify-center w-8 h-8 bg-primary rounded-full border-4 border-background shrink-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/30">
@@ -897,7 +895,7 @@ export function Profile() {
                         </div>
                       </div>
                     )}
-                    {education.map((edu, index) => (
+                    {education.map((edu, _index) => (
                       <div key={edu.id} className="relative flex items-start">
                         {/* Timeline dot */}
                         <div className="relative z-10 flex items-center justify-center w-8 h-8 bg-primary rounded-full border-4 border-background shrink-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/30">

@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { usePersonalInfo } from "@/hooks/usePortfolioData";
 import { useTasks, useSchedules } from "@/hooks/useManagement";
 import { useAdmin } from "@/hooks/useAdmin";
-import { Mail, Phone, MapPin, Send, MessageCircle, Calendar, Clock, CheckSquare, Info, Settings, Eye, EyeOff, Trash2, CalendarPlus, CheckCheck, ArrowRight } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageCircle, Calendar, Clock, CheckSquare, Info, Eye, Trash2, CalendarPlus, CheckCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useContactMessages, type ContactMessage } from "@/hooks/useManagement";
 
@@ -46,7 +46,7 @@ export default function Contact() {
   });
 
   // Admin state
-  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [_selectedMessage, _setSelectedMessage] = useState<ContactMessage | null>(null);
   const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'read' | 'replied'>('all');
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const [convertDialog, setConvertDialog] = useState<{ open: boolean; type: 'task' | 'schedule' | null; message: ContactMessage | null }>({
@@ -54,7 +54,20 @@ export default function Contact() {
     type: null,
     message: null
   });
-  const [convertFormData, setConvertFormData] = useState<any>({});
+  // Narrow type for the convert dialog form data
+  type ConvertFormData = {
+    title?: string;
+    description?: string;
+    priority?: 'low' | 'medium' | 'high';
+    dueDate?: string;
+    dueTime?: string;
+    startTime?: string;
+    endTime?: string;
+    type?: 'meeting' | 'call' | 'event' | 'deadline';
+    isPublic?: boolean;
+  };
+
+  const [convertFormData, setConvertFormData] = useState<ConvertFormData>({});
 
   // Helper function to check if a message is a task request
   const isTaskRequest = (message: ContactMessage) => {
@@ -116,7 +129,7 @@ export default function Contact() {
         description: "Thank you for your message. I'll get back to you soon!",
       });
       setFormData({ name: "", email: "", subject: "", message: "" });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
@@ -173,7 +186,7 @@ This is an automated task request submission.
         budget: "",
         additionalNotes: ""
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to submit task request. Please try again.",
@@ -206,7 +219,7 @@ This is an automated task request submission.
         title: "Task request accepted!",
         description: `"${taskData.title}" has been added to your tasks.`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to accept task request.",
@@ -222,7 +235,7 @@ This is an automated task request submission.
         title: "Message marked as read",
         description: "The message status has been updated.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update message status.",
@@ -238,7 +251,7 @@ This is an automated task request submission.
         title: "Message marked as replied",
         description: "The message status has been updated.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update message status.",
@@ -255,7 +268,7 @@ This is an automated task request submission.
         description: "The message has been permanently deleted.",
       });
       setDeletingMessageId(null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete message.",
@@ -290,7 +303,7 @@ This is an automated task request submission.
       
       setConvertDialog({ open: false, type: null, message: null });
       setConvertFormData({});
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to create task.",
@@ -329,7 +342,7 @@ This is an automated task request submission.
       
       setConvertDialog({ open: false, type: null, message: null });
       setConvertFormData({});
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to create schedule item.",
@@ -396,7 +409,7 @@ This is an automated task request submission.
                   {/* Filter for task requests */}
                   <div className="flex items-center gap-4">
                     <Label htmlFor="taskRequestFilter">Filter by status:</Label>
-                    <Select value={messageFilter} onValueChange={(value: any) => setMessageFilter(value)}>
+                    <Select value={messageFilter} onValueChange={(value: 'all' | 'unread' | 'read' | 'replied') => setMessageFilter(value)}>
                       <SelectTrigger className="w-48">
                         <SelectValue />
                       </SelectTrigger>
@@ -1056,7 +1069,7 @@ This is an automated task request submission.
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="priority">Priority</Label>
-                    <Select value={convertFormData.priority || 'medium'} onValueChange={(value) => setConvertFormData(prev => ({ ...prev, priority: value }))}>
+                    <Select value={convertFormData.priority || 'medium'} onValueChange={(value) => setConvertFormData(prev => ({ ...prev, priority: value as 'low' | 'medium' | 'high' }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -1129,7 +1142,7 @@ This is an automated task request submission.
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="scheduleType">Type</Label>
-                    <Select value={convertFormData.type || 'meeting'} onValueChange={(value) => setConvertFormData(prev => ({ ...prev, type: value }))}>
+                    <Select value={convertFormData.type || 'meeting'} onValueChange={(value) => setConvertFormData(prev => ({ ...prev, type: value as 'meeting' | 'call' | 'event' | 'deadline' }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>

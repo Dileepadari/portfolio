@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +15,6 @@ import {
   Clock, 
   MessageSquare, 
   Heart,
-  BookOpen,
   Tag,
   TrendingUp,
   Plus,
@@ -30,7 +28,7 @@ import {
 import { BlogPost, useBlogPosts, addBlogPost, updateBlogPost, deleteBlogPost, useBlogEngagement } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
 
-const categories = ["All", "Frontend Development", "Backend Development", "Data Science", "Personal", "Career"];
+const _categories = ["All", "Frontend Development", "Backend Development", "Data Science", "Personal", "Career"];
 
 export function Blog() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,7 +61,7 @@ export function Blog() {
       toast({ title: "Success", description: "Blog post added successfully!" });
       setShowAddForm(false);
       refetch();
-    } catch (error) {
+    } catch {
       toast({ title: "Error", description: "Failed to add blog post", variant: "destructive" });
     }
   };
@@ -74,7 +72,7 @@ export function Blog() {
       toast({ title: "Success", description: "Blog post updated successfully!" });
       setEditingPost(null);
       refetch();
-    } catch (error) {
+    } catch {
       toast({ title: "Error", description: "Failed to update blog post", variant: "destructive" });
     }
   };
@@ -84,7 +82,7 @@ export function Blog() {
       await deleteBlogPost(id);
       toast({ title: "Success", description: "Blog post deleted successfully!" });
       refetch();
-    } catch (error) {
+    } catch {
       toast({ title: "Error", description: "Failed to delete blog post", variant: "destructive" });
     }
   };

@@ -32,13 +32,13 @@ const COLOR_PALETTES = [
 // Helper: Convert hex to HSL string for Tailwind
 function hexToHSL(hex: string) {
   hex = hex.replace('#', '');
-  let r = parseInt(hex.substring(0,2), 16) / 255;
-  let g = parseInt(hex.substring(2,4), 16) / 255;
-  let b = parseInt(hex.substring(4,6), 16) / 255;
-  let max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const r = parseInt(hex.substring(0,2), 16) / 255;
+  const g = parseInt(hex.substring(2,4), 16) / 255;
+  const b = parseInt(hex.substring(4,6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
   let h = 0, s = 0, l = (max + min) / 2;
   if(max !== min){
-    let d = max - min;
+    const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch(max){
       case r: h = (g - b) / d + (g < b ? 6 : 0); break;
@@ -54,9 +54,6 @@ function hexToHSL(hex: string) {
 }
 
 function applyPalette(palette: { light: { primary: string; accent: string; background: string; border?: string }, dark: { primary: string; accent: string; background: string; border?: string } }) {
-  // Detect theme
-  const isDark = document.documentElement.classList.contains('dark');
-  // Always set both, so switching theme is instant
   document.documentElement.style.setProperty('--primary', hexToHSL(palette.light.primary));
   document.documentElement.style.setProperty('--accent', hexToHSL(palette.light.accent));
   document.documentElement.style.setProperty('--background', hexToHSL(palette.light.background));
@@ -141,13 +138,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Github,
   User,
-  FolderGit2,
   BookOpen,
   Calendar,
-  FileText,
   LogOut,
   LogIn,
-  Clock,
   Settings,
   ChevronDown,
   Menu,
@@ -162,7 +156,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 // Import logo images
 import logoDark from "@/assets/adk_dev_logo_dark.png"; // For light mode
 import logoLight from "@/assets/adk_dev_logo_light.png"; // For dark mode  
-import logoMobile from "@/assets/adk_dev_only_logo_color.png"; // For mobile
 import { DialogTitle } from "@radix-ui/react-dialog";
 
 export function Navigation() {

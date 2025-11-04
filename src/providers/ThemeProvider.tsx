@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
 
+/* eslint-disable react-refresh/only-export-components */
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;

@@ -23,19 +23,20 @@ import {
   Send,
   Reply,
   Trash2,
-  ExternalLink,
   Copy,
   Eye
 } from "lucide-react";
-import { 
-  BlogPost, 
-  useBlogPosts, 
-  useBlogComments, 
+import {
+  BlogPost,
+  BlogComment,
+  useBlogPosts,
+  useBlogComments,
   useBlogLike,
-  addBlogComment, 
+  addBlogComment,
   deleteBlogComment
 } from "@/hooks/usePortfolioData";
 import { useAuth } from "@/hooks/useAuth";
+import type { User } from '@supabase/supabase-js';
 import 'highlight.js/styles/github-dark.css'; // You can change this theme
 
 export function BlogPostView() {
@@ -86,7 +87,7 @@ export function BlogPostView() {
       setNewComment('');
       toast({ title: "Success", description: "Comment added successfully!" });
       refetchComments();
-    } catch (error) {
+    } catch {
       toast({ 
         title: "Error", 
         description: "Failed to add comment", 
@@ -116,7 +117,7 @@ export function BlogPostView() {
       setReplyToComment(null);
       toast({ title: "Success", description: "Reply added successfully!" });
       refetchComments();
-    } catch (error) {
+    } catch {
       toast({ 
         title: "Error", 
         description: "Failed to add reply", 
@@ -132,7 +133,7 @@ export function BlogPostView() {
       await deleteBlogComment(commentId);
       toast({ title: "Success", description: "Comment deleted successfully!" });
       refetchComments();
-    } catch (error) {
+    } catch {
       toast({ 
         title: "Error", 
         description: "Failed to delete comment", 
@@ -148,7 +149,7 @@ export function BlogPostView() {
       const url = window.location.href;
       await navigator.clipboard.writeText(url);
       toast({ title: "Success", description: "Link copied to clipboard!" });
-    } catch (error) {
+    } catch {
       toast({ title: "Error", description: "Failed to copy link", variant: "destructive" });
     }
   };
@@ -400,8 +401,8 @@ export function BlogPostView() {
 }
 
 interface CommentCardProps {
-  comment: any;
-  currentUser: any;
+  comment: BlogComment;
+  currentUser: User | null;
   onReply: (commentId: string | null) => void;
   onDelete: (commentId: string) => void;
   replyToComment: string | null;
@@ -526,7 +527,7 @@ function CommentCard({
             {/* Replies */}
             {comment.replies && comment.replies.length > 0 && (
               <div className="mt-4 space-y-4 pl-4 border-l-2 border-border">
-                {comment.replies.map((reply: any) => (
+                {comment.replies.map((reply: BlogComment) => (
                   <CommentCard
                     key={reply.id}
                     comment={reply}

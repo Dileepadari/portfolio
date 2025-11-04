@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 // Types
@@ -148,7 +148,7 @@ export interface TimelineEvent {
   tags?: string[];
   link?: string;
   impact?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   order_index: number;
   created_at: string;
   updated_at: string;
@@ -440,7 +440,7 @@ export function useBlogComments(blogPostId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       setLoading(true);
       const { data: result, error } = await supabase
@@ -470,13 +470,13 @@ export function useBlogComments(blogPostId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [blogPostId]);
 
   useEffect(() => {
     if (blogPostId) {
       fetchComments();
     }
-  }, [blogPostId]);
+  }, [blogPostId, fetchComments]);
 
   return { data, loading, error, refetch: fetchComments };
 }
@@ -486,7 +486,7 @@ export function useBlogLike(blogPostId: string) {
   const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const checkLikeStatus = async () => {
+  const checkLikeStatus = useCallback(async () => {
     try {
       const { data: likeCountData } = await supabase
         .from('blog_likes')
@@ -506,7 +506,7 @@ export function useBlogLike(blogPostId: string) {
     } catch (error) {
       console.error('Error checking like status:', error);
     }
-  };
+  }, [blogPostId]);
 
   const toggleLike = async () => {
     try {
@@ -548,7 +548,7 @@ export function useBlogLike(blogPostId: string) {
     if (blogPostId) {
       checkLikeStatus();
     }
-  }, [blogPostId]);
+  }, [blogPostId, checkLikeStatus]);
 
   return { isLiked, likeCount, toggleLike, loading };
 }
@@ -561,7 +561,7 @@ export function useBlogEngagement(blogPostId: string) {
   });
   const [loading, setLoading] = useState(true);
 
-  const fetchEngagementCounts = async () => {
+  const fetchEngagementCounts = useCallback(async () => {
     if (!blogPostId) return;
     
     try {
@@ -582,11 +582,11 @@ export function useBlogEngagement(blogPostId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [blogPostId]);
 
   useEffect(() => {
     fetchEngagementCounts();
-  }, [blogPostId]);
+  }, [blogPostId, fetchEngagementCounts]);
 
   return { counts, loading, refetch: fetchEngagementCounts };
 }
@@ -630,12 +630,14 @@ export function useTimelineEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTimelineEvents = async () => {
+  const fetchTimelineEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const { data, error, count } = await supabase
+      // supabase client is strongly typed to known table names; use a narrow exception here
+      const { data, error, count: _count } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('timeline_events' as any)
         .select('*', { count: 'exact' })
         .order('date', { ascending: false })
@@ -647,17 +649,17 @@ export function useTimelineEvents() {
       
       const events = (data as unknown as TimelineEvent[]) || [];
       setTimelineEvents(events);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to fetch timeline events');
       setTimelineEvents([]); // Clear events on error
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchTimelineEvents();
-  }, []);
+  }, [fetchTimelineEvents]);
 
   return { timelineEvents, loading, error, refetch: fetchTimelineEvents };
 }
@@ -667,7 +669,7 @@ export function useTimelineManagement() {
 
   // Add a function to check user permissions
   const checkUserPermissions = async () => {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: _authError } = await supabase.auth.getUser();
     
     if (!user) {
       throw new Error('User not authenticated');
@@ -681,7 +683,7 @@ export function useTimelineManagement() {
       .single();
     
     if (profileError) {
-      // Could not fetch user profile, proceeding anyway
+      console.error('Error fetching user profile:', profileError);
     } else if (!profile || !profile.is_admin) {
       throw new Error('User does not have admin permissions required for timeline management');
     }
@@ -697,6 +699,7 @@ export function useTimelineManagement() {
       await checkUserPermissions();
       
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('timeline_events' as any)
         .insert([{
           ...eventData,
@@ -714,8 +717,8 @@ export function useTimelineManagement() {
       }
       
       return data as unknown as TimelineEvent;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to add timeline event');
+    } catch (error: unknown) {
+      throw new Error((error as Error).message || 'Failed to add timeline event');
     } finally {
       setLoading(false);
     }
@@ -729,6 +732,7 @@ export function useTimelineManagement() {
       await checkUserPermissions();
       
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('timeline_events' as any)
         .update({
           ...updates,
@@ -747,8 +751,8 @@ export function useTimelineManagement() {
       }
       
       return data as unknown as TimelineEvent;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to update timeline event');
+    } catch (error: unknown) {
+      throw new Error((error as Error).message || 'Failed to update timeline event');
     } finally {
       setLoading(false);
     }
@@ -763,6 +767,7 @@ export function useTimelineManagement() {
       
       // Perform the delete
       const { data: deletedData, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('timeline_events' as any)
         .delete()
         .eq('id', id)
@@ -777,8 +782,8 @@ export function useTimelineManagement() {
         throw new Error('No records were deleted - this might be a permissions issue');
       }
       
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to delete timeline event');
+    } catch (error: unknown) {
+      throw new Error((error as Error).message || 'Failed to delete timeline event');
     } finally {
       setLoading(false);
     }
@@ -793,13 +798,14 @@ export function useActivityOverview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActivityStats = async () => {
+  const fetchActivityStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       // Fetch timeline events
       const { data: timelineData, error: timelineError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('timeline_events' as any)
         .select('type, date, created_at, title');
 
@@ -828,28 +834,28 @@ export function useActivityOverview() {
       }
 
       // Normalize data
-      const events = (timelineData as any[]) || [];
-      const schedules = (schedulesData as any[]) || [];
-      const tasks = (tasksData as any[]) || [];
+  const events = (timelineData as unknown as TimelineEvent[]) || [];
+  const schedules = (schedulesData as { start_time?: string; created_at?: string; type?: string; title?: string; status?: string }[]) || [];
+  const tasks = (tasksData as { due_date?: string; created_at?: string; updated_at?: string }[]) || [];
 
-      // Calculate stats from all sources
-      const totalEvents = events.length + schedules.length + tasks.length;
+  // Calculate stats from all sources
+  const totalEvents = events.length + schedules.length + tasks.length;
       
-      const projects = events.filter((e: any) => e.type === 'project').length;
-      const achievements = events.filter((e: any) => e.type === 'achievement').length;
-      const contributions = events.filter((e: any) => e.type === 'contribution').length;
-      const commits = events.filter((e: any) => e.type === 'commit').length;
-      const timelineTasks = events.filter((e: any) => e.type === 'task').length;
-      const actualTasks = tasks.length;
-      const schedulesCount = schedules.length;
+  const projects = events.filter((e: TimelineEvent) => e.type === 'project').length;
+  const achievements = events.filter((e: TimelineEvent) => e.type === 'achievement').length;
+  const contributions = events.filter((e: TimelineEvent) => e.type === 'contribution').length;
+  const commits = events.filter((e: TimelineEvent) => e.type === 'commit').length;
+  const timelineTasks = events.filter((e: TimelineEvent) => e.type === 'task').length;
+  const actualTasks = tasks.length;
+  const schedulesCount = schedules.length;
 
       // Calculate recent activity (last 365 days for GitHub-style graph)
       const oneYearAgo = new Date();
       oneYearAgo.setDate(oneYearAgo.getDate() - 365);
 
-      const recentEvents = events.filter((e: any) => new Date(e.date || e.created_at) >= oneYearAgo);
-      const recentSchedules = schedules.filter((s: any) => new Date(s.start_time || s.created_at) >= oneYearAgo);
-      const recentTasks = tasks.filter((t: any) => {
+      const recentEvents = events.filter((e: TimelineEvent) => new Date(e.date || e.created_at) >= oneYearAgo);
+      const recentSchedules = schedules.filter((s) => new Date(s.start_time || s.created_at) >= oneYearAgo);
+      const recentTasks = tasks.filter((t) => {
         const taskDate = t.due_date || t.updated_at || t.created_at;
         return new Date(taskDate) >= oneYearAgo;
       });
@@ -866,7 +872,7 @@ export function useActivityOverview() {
       }
       
       // Fill in timeline events activity
-      recentEvents.forEach((item: any) => {
+      recentEvents.forEach((item: TimelineEvent) => {
         const date = new Date(item.date || item.created_at).toISOString().split('T')[0];
         if (activityMap.has(date)) {
           const activity = activityMap.get(date)!;
@@ -876,7 +882,7 @@ export function useActivityOverview() {
       });
 
       // Fill in schedules activity
-      recentSchedules.forEach((item: any) => {
+      recentSchedules.forEach((item) => {
         const date = new Date(item.start_time || item.created_at).toISOString().split('T')[0];
         if (activityMap.has(date)) {
           const activity = activityMap.get(date)!;
@@ -886,7 +892,7 @@ export function useActivityOverview() {
       });
 
       // Fill in tasks activity
-      recentTasks.forEach((item: any) => {
+      recentTasks.forEach((item) => {
         // Use due_date if available, otherwise use updated_at (for completion), then created_at
         const taskDate = item.due_date || item.updated_at || item.created_at;
         const date = new Date(taskDate).toISOString().split('T')[0];
@@ -921,11 +927,11 @@ export function useActivityOverview() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchActivityStats();
-  }, []);
+  }, [fetchActivityStats]);
 
   return { stats, loading, error, refetch: fetchActivityStats };
 }

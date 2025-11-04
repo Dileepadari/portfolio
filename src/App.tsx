@@ -8,7 +8,6 @@ import { Layout } from "./layouts/Layout";
 import { Projects } from "./pages/Projects";
 import { Blog } from "./pages/Blog";
 import { BlogPostView } from "./pages/BlogPostView";
-import { Timeline } from "./pages/Timeline";
 import Contact from "./pages/Contact";
 import { Auth } from "./pages/Auth";
 import { Profile } from "./pages/Profile";

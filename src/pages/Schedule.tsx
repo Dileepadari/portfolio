@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useSchedules, useTasks } from "@/hooks/useManagement";
 import type { Schedule as ScheduleType, Task as TaskType } from "@/hooks/useManagement";
-import { useAuth } from "@/hooks/useAuth";
 import { 
   Calendar, 
   Clock, 
@@ -28,18 +27,20 @@ import {
   Target,
   ChevronLeft,
   ChevronRight,
-  MapPin,
-  Video,
-  Bell,
-  Repeat,
   CalendarDays,
-  Filter,
   Search
 } from "lucide-react";
-import { format, startOfWeek, addDays, isSameDay, parseISO, addWeeks, subWeeks, isToday, isFuture, isPast, addHours } from "date-fns";
+import { format, startOfWeek, addDays, addWeeks, subWeeks, isToday, addHours } from "date-fns";
+
+// Local narrow types to avoid using `any` in handlers
+type LocalScheduleCategory = "meeting" | "appointment" | "event" | "deadline" | "reminder" | "personal" | "work";
+type LocalScheduleType = "meeting" | "call" | "event" | "deadline";
+type LocalScheduleStatus = "scheduled" | "completed" | "cancelled";
+type LocalTaskPriority = "low" | "medium" | "high";
+type LocalTaskCategory = "personal" | "work" | "project" | "academic" | "general";
+type LocalTaskStatus = "todo" | "in-progress" | "completed";
 
 export function Schedule() {
-  const { user } = useAuth();
   const { toast } = useToast();
   
   // Hooks for data management
@@ -57,11 +58,11 @@ export function Schedule() {
     createTask,
     updateTask,
     deleteTask,
-    convertTaskToSchedule
+    convertTaskToSchedule: _convertTaskToSchedule
   } = useTasks();
 
   // State management
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [_selectedDate, setSelectedDate] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [activeTab, setActiveTab] = useState("overview");
   const [taskFilter, setTaskFilter] = useState<string>("all");
@@ -91,7 +92,7 @@ export function Schedule() {
     reminder_minutes: [15],
     notes: "",
     is_recurring: false,
-    recurrence_rule: null as any,
+    recurrence_rule: null as { freq?: string; interval?: number } | null,
     recurrence_end_date: "",
     parent_event_id: "",
     original_start_time: "",
@@ -111,7 +112,7 @@ export function Schedule() {
     actual_hours: 0,
     order_index: 0,
     is_recurring: false,
-    recurrence_pattern: null as any,
+    recurrence_pattern: null as { freq?: string; interval?: number } | null,
     notes: "",
     assignee_email: "",
     project_id: "",
@@ -229,18 +230,37 @@ export function Schedule() {
   };
 
   // Form handlers
-  const handleCreateSchedule = async (e?: React.MouseEvent) => {
+  const handleCreateSchedule = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     try {
-      const scheduleData = {
-        ...scheduleForm,
+      // Build a payload that matches the Schedule type (avoid `null` values)
+      const scheduleData: Omit<ScheduleType, 'id' | 'created_at' | 'updated_at'> = {
+        title: scheduleForm.title,
+        description: scheduleForm.description || undefined,
+        start_time: scheduleForm.start_time,
+        end_time: scheduleForm.end_time,
+        location: scheduleForm.location?.trim() || undefined,
+        meeting_url: scheduleForm.meeting_url?.trim() || undefined,
+        category: scheduleForm.category,
+        type: scheduleForm.type,
+        status: scheduleForm.status,
+        attendees: scheduleForm.attendees || [],
         tags: scheduleForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-        attendees: scheduleForm.attendees
+        color: scheduleForm.color,
+        is_public: scheduleForm.is_public,
+        reminder_minutes: scheduleForm.reminder_minutes,
+        notes: scheduleForm.notes || undefined,
+        is_recurring: scheduleForm.is_recurring,
+        recurrence_rule: scheduleForm.is_recurring ? scheduleForm.recurrence_rule : undefined,
+        recurrence_end_date: scheduleForm.recurrence_end_date || undefined,
+        parent_event_id: scheduleForm.parent_event_id || undefined,
+        original_start_time: scheduleForm.original_start_time || undefined,
+        task_id: scheduleForm.task_id || undefined
       };
-      
+
       await createSchedule(scheduleData);
       setShowCreateDialog(false);
       setScheduleForm({
@@ -271,32 +291,34 @@ export function Schedule() {
         title: "Schedule created",
         description: "Your schedule has been created successfully.",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Create schedule error:', message);
       toast({
         title: "Error",
-        description: "Failed to create schedule. Please try again.",
+        description: `Failed to create schedule. ${message}`,
         variant: "destructive",
       });
     }
   };
 
-  const handleCreateTask = async (e?: React.MouseEvent) => {
+  const handleCreateTask = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     try {
-      // Prepare task data with proper formatting and filtering
+      // Prepare task data with proper formatting and filtering (avoid `null`)
       const taskData: Omit<TaskType, 'id' | 'created_at' | 'updated_at'> = {
         title: taskForm.title,
-        description: taskForm.description || null,
-        due_date: taskForm.due_date || null,
+        description: taskForm.description || undefined,
+        due_date: taskForm.due_date || undefined,
         status: taskForm.status,
         priority: taskForm.priority,
         category: taskForm.category,
-        estimated_hours: taskForm.estimated_hours || null,
-        actual_hours: taskForm.actual_hours || null,
-        notes: taskForm.notes || null,
+        estimated_hours: taskForm.estimated_hours || undefined,
+        actual_hours: taskForm.actual_hours || undefined,
+        notes: taskForm.notes || undefined,
         is_recurring: taskForm.is_recurring,
         order_index: tasks.length, // Set to current length for proper ordering
         tags: taskForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
@@ -344,11 +366,12 @@ export function Schedule() {
         title: "Task created",
         description: "Your task has been created successfully.",
       });
-    } catch (error) {
-      console.error('Create task error:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Create task error:', message);
       toast({
         title: "Error",
-        description: "Failed to create task. Please try again.",
+        description: `Failed to create task. ${message}`,
         variant: "destructive",
       });
     }
@@ -377,10 +400,12 @@ export function Schedule() {
         title: "Task converted",
         description: "Task has been converted to a schedule successfully.",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Convert task to schedule error:', message);
       toast({
         title: "Error",
-        description: "Failed to convert task to schedule.",
+        description: `Failed to convert task to schedule. ${message}`,
         variant: "destructive",
       });
     }
@@ -393,10 +418,12 @@ export function Schedule() {
         title: "Schedule deleted",
         description: "The schedule has been deleted successfully.",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Delete schedule error:', message);
       toast({
         title: "Error",
-        description: "Failed to delete schedule.",
+        description: `Failed to delete schedule. ${message}`,
         variant: "destructive",
       });
     }
@@ -409,10 +436,12 @@ export function Schedule() {
         title: "Task deleted",
         description: "The task has been deleted successfully.",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Delete task error:', message);
       toast({
         title: "Error",
-        description: "Failed to delete task.",
+        description: `Failed to delete task. ${message}`,
         variant: "destructive",
       });
     }
@@ -469,7 +498,7 @@ export function Schedule() {
     setShowEditTaskDialog(true);
   };
 
-  const handleUpdateSchedule = async (e?: React.MouseEvent) => {
+  const handleUpdateSchedule = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -477,10 +506,10 @@ export function Schedule() {
     if (!editingSchedule) return;
     
     try {
-      // Prepare schedule data with proper formatting and filtering
+      // Prepare schedule data with proper formatting and filtering (avoid nulls)
       const scheduleData: Partial<ScheduleType> = {
         title: scheduleForm.title,
-        description: scheduleForm.description || null,
+        description: scheduleForm.description || undefined,
         start_time: scheduleForm.start_time,
         end_time: scheduleForm.end_time,
         type: scheduleForm.type,
@@ -488,7 +517,7 @@ export function Schedule() {
         status: scheduleForm.status,
         color: scheduleForm.color,
         reminder_minutes: scheduleForm.reminder_minutes,
-        notes: scheduleForm.notes || null,
+        notes: scheduleForm.notes || undefined,
         is_recurring: scheduleForm.is_recurring,
         is_public: scheduleForm.is_public,
         tags: scheduleForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
@@ -532,17 +561,18 @@ export function Schedule() {
         title: "Schedule updated",
         description: "Your schedule has been updated successfully.",
       });
-    } catch (error) {
-      console.error('Update schedule error:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Update schedule error:', message);
       toast({
         title: "Error",
-        description: "Failed to update schedule. Please try again.",
+        description: `Failed to update schedule. ${message}`,
         variant: "destructive",
       });
     }
   };
 
-  const handleUpdateTask = async (e?: React.MouseEvent) => {
+  const handleUpdateTask = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -590,11 +620,12 @@ export function Schedule() {
         title: "Task updated",
         description: "Your task has been updated successfully.",
       });
-    } catch (error) {
-      console.error('Update task error:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Update task error:', message);
       toast({
         title: "Error",
-        description: "Failed to update task. Please try again.",
+        description: `Failed to update task. ${message}`,
         variant: "destructive",
       });
     }
@@ -664,7 +695,7 @@ export function Schedule() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="task-status">Status</Label>
-                      <Select value={taskForm.status} onValueChange={(value: any) => setTaskForm({...taskForm, status: value})}>
+                      <Select value={taskForm.status} onValueChange={(value: LocalTaskStatus) => setTaskForm({...taskForm, status: value})}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -679,7 +710,7 @@ export function Schedule() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="task-priority">Priority</Label>
-                      <Select value={taskForm.priority} onValueChange={(value: any) => setTaskForm({...taskForm, priority: value})}>
+                      <Select value={taskForm.priority} onValueChange={(value: LocalTaskPriority) => setTaskForm({...taskForm, priority: value})}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -692,7 +723,7 @@ export function Schedule() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="task-category">Category</Label>
-                      <Select value={taskForm.category} onValueChange={(value: any) => setTaskForm({...taskForm, category: value})}>
+                      <Select value={taskForm.category} onValueChange={(value: LocalTaskCategory) => setTaskForm({...taskForm, category: value})}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -868,7 +899,7 @@ export function Schedule() {
               onSubmit={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                handleUpdateSchedule(e as any);
+                handleUpdateSchedule();
               }}
             >
               <div 
@@ -922,7 +953,7 @@ export function Schedule() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="edit-schedule-category">Category</Label>
-                  <Select value={scheduleForm.category} onValueChange={(value: any) => setScheduleForm({...scheduleForm, category: value})}>
+                  <Select value={scheduleForm.category} onValueChange={(value: LocalScheduleCategory) => setScheduleForm({...scheduleForm, category: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -939,7 +970,7 @@ export function Schedule() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-schedule-type">Type</Label>
-                  <Select value={scheduleForm.type} onValueChange={(value: any) => setScheduleForm({...scheduleForm, type: value})}>
+                  <Select value={scheduleForm.type} onValueChange={(value: LocalScheduleType) => setScheduleForm({...scheduleForm, type: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -953,7 +984,7 @@ export function Schedule() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-schedule-status">Status</Label>
-                  <Select value={scheduleForm.status} onValueChange={(value: any) => setScheduleForm({...scheduleForm, status: value})}>
+                  <Select value={scheduleForm.status} onValueChange={(value: LocalScheduleStatus) => setScheduleForm({...scheduleForm, status: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1053,7 +1084,7 @@ export function Schedule() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-task-status">Status</Label>
-                  <Select value={taskForm.status} onValueChange={(value: any) => setTaskForm({...taskForm, status: value})}>
+                  <Select value={taskForm.status} onValueChange={(value: LocalTaskStatus) => setTaskForm({...taskForm, status: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1068,7 +1099,7 @@ export function Schedule() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="edit-task-priority">Priority</Label>
-                  <Select value={taskForm.priority} onValueChange={(value: any) => setTaskForm({...taskForm, priority: value})}>
+                  <Select value={taskForm.priority} onValueChange={(value: LocalTaskPriority) => setTaskForm({...taskForm, priority: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1081,7 +1112,7 @@ export function Schedule() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-task-category">Category</Label>
-                  <Select value={taskForm.category} onValueChange={(value: any) => setTaskForm({...taskForm, category: value})}>
+                  <Select value={taskForm.category} onValueChange={(value: LocalTaskCategory) => setTaskForm({...taskForm, category: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1903,7 +1934,7 @@ export function Schedule() {
               onSubmit={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                handleCreateSchedule(e as any);
+                handleCreateSchedule();
               }}
             >
               <div 
@@ -1957,7 +1988,7 @@ export function Schedule() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="schedule-type">Type</Label>
-                  <Select value={scheduleForm.type} onValueChange={(value: any) => setScheduleForm({...scheduleForm, type: value})}>
+                  <Select value={scheduleForm.type} onValueChange={(value: LocalScheduleType) => setScheduleForm({...scheduleForm, type: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1971,7 +2002,7 @@ export function Schedule() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="schedule-category">Category</Label>
-                  <Select value={scheduleForm.category} onValueChange={(value: any) => setScheduleForm({...scheduleForm, category: value})}>
+                  <Select value={scheduleForm.category} onValueChange={(value: LocalScheduleCategory) => setScheduleForm({...scheduleForm, category: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1990,7 +2021,7 @@ export function Schedule() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="schedule-status">Status</Label>
-                  <Select value={scheduleForm.status} onValueChange={(value: any) => setScheduleForm({...scheduleForm, status: value})}>
+                  <Select value={scheduleForm.status} onValueChange={(value: LocalScheduleStatus) => setScheduleForm({...scheduleForm, status: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
