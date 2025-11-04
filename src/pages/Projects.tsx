@@ -19,14 +19,14 @@ import {
   Cloud,
   Plus,
   FolderOpen,
-  Lock,
   Dot,
   Edit2,
   Trash2,
   Save,
   X,
   User,
-  Users
+  Users,
+  Globe
 } from "lucide-react";
 
 import { Project } from "@/hooks/usePortfolioData";
@@ -55,7 +55,6 @@ const projectCategories = [
   "mobile development",
   "extension development", 
   "distributed systems", 
-  "embedded", 
   "hardware", 
   "iot", 
   "machine learning",
@@ -263,16 +262,22 @@ export function Projects() {
           {/* Project Categories Tabs */}
           <div className="mb-6">
             <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-              <div className="overflow-x-auto">
-                <TabsList className="inline-flex h-auto p-1 bg-muted/50 min-w-full justify-start">
+              <div className="overflow-x-auto md:scrollbar-hide">
+                <TabsList className="inline-flex h-auto p-1 bg-muted/50 w-full sm:min-w-full justify-start">
                   {projectCategories.map((category) => (
                     <TabsTrigger 
                       key={category} 
                       value={category}
-                      className="text-xs px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap flex-shrink-0"
+                      className="text-[10px] sm:text-xs px-2 sm:px-3 py-1.5 sm:py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap flex-shrink-0"
                     >
-                      {category === "all" ? "All Projects" : 
+                      {category === "all" ? "All" : 
                        category === "iot" ? "IoT" :
+                       category === "web development" ? "Web" :
+                       category === "mobile development" ? "Mobile" :
+                       category === "extension development" ? "Extensions" :
+                       category === "distributed systems" ? "Distributed" :
+                       category === "machine learning" ? "ML" :
+                       category === "game development" ? "Games" :
                        category.split(' ').map(word => 
                          word.charAt(0).toUpperCase() + word.slice(1)
                        ).join(' ')}
@@ -502,14 +507,14 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2 mb-2">
-              <h3 className="text-lg font-semibold text-primary hover:underline cursor-pointer flex items-center gap-2">
-                {project.title}
-                {project.is_private && <Lock className="w-4 h-4 text-muted-foreground" />}
-                {featured && <Star className="w-4 h-4 text-yellow-400 fill-current" />}
+              <h3 className="text-base sm:text-lg font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+                <span className="truncate">{project.title}</span>
+                {project.is_private && <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />}
+                {featured && <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current flex-shrink-0" />}
               </h3>
               
               {/* GitHub and Live Links */}
-              <div className="flex gap-1 ml-2">
+              <div className="flex gap-1 flex-shrink-0">
                 {project.github_url && (
                   <Button
                     variant="ghost"
@@ -538,49 +543,51 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
               </div>
             </div>
             
-            <p className="text-muted-foreground text-sm leading-relaxed mb-3 text-justify">
+            <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-3 text-justify">
               {project.description}
             </p>
 
             {/* Language and Stats */}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground mb-3">
               {project.language && (
                 <div className="flex items-center gap-1">
                   <span 
-                    className="w-3 h-3 rounded-full" 
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
                     style={{ backgroundColor: project.language_color }}
                   />
-                  <span>{project.language}</span>
+                  <span className="truncate">{project.language}</span>
                 </div>
               )}
               
               {(project.is_private === false) ? (
                 <div className="flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  <span>Owned by me</span>
+                  <User className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                  <span className="hidden sm:inline">Owned</span>
+                  <span className="sm:hidden">Mine</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
-                  <Users className="w-3 h-3" />
-                  <span>Contributed</span>
+                  <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                  <span className="hidden sm:inline">Contributed</span>
+                  <span className="sm:hidden">Contrib</span>
                 </div>
               )}
               
               <div className="flex items-center gap-1">
-                <Dot className="w-3 h-3" />
-                <span>Updated {getTimeAgo(project.updated_at)}</span>
+                <Dot className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                <span className="truncate">Updated {getTimeAgo(project.updated_at)}</span>
               </div>
             </div>
           </div>
         </div>
 
         {(project.tags) && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3">
             {(project.tags || []).map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
-                className="bg-primary/10 text-primary border-primary/20 text-xs"
+                className="bg-primary/10 text-primary border-primary/20 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5"
               >
                 {tag}
               </Badge>
@@ -791,7 +798,7 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
             <SelectContent>
               {projectCategories.slice(1).map((category) => (
                 <SelectItem key={category} value={category}>
-                  {category === "iot" ? "IoT" :
+                  {category === "iot" ? "IoT & Embedded Systems" :
                     category.split(' ').map(word =>
                       word.charAt(0).toUpperCase() + word.slice(1)
                     ).join(' ')}
