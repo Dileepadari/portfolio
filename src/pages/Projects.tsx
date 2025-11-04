@@ -501,15 +501,44 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center justify-between gap-2 mb-2">
               <h3 className="text-lg font-semibold text-primary hover:underline cursor-pointer flex items-center gap-2">
                 {project.title}
                 {project.is_private && <Lock className="w-4 h-4 text-muted-foreground" />}
+                {featured && <Star className="w-4 h-4 text-yellow-400 fill-current" />}
               </h3>
-              {featured && <Star className="w-4 h-4 text-yellow-400 fill-current" />}
+              
+              {/* GitHub and Live Links */}
+              <div className="flex gap-1 ml-2">
+                {project.github_url && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                    asChild
+                  >
+                    <a href={project.github_url} target="_blank" rel="noopener noreferrer">
+                      <Github className="w-3.5 h-3.5" />
+                    </a>
+                  </Button>
+                )}
+                
+                {project.live_url && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                    asChild
+                  >
+                    <a href={project.live_url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </Button>
+                )}
+              </div>
             </div>
             
-            <p className="text-muted-foreground text-sm leading-relaxed mb-3">
+            <p className="text-muted-foreground text-sm leading-relaxed mb-3 text-justify">
               {project.description}
             </p>
 
@@ -561,33 +590,6 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
       </CardHeader>
 
       <CardContent className="pt-0">
-        <div className="flex gap-2 justify-end">
-          {(project.github_url) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
-              asChild
-            >
-              <a href={project.github_url} target="_blank" rel="noopener noreferrer">
-                <Github className="w-3 h-3" />
-              </a>
-            </Button>
-          )}
-          
-          {project.live_url && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
-              asChild
-            >
-              <a href={project.live_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </Button>
-          )}
-        </div>
       </CardContent>
     </Card>
   );
