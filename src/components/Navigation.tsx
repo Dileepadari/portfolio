@@ -192,7 +192,6 @@ export function Navigation() {
 
   const adminItems = [
     { path: "workos.dileepadari.dev", label: "WorkOs", icon: Rocket },
-    {}
   ];
 
   const isAdminPath = (path: string) => {
