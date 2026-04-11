@@ -191,7 +191,8 @@ export function Navigation() {
   ];
 
   const adminItems = [
-    { path: "/schedule", label: "Schedule", icon: Calendar },
+    { path: "workos.dileepadari.dev", label: "WorkOs", icon: Rocket },
+    {}
   ];
 
   const isAdminPath = (path: string) => {
