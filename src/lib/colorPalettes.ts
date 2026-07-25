@@ -56,7 +56,7 @@ function hexToHSL(hex: string): string {
 /**
  * Applies the palette's colors as inline styles on <html> for whichever
  * theme is actually resolved right now. Takes resolvedTheme explicitly
- * rather than probing the DOM for a `.dark` element — in this app `.dark`
+ * rather than probing the DOM for a `.dark` element - in this app `.dark`
  * and `:root` are the same element (the class toggles on <html> itself), so
  * querying for `.dark` to decide "is dark active" is a race against
  * ThemeProvider's own effect that adds the class, and inline styles set

@@ -3,7 +3,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Tailwind v4 has no JS config file — dark mode is a variant targeting the
+/* Tailwind v4 has no JS config file - dark mode is a variant targeting the
    .dark class (same behavior as the old darkMode: ["class"] JS config). */
 @custom-variant dark (&:is(.dark *));
 

@@ -20,7 +20,7 @@ export function clearAdminToken(): void {
   localStorage.removeItem(ADMIN_TOKEN_KEY);
 }
 
-/** Decodes (but does not cryptographically verify) the token for UI state —
+/** Decodes (but does not cryptographically verify) the token for UI state -
  *  real verification always happens server-side in the admin Edge Function. */
 export function decodeAdminToken(token: string): AdminTokenPayload | null {
   try {

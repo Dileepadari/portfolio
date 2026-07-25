@@ -3,7 +3,7 @@
 // visitors shouldn't see via the anon key.
 //
 // Auth is a self-issued username/password + JWT scheme (admin_users table,
-// bcrypt hashes), not supabase.auth — see src/hooks/useAuth.ts for why.
+// bcrypt hashes), not supabase.auth - see src/hooks/useAuth.ts for why.
 // Routing mirrors the same single Deno.serve + pathname-matching style used
 // on the Oracle storage server this also proxies uploads to.
 
@@ -14,7 +14,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const JWT_SECRET = Deno.env.get("ADMIN_JWT_SECRET")!;
 
-// Oracle image/document storage — configurable without touching code.
+// Oracle image/document storage - configurable without touching code.
 // Upload and public-read happen to live on different hosts/domains today
 // (and the upload endpoint's own returned `url` has a domain bug), so the
 // public URL is built here from the known {fileType}/{appName}/{fileName}
@@ -37,7 +37,7 @@ const WRITABLE_TABLES = new Set([
 ]);
 
 // Tables where the admin needs to see rows the public anon key can't
-// (drafts, the contact inbox) — a small "select" operation on the same
+// (drafts, the contact inbox) - a small "select" operation on the same
 // gateway, service-role, bypasses RLS for these only.
 const ADMIN_READABLE_TABLES: Record<string, { column: string; ascending: boolean }> = {
   blog_posts: { column: "created_at", ascending: false },
@@ -170,7 +170,7 @@ async function handleData(req: Request): Promise<Response> {
     return json({ data });
   }
 
-  // Most tables key on `id` (uuid); site_settings keys on `key` (text) — the
+  // Most tables key on `id` (uuid); site_settings keys on `key` (text) - the
   // client passes idColumn for those instead of hardcoding a per-table map here.
   const idColumn = typeof body.idColumn === "string" ? body.idColumn : "id";
 
@@ -222,7 +222,7 @@ async function handleUpload(req: Request): Promise<Response> {
     return json({ error: result.error ?? "Upload to storage failed" }, 502);
   }
 
-  // Built from the known path convention rather than trusting result.url —
+  // Built from the known path convention rather than trusting result.url -
   // the upload endpoint returns a URL on the wrong domain (a bug on the
   // Oracle server side, not worth depending on here).
   const publicUrl = `${ORACLE_PUBLIC_BASE_URL}/${fileType}/${ORACLE_APP_NAME}/${fileName}`;

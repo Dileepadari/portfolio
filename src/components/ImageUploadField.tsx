@@ -15,7 +15,7 @@ interface ImageUploadFieldProps {
 }
 
 /**
- * A single field for "give this a URL, or upload a file to get one" —
+ * A single field for "give this a URL, or upload a file to get one" -
  * uploads go through the admin Edge Function (which holds the Oracle
  * storage secret), never directly from the browser.
  */

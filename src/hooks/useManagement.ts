@@ -33,7 +33,7 @@ export interface TaskRequest {
 }
 
 // contact_messages: anyone can submit (public RLS insert policy), but only
-// admins can read/update/delete — that part goes through the admin gateway.
+// admins can read/update/delete - that part goes through the admin gateway.
 export function useContactMessages() {
   const [data, setData] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);

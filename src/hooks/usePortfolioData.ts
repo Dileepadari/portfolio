@@ -326,7 +326,7 @@ export function useAchievements() {
 
 /**
  * Generic read (public, anon key) + write (admin gateway) hook for a simple
- * "list of rows ordered by a column" table — the shape every one of
+ * "list of rows ordered by a column" table - the shape every one of
  * education/experience/skills/achievements/courses/languages shares. New
  * tables should use this instead of hand-copying the fetch/create/update/
  * delete boilerplate above.
@@ -613,7 +613,7 @@ export const addBlogComment = async (commentData: Omit<BlogComment, 'id' | 'crea
 };
 
 /** Deletes a comment the caller owns (RLS checks the x-visitor-id header
- *  matches the comment's visitor_id) — will fail for comments belonging to
+ *  matches the comment's visitor_id) - will fail for comments belonging to
  *  someone else. */
 export const deleteBlogComment = async (commentId: string) => {
   const { error } = await supabase
@@ -630,7 +630,7 @@ export const adminDeleteBlogComment = async (commentId: string) => {
   await adminApi.remove('blog_comments', commentId);
 };
 
-// Site-wide settings (footer text, auth page copy, admin quick links) — a
+// Site-wide settings (footer text, auth page copy, admin quick links) - a
 // small public-readable key/value table, replacing what used to be hardcoded
 // strings scattered across Layout.tsx, Auth.tsx, and Navigation.tsx.
 export interface AdminQuickLink {

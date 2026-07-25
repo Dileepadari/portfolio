@@ -60,7 +60,7 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated Background Elements — same accent color as the rest of the
+      {/* Animated Background Elements - same accent color as the rest of the
           site (tracks whichever color palette is active) instead of a fixed
           hue, so this page doesn't visually break away from the theme. */}
       <div className="absolute inset-0">

@@ -10,7 +10,7 @@
 
 -- ============================================================================
 -- 1. admin_users: multiple admin accounts, hashed passwords. No RLS policies
---    at all — only the service-role key (used inside the Edge Function)
+--    at all - only the service-role key (used inside the Edge Function)
 --    can ever touch this table.
 -- ============================================================================
 
@@ -26,7 +26,7 @@ create table public.admin_users (
 alter table public.admin_users enable row level security;
 
 -- ============================================================================
--- 2. Drop the supabase.auth signup bootstrap trigger — obsolete now that
+-- 2. Drop the supabase.auth signup bootstrap trigger - obsolete now that
 --    Auth.tsx is a login-only form against admin_users, not auth.users.
 -- ============================================================================
 
@@ -35,7 +35,7 @@ drop function if exists public.handle_new_user();
 
 -- ============================================================================
 -- 3. Revoke RLS write access that depended on auth.uid()/is_admin() for the
---    "portfolio content" tables — all writes now go through the Edge
+--    "portfolio content" tables - all writes now go through the Edge
 --    Function's service-role client, which bypasses RLS regardless of these
 --    policies. Public SELECT policies are untouched.
 -- ============================================================================
@@ -47,12 +47,12 @@ drop policy if exists "Projects editable by admin" on public.projects;
 drop policy if exists "Skills editable by admin" on public.skills;
 drop policy if exists "Achievements editable by admin" on public.achievements;
 
--- courses was actually gated by "any authenticated user", not admin — fix.
+-- courses was actually gated by "any authenticated user", not admin - fix.
 drop policy if exists "Allow authenticated users to modify courses" on public.courses;
 
 -- ============================================================================
 -- 4. blog_posts: drafts are no longer exposed to the anon role at all (the
---    is_admin(auth.uid()) clause is now meaningless — nobody authenticates
+--    is_admin(auth.uid()) clause is now meaningless - nobody authenticates
 --    via supabase.auth). The admin editor's draft list now reads through
 --    the Edge Function's service-role client instead.
 -- ============================================================================
@@ -66,7 +66,7 @@ create policy "Published blog posts viewable by everyone"
 -- ============================================================================
 -- 5. tasks / schedules: this is a private task/schedule manager (Schedule.tsx
 --    now requires admin login just to view the page, per Stage 1), not
---    public portfolio content. Lock down direct reads too, not just the UI —
+--    public portfolio content. Lock down direct reads too, not just the UI -
 --    all access (including the admin's own) goes through the Edge Function.
 -- ============================================================================
 
@@ -91,7 +91,7 @@ create policy "Anyone can submit a contact message"
   with check (true);
 
 -- ============================================================================
--- 7. is_admin() is now unused by any policy — drop it.
+-- 7. is_admin() is now unused by any policy - drop it.
 -- ============================================================================
 
 drop function if exists public.is_admin(uuid);

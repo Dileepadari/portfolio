@@ -4,10 +4,10 @@ Setup, environment configuration, and deployment instructions for maintaining or
 
 ## Prerequisites
 
-- Node.js **>= 20.19** (the repo pins this in `package.json#engines` — `@tailwindcss/oxide`'s native binary requires it). Use [nvm](https://github.com/nvm-sh/nvm): `nvm install 22 && nvm use 22`.
+- Node.js **>= 20.19** (the repo pins this in `package.json#engines` - `@tailwindcss/oxide`'s native binary requires it). Use [nvm](https://github.com/nvm-sh/nvm): `nvm install 22 && nvm use 22`.
 - A [Supabase](https://supabase.com) project (Postgres + Edge Functions).
 - The [Supabase CLI](https://supabase.com/docs/guides/cli) (`npx supabase ...` works without a global install).
-- An Oracle Cloud (or any HTTP-reachable) object storage endpoint if you want image uploads to work — see [Oracle storage contract](#oracle-storage-contract) below. Not required to run the site; uploads will just fail until configured.
+- An Oracle Cloud (or any HTTP-reachable) object storage endpoint if you want image uploads to work - see [Oracle storage contract](#oracle-storage-contract) below. Not required to run the site; uploads will just fail until configured.
 
 ## 1. Clone and install
 
@@ -31,7 +31,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY="<your anon/publishable key>"
 VITE_SUPABASE_PROJECT_ID="<your-project-ref>"
 ```
 
-These are the only client-side secrets — everything else (service-role key, JWT signing secret, Oracle upload key) lives server-side in the Edge Function and is never sent to the browser.
+These are the only client-side secrets - everything else (service-role key, JWT signing secret, Oracle upload key) lives server-side in the Edge Function and is never sent to the browser.
 
 ## 3. Link and migrate the database
 
@@ -61,12 +61,12 @@ Every authenticated write, every admin-only read, and the image upload proxy go 
 npx supabase functions deploy admin
 ```
 
-Set its secrets (never pass these as CLI arguments — use `secrets set` so they're not written to shell history):
+Set its secrets (never pass these as CLI arguments - use `secrets set` so they're not written to shell history):
 
 ```sh
 npx supabase secrets set ADMIN_JWT_SECRET="$(openssl rand -hex 32)"
 
-# Oracle object storage — see the contract below. Skip these if you don't
+# Oracle object storage - see the contract below. Skip these if you don't
 # need image uploads yet; the rest of the site works without them.
 npx supabase secrets set ORACLE_UPLOAD_BASE_URL="https://your-upload-host"
 npx supabase secrets set ORACLE_PUBLIC_BASE_URL="https://your-public-read-host"
@@ -74,13 +74,13 @@ npx supabase secrets set ORACLE_UPLOAD_API_KEY="your-upload-api-key"
 npx supabase secrets set ORACLE_APP_NAME="portfolio"
 ```
 
-`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically into every Edge Function by Supabase — don't set those yourself.
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically into every Edge Function by Supabase - don't set those yourself.
 
 `supabase/config.toml` sets `verify_jwt = false` for this function deliberately: it implements its own JWT scheme (checked against `admin_users`), so Supabase's platform-level "must have a Supabase-issued JWT" gate has to be off, or no request would ever reach the function's own auth check.
 
 ## 5. Create your first admin user
 
-Multiple admins are supported — this can be run again later for additional accounts.
+Multiple admins are supported - this can be run again later for additional accounts.
 
 ```sh
 SUPABASE_URL="https://<your-project-ref>.supabase.co" \
@@ -90,7 +90,7 @@ ADMIN_BOOTSTRAP_PASSWORD="a strong password, 8+ chars" \
 npm run create-admin
 ```
 
-Env vars only, deliberately — the script refuses to read a username/password from `argv` so a password never ends up echoed in a shell history or process listing. Sign in at `/auth`.
+Env vars only, deliberately - the script refuses to read a username/password from `argv` so a password never ends up echoed in a shell history or process listing. Sign in at `/auth`.
 
 ## 6. Run it locally
 
@@ -111,7 +111,7 @@ The Edge Function proxies uploads so the upload API key never reaches the browse
 - **Upload**: `POST {ORACLE_UPLOAD_BASE_URL}/upload` with headers `x-upload-key`, `x-file-type` (`images`|`documents`), `x-app-name`, `x-file-name`, and the raw file bytes as the body. Expected response: `{ success: true, url: "..." }`.
 - **Public read**: the Edge Function builds the public URL itself from the known convention `{ORACLE_PUBLIC_BASE_URL}/{fileType}/{ORACLE_APP_NAME}/{fileName}` rather than trusting the upload response's `url` field.
 
-Any HTTP storage service that implements the same contract works as a drop-in replacement — swap the three `ORACLE_*` secrets.
+Any HTTP storage service that implements the same contract works as a drop-in replacement - swap the three `ORACLE_*` secrets.
 
 ## Deployment
 
@@ -121,4 +121,4 @@ The frontend is a static Vite build with no server-side rendering, so it deploys
 npm run build   # outputs to dist/
 ```
 
-Point Vercel, Netlify, Cloudflare Pages, or similar at this repo with build command `npm run build` and output directory `dist`, and set the three `VITE_*` environment variables from step 2 in that platform's dashboard. The Supabase Edge Function and database migrations are deployed independently via the Supabase CLI steps above — they aren't part of the static build.
+Point Vercel, Netlify, Cloudflare Pages, or similar at this repo with build command `npm run build` and output directory `dist`, and set the three `VITE_*` environment variables from step 2 in that platform's dashboard. The Supabase Edge Function and database migrations are deployed independently via the Supabase CLI steps above - they aren't part of the static build.

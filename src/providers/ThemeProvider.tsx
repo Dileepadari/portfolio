@@ -12,7 +12,7 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme;
-  /** The actual light/dark in effect right now — resolves "system" via the
+  /** The actual light/dark in effect right now - resolves "system" via the
    *  OS preference and stays up to date if that preference changes. */
   resolvedTheme: ResolvedTheme;
   setTheme: (theme: Theme) => void;

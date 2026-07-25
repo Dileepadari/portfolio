@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Provisions or updates an admin_users row directly via the service-role
 // key. Deliberately a standalone script, not app code or a committed
-// migration — an admin's password hash should never end up in a UI form
+// migration - an admin's password hash should never end up in a UI form
 // visible to the browser bundle, or in git history.
 //
-// Username/password are read from env vars, never CLI args — argv gets
+// Username/password are read from env vars, never CLI args - argv gets
 // echoed back by npm/shells/process listings, env vars set via a file
 // (e.g. ~/.bashrc, sourced with `eval`) don't.
 //

@@ -136,7 +136,7 @@ export function Settings() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Shown in the "Admin" menu in the site header — for links to other tools you use (e.g. WorkOS).
+              Shown in the "Admin" menu in the site header - for links to other tools you use (e.g. WorkOS).
             </p>
             {quickLinks.map((link, index) => (
               <div key={index} className="flex gap-2">

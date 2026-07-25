@@ -1,9 +1,9 @@
--- Stage 4: make the remaining hardcoded content editable — the "About Me"
+-- Stage 4: make the remaining hardcoded content editable - the "About Me"
 -- highlight cards, the Languages list, and various site-wide strings
 -- (footer, auth page copy, admin quick-links) that only ever lived in JSX.
 
 -- ============================================================================
--- 1. personal_info.highlights — the 4 "About Me" feature cards were
+-- 1. personal_info.highlights - the 4 "About Me" feature cards were
 --    hardcoded JSX with no admin control at all. Default preserves exactly
 --    what's on the site today so nothing visually changes until edited.
 -- ============================================================================
@@ -24,7 +24,7 @@ update public.personal_info set highlights = '[
 where highlights = '[]'::jsonb;
 
 -- ============================================================================
--- 2. languages — was a hardcoded array in Profile.tsx (Telugu/English/Hindi),
+-- 2. languages - was a hardcoded array in Profile.tsx (Telugu/English/Hindi),
 --    now a real table with the same CRUD shape as skills/achievements.
 -- ============================================================================
 
@@ -43,7 +43,7 @@ alter table public.languages enable row level security;
 create policy "Languages viewable by everyone"
   on public.languages for select
   using (true);
--- No write policy — all writes go through the admin gateway (service role).
+-- No write policy - all writes go through the admin gateway (service role).
 
 create trigger update_languages_updated_at
   before update on public.languages
@@ -55,7 +55,7 @@ insert into public.languages (name, level, proficiency, order_index) values
   ('Hindi', 'Conversational', 75, 3);
 
 -- ============================================================================
--- 3. site_settings — a small key/value table for the strings that were
+-- 3. site_settings - a small key/value table for the strings that were
 --    hardcoded across Layout.tsx (footer), Auth.tsx (brand copy), and
 --    Navigation.tsx (the admin quick-links dropdown list).
 -- ============================================================================
@@ -71,7 +71,7 @@ alter table public.site_settings enable row level security;
 create policy "Site settings viewable by everyone"
   on public.site_settings for select
   using (true);
--- No write policy — all writes go through the admin gateway (service role).
+-- No write policy - all writes go through the admin gateway (service role).
 
 create trigger update_site_settings_updated_at
   before update on public.site_settings

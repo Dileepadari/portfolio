@@ -10,7 +10,7 @@ import {
 
 /**
  * Admin-only auth against our own `admin_users` table (see
- * supabase/functions/admin), not supabase.auth — there is no visitor-facing
+ * supabase/functions/admin), not supabase.auth - there is no visitor-facing
  * sign-up; admins are provisioned via `npm run create-admin`.
  */
 export function useAuth() {

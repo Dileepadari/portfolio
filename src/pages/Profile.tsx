@@ -46,7 +46,7 @@ import { ImageUploadField } from "@/components/ImageUploadField";
 import profileAvatar from "@/assets/dileepadari.png";
 import portfolio from "@/assets/portfolio.pdf";
 
-// Icon choices available for "About Me" highlight cards — a fixed set
+// Icon choices available for "About Me" highlight cards - a fixed set
 // (stored as a string key in personal_info.highlights) rather than a full
 // icon-picker, kept small and already-imported to avoid extra bundle weight.
 const HIGHLIGHT_ICON_MAP: Record<string, typeof Layers> = {

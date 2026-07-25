@@ -56,7 +56,7 @@ create policy "Visitors can unlike their own likes"
 
 -- ============================================================================
 -- 4. blog_comments: add the same visitor_id concept so anonymous commenters
---    can delete their own comments (previously impossible — ownership was
+--    can delete their own comments (previously impossible - ownership was
 --    keyed on auth.uid() = user_id, which anonymous commenters never have).
 -- ============================================================================
 
@@ -66,7 +66,7 @@ drop policy if exists "Users can delete their own comments" on public.blog_comme
 drop policy if exists "Users can update their own comments" on public.blog_comments;
 -- (No public UPDATE policy: nothing in the app lets a visitor edit a posted
 -- comment today, so there's no reason to open that surface up. Admin
--- moderation — approving/deleting any comment regardless of ownership — is
+-- moderation - approving/deleting any comment regardless of ownership - is
 -- handled by the centralized admin-data Edge Function introduced in Stage 2,
 -- which uses the service-role key and bypasses RLS entirely.)
 

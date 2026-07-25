@@ -1,4 +1,4 @@
--- Stage 5: replace the "task request" contact-form hack — structured fields
+-- Stage 5: replace the "task request" contact-form hack - structured fields
 -- were serialized into a contact_messages.message text blob (prefixed with
 -- "Task: ", "Priority: ", etc.) and re-parsed with brittle string matching.
 -- Real columns now, same as everything else.
@@ -26,7 +26,7 @@ alter table public.task_requests enable row level security;
 create policy "Anyone can submit a task request"
   on public.task_requests for insert
   with check (true);
--- No select/update/delete policy — admin-only, via the admin gateway
+-- No select/update/delete policy - admin-only, via the admin gateway
 -- (service role), same pattern as contact_messages.
 
 create trigger update_task_requests_updated_at

@@ -163,7 +163,7 @@ export function BlogPostView() {
   const handleDeleteComment = async (commentId: string) => {
     try {
       // Admins can moderate any comment; visitors can only delete their own
-      // (enforced server-side either way — this just picks the right path).
+      // (enforced server-side either way - this just picks the right path).
       if (isAdmin) {
         await adminDeleteBlogComment(commentId);
       } else {

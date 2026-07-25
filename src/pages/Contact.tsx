@@ -226,7 +226,7 @@ export default function Contact() {
   };
 
   // task_requests.status is stored as pending/accepted/declined (DB check
-  // constraint) — "accepted" means it was taken and is now tracked in the
+  // constraint) - "accepted" means it was taken and is now tracked in the
   // separate WorkOS app, not that it became an internal Task here.
   const getTaskRequestStatusLabel = (status: string) => {
     switch (status) {
@@ -886,7 +886,7 @@ export default function Contact() {
           </div>
         </div>
 
-        {/* Detail View Dialog — full, un-truncated content for a message or task request */}
+        {/* Detail View Dialog - full, un-truncated content for a message or task request */}
         <Dialog open={viewingItem !== null} onOpenChange={(open) => { if (!open) setViewingItem(null); }}>
           <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
             {viewingItem?.kind === 'message' && (
