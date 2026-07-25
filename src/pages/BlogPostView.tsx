@@ -33,24 +33,56 @@ import {
   useBlogComments,
   useBlogLike,
   addBlogComment,
-  deleteBlogComment
+  deleteBlogComment,
+  adminDeleteBlogComment
 } from "@/hooks/usePortfolioData";
 import { useAuth } from "@/hooks/useAuth";
-import type { User } from '@supabase/supabase-js';
-import 'highlight.js/styles/github-dark.css'; // You can change this theme
+import { useAdmin } from "@/hooks/useAdmin";
+import { getVisitorId } from "@/lib/visitor";
+import hljsLightThemeUrl from 'highlight.js/styles/github.css?url';
+import hljsDarkThemeUrl from 'highlight.js/styles/github-dark.css?url';
+
+const HLJS_THEME_LINK_ID = 'hljs-theme-stylesheet';
+
+// The two highlight.js themes both define plain `.hljs` selectors, so they can't
+// coexist as static imports (whichever loads last would just win globally).
+// Swap the <link> based on the site's actual light/dark class instead, so code
+// blocks stay legible in both themes rather than only in dark mode.
+function useHighlightTheme() {
+  useEffect(() => {
+    const applyThemeLink = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      let link = document.getElementById(HLJS_THEME_LINK_ID) as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement('link');
+        link.id = HLJS_THEME_LINK_ID;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+      }
+      link.href = isDark ? hljsDarkThemeUrl : hljsLightThemeUrl;
+    };
+
+    applyThemeLink();
+    const observer = new MutationObserver(applyThemeLink);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+}
 
 export function BlogPostView() {
   const { slug } = useParams<{ slug: string }>();
   const { data: blogPosts, loading: postsLoading } = useBlogPosts();
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
+  useHighlightTheme();
   const { toast } = useToast();
   
   const [post, setPost] = useState<BlogPost | null>(null);
   const [newComment, setNewComment] = useState('');
   const [replyToComment, setReplyToComment] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
-  const [authorName, setAuthorName] = useState(user?.user_metadata?.full_name || '');
-  const [authorEmail, setAuthorEmail] = useState(user?.email || '');
+  const [authorName, setAuthorName] = useState(user?.username || '');
+  const [authorEmail, setAuthorEmail] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
 
   const { data: comments, loading: commentsLoading, refetch: refetchComments } = useBlogComments(post?.id || '');
@@ -79,7 +111,7 @@ export function BlogPostView() {
         author_name: authorName.trim(),
         author_email: authorEmail.trim() || undefined,
         content: newComment.trim(),
-        user_id: user?.id,
+        visitor_id: getVisitorId(),
         is_approved: true,
         parent_comment_id: undefined
       });
@@ -109,7 +141,7 @@ export function BlogPostView() {
         author_name: authorName.trim(),
         author_email: authorEmail.trim() || undefined,
         content: replyContent.trim(),
-        user_id: user?.id,
+        visitor_id: getVisitorId(),
         is_approved: true
       });
 
@@ -130,7 +162,13 @@ export function BlogPostView() {
 
   const handleDeleteComment = async (commentId: string) => {
     try {
-      await deleteBlogComment(commentId);
+      // Admins can moderate any comment; visitors can only delete their own
+      // (enforced server-side either way — this just picks the right path).
+      if (isAdmin) {
+        await adminDeleteBlogComment(commentId);
+      } else {
+        await deleteBlogComment(commentId);
+      }
       toast({ title: "Success", description: "Comment deleted successfully!" });
       refetchComments();
     } catch {
@@ -195,7 +233,7 @@ export function BlogPostView() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-4xl mx-auto p-4 sm:p-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 fade-in">
         {/* Navigation */}
         <div className="mb-6">
           <Link to="/blog">
@@ -290,7 +328,7 @@ export function BlogPostView() {
           )}
 
           {/* Article Content */}
-          <div className="prose prose-lg max-w-none dark:prose-invert">
+          <div>
             <div className="markdown-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -380,7 +418,7 @@ export function BlogPostView() {
                 <CommentCard
                   key={comment.id}
                   comment={comment}
-                  currentUser={user}
+                  isAdmin={isAdmin}
                   onReply={setReplyToComment}
                   onDelete={handleDeleteComment}
                   replyToComment={replyToComment}
@@ -402,7 +440,7 @@ export function BlogPostView() {
 
 interface CommentCardProps {
   comment: BlogComment;
-  currentUser: User | null;
+  isAdmin: boolean;
   onReply: (commentId: string | null) => void;
   onDelete: (commentId: string) => void;
   replyToComment: string | null;
@@ -414,10 +452,10 @@ interface CommentCardProps {
   authorEmail: string;
 }
 
-function CommentCard({ 
-  comment, 
-  currentUser, 
-  onReply, 
+function CommentCard({
+  comment,
+  isAdmin,
+  onReply,
   onDelete, 
   replyToComment, 
   replyContent, 
@@ -427,7 +465,7 @@ function CommentCard({
   authorName,
   authorEmail
 }: CommentCardProps) {
-  const canDelete = currentUser && (currentUser.id === comment.user_id);
+  const canDelete = isAdmin || comment.visitor_id === getVisitorId();
   const showReplyForm = replyToComment === comment.id;
 
   return (
@@ -531,7 +569,7 @@ function CommentCard({
                   <CommentCard
                     key={reply.id}
                     comment={reply}
-                    currentUser={currentUser}
+                    isAdmin={isAdmin}
                     onReply={onReply}
                     onDelete={onDelete}
                     replyToComment={replyToComment}

@@ -1,76 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-// Color palette options
-const COLOR_PALETTES = [
-  {
-    name: "Common",
-  light: { primary: "#2563eb", accent: "#22c55e", background: "#fdfdfdff", border: "#d1d5db" },
-  dark: { primary: "#2563eb", accent: "#22c55e", background: "#1a1a1bff", border: "#4b5563" },
-  },
-  {
-    name: "Monokai",
-  light: { primary: "#f92672", accent: "#a6e22e", background: "#fffaf3", border: "#d1d5db" },
-  dark: { primary: "#f92672", accent: "#a6e22e", background: "#18181b", border: "#4b5563" },
-  },
-  {
-    name: "Original (GitHub)",
-  light: { primary: "#24292f", accent: "#e36209", background: "#f8f9fb", border: "#d1d5db" },
-  dark: { primary: "#cfd9e6ff", accent: "#e36209", background: "#0d1117", border: "#4b5563" },
-  },
-  {
-    name: "Material Design",
-  light: { primary: "#6200ea", accent: "#03dac6", background: "#f7f7fa", border: "#d1d5db" },
-  dark: { primary: "#bb86fc", accent: "#03dac6", background: "#0a0a0a", border: "#4b5563" },
-  },
-  {
-    name: "Original",
-  light: { primary: "#3b82f6", accent: "#f59e42", background: "#f7f7fa", border: "#d1d5db" },
-  dark: { primary: "#2563eb", accent: "#f59e42", background: "#18181b", border: "#4b5563" },
-  }
-];
-
-// Helper: Convert hex to HSL string for Tailwind
-function hexToHSL(hex: string) {
-  hex = hex.replace('#', '');
-  const r = parseInt(hex.substring(0,2), 16) / 255;
-  const g = parseInt(hex.substring(2,4), 16) / 255;
-  const b = parseInt(hex.substring(4,6), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-  if(max !== min){
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch(max){
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-    h /= 6;
-  }
-  h = Math.round(h * 360);
-  s = Math.round(s * 100);
-  l = Math.round(l * 100);
-  return `${h} ${s}% ${l}%`;
-}
-
-function applyPalette(palette: { light: { primary: string; accent: string; background: string; border?: string }, dark: { primary: string; accent: string; background: string; border?: string } }) {
-  document.documentElement.style.setProperty('--primary', hexToHSL(palette.light.primary));
-  document.documentElement.style.setProperty('--accent', hexToHSL(palette.light.accent));
-  document.documentElement.style.setProperty('--background', hexToHSL(palette.light.background));
-  document.documentElement.style.setProperty('--border', hexToHSL(palette.light.border || 'transparent'));
-  
-  const darkRoot = document.querySelector('.dark') as HTMLElement | null;
-  if (darkRoot) {
-    darkRoot.style.setProperty('--primary', hexToHSL(palette.dark.primary));
-    darkRoot.style.setProperty('--accent', hexToHSL(palette.dark.accent));
-    darkRoot.style.setProperty('--background', hexToHSL(palette.dark.background));
-    darkRoot.style.setProperty('--border', hexToHSL(palette.dark.border || 'transparent'));
-  }
-}
-
+import { COLOR_PALETTES, applyColorPalette } from "@/lib/colorPalettes";
+import { useTheme } from "@/providers/ThemeProvider";
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 function ColorPaletteSelector() {
+  const { resolvedTheme } = useTheme();
   const [selected, setSelected] = useState(() => {
     const saved = localStorage.getItem('color-palette');
     return saved ? parseInt(saved) : 0;
@@ -78,30 +13,21 @@ function ColorPaletteSelector() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    applyPalette(COLOR_PALETTES[selected]);
+    applyColorPalette(COLOR_PALETTES[selected], resolvedTheme);
     localStorage.setItem('color-palette', String(selected));
-  }, [selected]);
-
-  // Also update palette when theme changes
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      applyPalette(COLOR_PALETTES[selected]);
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, [selected]);
+  }, [selected, resolvedTheme]);
 
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <button
           className={`w-7 h-7 rounded-full border-2 border-border flex items-center justify-center focus:outline-none transition-all duration-200 ml-2 ${open ? 'ring-2 ring-primary' : ''}`}
-          style={{ background: COLOR_PALETTES[selected][document.documentElement.classList.contains('dark') ? 'dark' : 'light'].primary }}
+          style={{ background: COLOR_PALETTES[selected][resolvedTheme].primary }}
           title="Change color palette"
           onClick={() => setOpen(true)}
           aria-label="Change color palette"
         >
-          <span className="w-4 h-4 rounded-full" style={{ background: COLOR_PALETTES[selected][document.documentElement.classList.contains('dark') ? 'dark' : 'light'].accent }} />
+          <span className="w-4 h-4 rounded-full" style={{ background: COLOR_PALETTES[selected][resolvedTheme].accent }} />
         </button>
         <DialogContent>
           <DialogTitle className="text-lg font-semibold mb-2">Select Color Palette</DialogTitle>
@@ -111,12 +37,12 @@ function ColorPaletteSelector() {
                 <button
                   key={palette.name}
                   className={`w-10 h-10 rounded-full border-2 border-border flex items-center justify-center focus:outline-none transition-all duration-200 ${selected === idx ? 'ring-2 ring-primary' : ''}`}
-                  style={{ background: palette[document.documentElement.classList.contains('dark') ? 'dark' : 'light'].primary }}
+                  style={{ background: palette[resolvedTheme].primary }}
                   title={palette.name}
                   onClick={() => { setSelected(idx); setOpen(false); }}
                   aria-label={palette.name}
                 >
-                  <span className="w-5 h-5 rounded-full" style={{ background: palette[document.documentElement.classList.contains('dark') ? 'dark' : 'light'].accent }} />
+                  <span className="w-5 h-5 rounded-full" style={{ background: palette[resolvedTheme].accent }} />
                 </button>
               ))}
             </div>
@@ -134,12 +60,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Github,
   User,
   BookOpen,
-  Calendar,
   LogOut,
   LogIn,
   Settings,
@@ -151,6 +76,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useSiteSettings } from "@/hooks/usePortfolioData";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Import logo images
@@ -173,25 +99,32 @@ export function Navigation() {
     setIsMobileMenuOpen(false);
   };
 
-  const getUserInitials = (email: string) => {
-    return email
-      .split('@')[0]
-      .split('.')
+  const getUserInitials = (username: string) => {
+    return username
+      .split(/[.\s_-]/)
+      .filter(Boolean)
       .map(part => part.charAt(0).toUpperCase())
       .join('')
-      .slice(0, 2);
+      .slice(0, 2) || username.slice(0, 2).toUpperCase();
   };
 
   const navItems = [
     { path: "/", label: "Overview", icon: User },
     { path: "/projects", label: "Projects", icon: Github },
     { path: "/blog", label: "Blog", icon: BookOpen },
-    // { path: "/timeline", label: "Timeline", icon: Clock },
     { path: "/contact", label: "Contact", icon: UserCircle },
   ];
 
+  const { settings } = useSiteSettings();
+
   const adminItems = [
-    { path: "https://workos.dileepadari.dev", label: "WorkOs", icon: Rocket },
+    { type: 'internal' as const, path: '/settings', label: 'Site Settings', icon: Settings },
+    ...(settings.admin_quick_links || []).map((link) => ({
+      type: 'external' as const,
+      path: link.url,
+      label: link.label,
+      icon: Rocket,
+    })),
   ];
 
   const isAdminPath = (path: string) => {
@@ -278,26 +211,25 @@ export function Navigation() {
                   <DropdownMenuContent align="start" className="w-48 animate-in slide-in-from-top-2 duration-300">
                     {adminItems.map((item) => {
                       const Icon = item.icon;
-                      const isActive = location.pathname === item.path;
+                      const itemClassName = "group flex items-center w-full px-3 py-2 rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground";
+                      const content = (
+                        <>
+                          <Icon className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-105" />
+                          <span className="transition-transform duration-200 group-hover:translate-x-1">
+                            {item.label}
+                          </span>
+                        </>
+                      );
 
                       return (
                         <DropdownMenuItem key={item.path} asChild>
-                          <Link
-                            to={item.path}
-                            className={`group flex items-center w-full px-3 py-2 rounded-md transition-all duration-200 ${isActive
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "hover:bg-accent hover:text-accent-foreground"
-                              }`}
-                          >
-                            <Icon className={`w-4 h-4 mr-2 transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-105"
-                              }`} />
-                            <span className="transition-transform duration-200 group-hover:translate-x-1">
-                              {item.label}
-                            </span>
-                            {isActive && (
-                              <span className="ml-auto w-2 h-2 bg-primary-foreground rounded-full animate-pulse" />
-                            )}
-                          </Link>
+                          {item.type === 'internal' ? (
+                            <Link to={item.path} className={itemClassName}>{content}</Link>
+                          ) : (
+                            <a href={item.path} target="_blank" rel="noopener noreferrer" className={itemClassName}>
+                              {content}
+                            </a>
+                          )}
                         </DropdownMenuItem>
                       );
                     })}
@@ -328,9 +260,8 @@ export function Navigation() {
                         className="relative h-10 w-10 rounded-full p-0 hover:bg-accent transition-colors duration-200"
                       >
                         <Avatar className="h-9 w-9 border-2 border-transparent hover:border-primary/20 transition-colors duration-200">
-                          <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
                           <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                            {getUserInitials(user.email || '')}
+                            {getUserInitials(user.username)}
                           </AvatarFallback>
                         </Avatar>
                         {isAdmin && (
@@ -343,13 +274,12 @@ export function Navigation() {
                     <DropdownMenuContent align="end" className="w-56 animate-in slide-in-from-top-2 duration-300">
                       <div className="flex items-center justify-start gap-2 p-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
                           <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                            {getUserInitials(user.email || '')}
+                            {getUserInitials(user.username)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{user.email}</p>
+                          <p className="text-sm font-medium leading-none">{user.username}</p>
                           {isAdmin && (
                             <p className="text-xs text-primary font-medium">Administrator</p>
                           )}
@@ -372,10 +302,11 @@ export function Navigation() {
                   <Button variant="ghost" size="sm" asChild>
                     <Link
                       to="/auth"
-                      className="group inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-300 hover:bg-green-500/10 hover:text-green-600 border border-transparent hover:border-green-200 rounded-lg"
+                      className="group relative inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 ease-in-out rounded-lg"
                     >
                       <LogIn className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110 group-hover:translate-x-1" />
                       Sign In
+                      <span className="absolute bottom-0 left-1/2 h-0.5 w-0 -translate-x-1/2 bg-primary transition-all duration-300 ease-out group-hover:w-1/2" />
                     </Link>
                   </Button>
                 )}
@@ -417,14 +348,13 @@ export function Navigation() {
                 <div className="px-4 py-3 mb-2 bg-accent/20 rounded-lg mx-2 overflow-hidden">
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar className="h-10 w-10 border-2 border-primary/20 flex-shrink-0">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
                       <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                        {getUserInitials(user.email || '')}
+                        {getUserInitials(user.username)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <div className="flex items-center gap-2 min-w-0">
-                        <p className="text-sm font-medium leading-none truncate flex-1 min-w-0">{user.email}</p>
+                        <p className="text-sm font-medium leading-none truncate flex-1 min-w-0">{user.username}</p>
                         {isAdmin && (
                           <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full flex-shrink-0">
                             Admin
@@ -440,7 +370,7 @@ export function Navigation() {
                       onClick={closeMobileMenu}
                       asChild
                     >
-                      <Link to="/profile">
+                      <Link to="/">
                         <Settings className="w-4 h-4" />
                       </Link>
                     </Button>
@@ -498,25 +428,29 @@ export function Navigation() {
                   </div>
                   {adminItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={closeMobileMenu}
-                        className={`group flex items-center px-6 py-3 text-sm font-medium transition-all duration-300 ease-in-out rounded-lg ${isActive
-                          ? "text-primary bg-primary/10 shadow-sm border-l-4 border-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:border-l-4 hover:border-accent"
-                          }`}
-                      >
-                        <Icon className={`w-5 h-5 mr-3 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-105"
-                          }`} />
+                    const itemClassName = "group flex items-center px-6 py-3 text-sm font-medium transition-all duration-300 ease-in-out rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:border-l-4 hover:border-accent";
+                    const content = (
+                      <>
+                        <Icon className="w-5 h-5 mr-3 transition-transform duration-300 group-hover:scale-105" />
                         {item.label}
-                        {isActive && (
-                          <span className="ml-auto w-2 h-2 bg-primary rounded-full animate-pulse" />
-                        )}
+                      </>
+                    );
+
+                    return item.type === 'internal' ? (
+                      <Link key={item.path} to={item.path} onClick={closeMobileMenu} className={itemClassName}>
+                        {content}
                       </Link>
+                    ) : (
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={closeMobileMenu}
+                        className={itemClassName}
+                      >
+                        {content}
+                      </a>
                     );
                   })}
                 </div>

@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       achievements: {
@@ -46,6 +71,122 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          last_login_at: string | null
+          password_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_login_at?: string | null
+          password_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_login_at?: string | null
+          password_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      blog_comments: {
+        Row: {
+          author_email: string | null
+          author_name: string
+          blog_post_id: string
+          content: string
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          parent_comment_id: string | null
+          updated_at: string
+          user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          author_email?: string | null
+          author_name: string
+          blog_post_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          author_email?: string | null
+          author_name?: string
+          blog_post_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "blog_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_likes: {
+        Row: {
+          blog_post_id: string
+          created_at: string
+          id: string
+          user_id: string | null
+          visitor_id: string
+        }
+        Insert: {
+          blog_post_id: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          visitor_id: string
+        }
+        Update: {
+          blog_post_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_likes_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blog_posts: {
         Row: {
@@ -94,148 +235,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      blog_comments: {
-        Row: {
-          author_email: string | null
-          author_name: string
-          blog_post_id: string
-          content: string
-          created_at: string
-          id: string
-          is_approved: boolean | null
-          parent_comment_id: string | null
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          author_email?: string | null
-          author_name: string
-          blog_post_id: string
-          content: string
-          created_at?: string
-          id?: string
-          is_approved?: boolean | null
-          parent_comment_id?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          author_email?: string | null
-          author_name?: string
-          blog_post_id?: string
-          content?: string
-          created_at?: string
-          id?: string
-          is_approved?: boolean | null
-          parent_comment_id?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blog_comments_blog_post_id_fkey"
-            columns: ["blog_post_id"]
-            isOneToOne: false
-            referencedRelation: "blog_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_comments_parent_comment_id_fkey"
-            columns: ["parent_comment_id"]
-            isOneToOne: false
-            referencedRelation: "blog_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      blog_likes: {
-        Row: {
-          blog_post_id: string
-          created_at: string
-          id: string
-          user_id: string | null
-          user_ip: string | null
-        }
-        Insert: {
-          blog_post_id: string
-          created_at?: string
-          id?: string
-          user_id?: string | null
-          user_ip?: string | null
-        }
-        Update: {
-          blog_post_id?: string
-          created_at?: string
-          id?: string
-          user_id?: string | null
-          user_ip?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blog_likes_blog_post_id_fkey"
-            columns: ["blog_post_id"]
-            isOneToOne: false
-            referencedRelation: "blog_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_likes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      blog_shares: {
-        Row: {
-          blog_post_id: string
-          created_at: string
-          id: string
-          share_type: string
-          user_id: string | null
-          user_ip: string | null
-        }
-        Insert: {
-          blog_post_id: string
-          created_at?: string
-          id?: string
-          share_type: string
-          user_id?: string | null
-          user_ip?: string | null
-        }
-        Update: {
-          blog_post_id?: string
-          created_at?: string
-          id?: string
-          share_type?: string
-          user_id?: string | null
-          user_ip?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blog_shares_blog_post_id_fkey"
-            columns: ["blog_post_id"]
-            isOneToOne: false
-            referencedRelation: "blog_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "blog_shares_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
       }
       contact_messages: {
         Row: {
@@ -390,6 +389,36 @@ export type Database = {
         }
         Relationships: []
       }
+      languages: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          name: string
+          order_index: number
+          proficiency: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level: string
+          name: string
+          order_index?: number
+          proficiency?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          name?: string
+          order_index?: number
+          proficiency?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       personal_info: {
         Row: {
           avatar_url: string | null
@@ -398,6 +427,7 @@ export type Database = {
           created_at: string
           email: string | null
           github: string | null
+          highlights: Json
           id: string
           instagram: string | null
           linkedin: string | null
@@ -418,6 +448,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           github?: string | null
+          highlights?: Json
           id?: string
           instagram?: string | null
           linkedin?: string | null
@@ -438,6 +469,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           github?: string | null
+          highlights?: Json
           id?: string
           instagram?: string | null
           linkedin?: string | null
@@ -488,118 +520,82 @@ export type Database = {
       }
       projects: {
         Row: {
+          category: string | null
           created_at: string
           description: string
-          featured: boolean | null
+          featured: boolean
           forks: number | null
           github_url: string | null
           id: string
           image_url: string | null
           images: string[] | null
-          is_private: boolean | null
+          is_contributed: boolean | null
           language: string | null
           language_color: string | null
           live_url: string | null
-          order_index: number | null
-          repository_url: string | null
+          order_index: number
           stars: number | null
           tags: string[] | null
-          technologies: string[] | null
           title: string
           updated_at: string
-          updated_at_display: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description: string
-          featured?: boolean | null
+          featured?: boolean
           forks?: number | null
           github_url?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
-          is_private?: boolean | null
+          is_contributed?: boolean | null
           language?: string | null
           language_color?: string | null
           live_url?: string | null
-          order_index?: number | null
-          repository_url?: string | null
+          order_index?: number
           stars?: number | null
           tags?: string[] | null
-          technologies?: string[] | null
           title: string
           updated_at?: string
-          updated_at_display?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string
-          featured?: boolean | null
+          featured?: boolean
           forks?: number | null
           github_url?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
-          is_private?: boolean | null
+          is_contributed?: boolean | null
           language?: string | null
           language_color?: string | null
           live_url?: string | null
-          order_index?: number | null
-          repository_url?: string | null
+          order_index?: number
           stars?: number | null
           tags?: string[] | null
-          technologies?: string[] | null
           title?: string
           updated_at?: string
-          updated_at_display?: string | null
         }
         Relationships: []
       }
-      schedules: {
+      site_settings: {
         Row: {
-          attendees: string[] | null
-          created_at: string
-          description: string | null
-          end_time: string
-          id: string
-          is_public: boolean | null
-          location: string | null
-          meeting_url: string | null
-          start_time: string
-          status: string | null
-          title: string
-          type: string | null
+          key: string
           updated_at: string
+          value: Json
         }
         Insert: {
-          attendees?: string[] | null
-          created_at?: string
-          description?: string | null
-          end_time: string
-          id?: string
-          is_public?: boolean | null
-          location?: string | null
-          meeting_url?: string | null
-          start_time: string
-          status?: string | null
-          title: string
-          type?: string | null
+          key: string
           updated_at?: string
+          value: Json
         }
         Update: {
-          attendees?: string[] | null
-          created_at?: string
-          description?: string | null
-          end_time?: string
-          id?: string
-          is_public?: boolean | null
-          location?: string | null
-          meeting_url?: string | null
-          start_time?: string
-          status?: string | null
-          title?: string
-          type?: string | null
+          key?: string
           updated_at?: string
+          value?: Json
         }
         Relationships: []
       }
@@ -636,62 +632,66 @@ export type Database = {
         }
         Relationships: []
       }
-      tasks: {
+      task_requests: {
         Row: {
+          additional_notes: string | null
+          budget: string | null
+          category: string
           created_at: string
           description: string | null
           due_date: string | null
+          due_time: string | null
+          estimated_duration: string | null
           id: string
-          order_index: number | null
-          priority: string | null
-          project_id: string | null
-          status: string | null
+          priority: string
+          requester_email: string
+          requester_name: string
+          status: string
           title: string
           updated_at: string
         }
         Insert: {
+          additional_notes?: string | null
+          budget?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           due_date?: string | null
+          due_time?: string | null
+          estimated_duration?: string | null
           id?: string
-          order_index?: number | null
-          priority?: string | null
-          project_id?: string | null
-          status?: string | null
+          priority?: string
+          requester_email: string
+          requester_name: string
+          status?: string
           title: string
           updated_at?: string
         }
         Update: {
+          additional_notes?: string | null
+          budget?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           due_date?: string | null
+          due_time?: string | null
+          estimated_duration?: string | null
           id?: string
-          order_index?: number | null
-          priority?: string | null
-          project_id?: string | null
-          status?: string | null
+          priority?: string
+          requester_email?: string
+          requester_name?: string
+          status?: string
           title?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "tasks_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      is_admin: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
@@ -820,6 +820,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

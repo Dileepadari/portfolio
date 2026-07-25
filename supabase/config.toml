@@ -1,1 +1,7 @@
-project_id = "bqmsihngmlnbophikpqj"
+project_id = "xaxttdkmnnncepykpavc"
+
+[functions.admin]
+# This function implements its own auth scheme (a self-issued JWT checked
+# against admin_users), so Supabase's platform-level JWT gate must be off —
+# otherwise every request needs a *Supabase*-issued JWT before our code runs.
+verify_jwt = false

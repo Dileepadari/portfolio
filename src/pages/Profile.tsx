@@ -39,11 +39,20 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { usePersonalInfo, useEducation, useExperience, useSkills, useAchievements, useCourses, PersonalInfo, Education, Experience, Skill, Achievement, Course } from "@/hooks/usePortfolioData";
+import { usePersonalInfo, useEducation, useExperience, useSkills, useAchievements, useCourses, useLanguages, PersonalInfo, Education, Experience, Skill, Achievement, Course, Language, PersonalHighlight } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
-import { supabase } from "@/integrations/supabase/client";
+import { adminApi } from "@/lib/adminApi";
+import { ImageUploadField } from "@/components/ImageUploadField";
 import profileAvatar from "@/assets/dileepadari.png";
 import portfolio from "@/assets/portfolio.pdf";
+
+// Icon choices available for "About Me" highlight cards — a fixed set
+// (stored as a string key in personal_info.highlights) rather than a full
+// icon-picker, kept small and already-imported to avoid extra bundle weight.
+const HIGHLIGHT_ICON_MAP: Record<string, typeof Layers> = {
+  Layers, Palette, Monitor, GitBranch, Code, Award, Star, Briefcase, Globe, Trophy,
+};
+const HIGHLIGHT_ICON_OPTIONS = Object.keys(HIGHLIGHT_ICON_MAP);
 
 export function Profile() {
   const { data: personalInfo, refetch: refetchPersonalInfo } = usePersonalInfo();
@@ -52,6 +61,12 @@ export function Profile() {
   const { data: skills, refetch: refetchSkills } = useSkills();
   const { data: achievements, refetch: refetchAchievements } = useAchievements();
   const { data: courses, refetch: refetchCourses } = useCourses();
+  const {
+    data: languages,
+    create: createLanguage,
+    update: updateLanguageEntry,
+    remove: removeLanguage,
+  } = useLanguages();
   const { isAdmin } = useAdmin();
   const { toast } = useToast();
 
@@ -61,6 +76,7 @@ export function Profile() {
   const [editingSkill, setEditingSkill] = useState<string | null>(null);
   const [editingAchievement, setEditingAchievement] = useState<string | null>(null);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [editingLanguage, setEditingLanguage] = useState<string | null>(null);
 
   // Add New states
   const [addingExperience, setAddingExperience] = useState(false);
@@ -68,16 +84,12 @@ export function Profile() {
   const [addingEducation, setAddingEducation] = useState(false);
   const [addingAchievement, setAddingAchievement] = useState(false);
   const [addingCourse, setAddingCourse] = useState(false);
+  const [addingLanguage, setAddingLanguage] = useState(false);
 
   // Update functions
   const updatePersonalInfo = async (updatedInfo: Partial<typeof personalInfo>) => {
     try {
-      const { error } = await supabase
-        .from('personal_info')
-        .update(updatedInfo)
-        .eq('id', personalInfo.id);
-
-      if (error) throw error;
+      await adminApi.update('personal_info', personalInfo.id, updatedInfo);
 
       toast({
         title: "Success",
@@ -97,12 +109,7 @@ export function Profile() {
 
   const updateEducation = async (id: string, updatedEducation: Partial<Education>) => {
     try {
-      const { error } = await supabase
-        .from('education')
-        .update(updatedEducation)
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.update('education', id, updatedEducation);
 
       toast({
         title: "Success",
@@ -122,12 +129,7 @@ export function Profile() {
 
   const updateExperience = async (id: string, updatedExperience: Partial<Experience>) => {
     try {
-      const { error } = await supabase
-        .from('experience')
-        .update(updatedExperience)
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.update('experience', id, updatedExperience);
 
       toast({
         title: "Success",
@@ -147,12 +149,7 @@ export function Profile() {
 
   const updateSkill = async (id: string, updatedSkill: Partial<Skill>) => {
     try {
-      const { error } = await supabase
-        .from('skills')
-        .update(updatedSkill)
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.update('skills', id, updatedSkill);
 
       toast({
         title: "Success",
@@ -172,12 +169,7 @@ export function Profile() {
 
   const updateAchievement = async (id: string, updatedAchievement: Partial<Achievement>) => {
     try {
-      const { error } = await supabase
-        .from('achievements')
-        .update(updatedAchievement)
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.update('achievements', id, updatedAchievement);
 
       toast({
         title: "Success",
@@ -197,12 +189,7 @@ export function Profile() {
 
   const updateCourse = async (id: string, updatedCourse: Partial<Course>) => {
     try {
-      const { error } = await supabase
-        .from('courses')
-        .update(updatedCourse)
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.update('courses', id, updatedCourse);
 
       toast({
         title: "Success",
@@ -223,11 +210,7 @@ export function Profile() {
   // Add functions
   const addExperience = async (newExperience: Omit<Experience, 'id'>) => {
     try {
-      const { error } = await supabase
-        .from('experience')
-        .insert([newExperience]);
-
-      if (error) throw error;
+      await adminApi.insert('experience', newExperience);
 
       toast({
         title: "Success",
@@ -247,11 +230,7 @@ export function Profile() {
 
   const addSkill = async (newSkill: Omit<Skill, 'id'>) => {
     try {
-      const { error } = await supabase
-        .from('skills')
-        .insert([newSkill]);
-
-      if (error) throw error;
+      await adminApi.insert('skills', newSkill);
 
       toast({
         title: "Success",
@@ -271,11 +250,7 @@ export function Profile() {
 
   const addEducation = async (newEducation: Omit<Education, 'id'>) => {
     try {
-      const { error } = await supabase
-        .from('education')
-        .insert([newEducation]);
-
-      if (error) throw error;
+      await adminApi.insert('education', newEducation);
 
       toast({
         title: "Success",
@@ -295,11 +270,7 @@ export function Profile() {
 
   const addAchievement = async (newAchievement: Omit<Achievement, 'id'>) => {
     try {
-      const { error } = await supabase
-        .from('achievements')
-        .insert([newAchievement]);
-
-      if (error) throw error;
+      await adminApi.insert('achievements', newAchievement);
 
       toast({
         title: "Success",
@@ -319,11 +290,7 @@ export function Profile() {
 
   const addCourse = async (newCourse: Omit<Course, 'id'>) => {
     try {
-      const { error } = await supabase
-        .from('courses')
-        .insert([newCourse]);
-
-      if (error) throw error;
+      await adminApi.insert('courses', newCourse);
 
       toast({
         title: "Success",
@@ -344,12 +311,7 @@ export function Profile() {
   // Delete functions
   const deleteExperience = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('experience')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.remove('experience', id);
 
       toast({
         title: "Success",
@@ -368,12 +330,7 @@ export function Profile() {
 
   const deleteSkill = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('skills')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.remove('skills', id);
 
       toast({
         title: "Success",
@@ -392,12 +349,7 @@ export function Profile() {
 
   const deleteEducation = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('education')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.remove('education', id);
 
       toast({
         title: "Success",
@@ -416,12 +368,7 @@ export function Profile() {
 
   const deleteAchievement = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('achievements')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.remove('achievements', id);
 
       toast({
         title: "Success",
@@ -440,12 +387,7 @@ export function Profile() {
 
   const deleteCourse = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await adminApi.remove('courses', id);
 
       toast({
         title: "Success",
@@ -459,6 +401,35 @@ export function Profile() {
         description: "Failed to delete course.",
         variant: "destructive",
       });
+    }
+  };
+
+  const addLanguage = async (newLanguage: Omit<Language, 'id'>) => {
+    try {
+      await createLanguage(newLanguage);
+      toast({ title: "Success", description: "Language added successfully!" });
+      setAddingLanguage(false);
+    } catch {
+      toast({ title: "Error", description: "Failed to add language.", variant: "destructive" });
+    }
+  };
+
+  const updateLanguage = async (id: string, updates: Partial<Language>) => {
+    try {
+      await updateLanguageEntry(id, updates);
+      toast({ title: "Success", description: "Language updated successfully!" });
+      setEditingLanguage(null);
+    } catch {
+      toast({ title: "Error", description: "Failed to update language.", variant: "destructive" });
+    }
+  };
+
+  const deleteLanguage = async (id: string) => {
+    try {
+      await removeLanguage(id);
+      toast({ title: "Success", description: "Language deleted successfully!" });
+    } catch {
+      toast({ title: "Error", description: "Failed to delete language.", variant: "destructive" });
     }
   };
 
@@ -481,7 +452,7 @@ export function Profile() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-7xl mx-auto p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto p-3 sm:p-6 fade-in">
         {/* Header */}
         <Card className="mb-6 sm:mb-4 bg-card border-border">
           <CardContent className="p-4 sm:p-6 lg:p-8">
@@ -614,12 +585,15 @@ export function Profile() {
                     </Link>
                   </Button>
 
-                  <Button className="w-max bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6">
-                    <Link to={portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                  <Button
+                    className="w-max bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6"
+                    asChild
+                  >
+                    <a href={portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center">
                       <Download className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline sm:hidden md:inline">Download Resume</span>
                       <span className="sm:inline md:hidden">Resume</span>
-                    </Link>
+                    </a>
                   </Button>
                 </div>
               </div>
@@ -649,37 +623,18 @@ export function Profile() {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  <div className="flex items-start space-x-3">
-                    <Layers className="w-5 h-5 text-primary mt-1 shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">FullStack Development</h3>
-                      <p className="text-sm">Strong foundation in web development, creating user-friendly and scalable web applications.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-3">
-                    <Palette className="w-5 h-5 text-primary mt-1 shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Design Thinking</h3>
-                      <p className="text-sm">Incorporating design principles and user-centric methodologies to create innovative solutions.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-3">
-                    <Monitor className="w-5 h-5 text-primary mt-1 shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">UI/UX</h3>
-                      <p className="text-sm">Crafting intuitive and visually appealing interfaces, focusing on usability and responsive design.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-3">
-                    <GitBranch className="w-5 h-5 text-primary mt-1 shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Exploring Open Source</h3>
-                      <p className="text-sm">Rebuilding open-source projects and exploring new technologies to enhance development skills.</p>
-                    </div>
-                  </div>
+                  {(personalInfo?.highlights || []).map((highlight, index) => {
+                    const Icon = HIGHLIGHT_ICON_MAP[highlight.icon] || Layers;
+                    return (
+                      <div key={index} className="flex items-start space-x-3">
+                        <Icon className="w-5 h-5 text-primary mt-1 shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-foreground mb-1">{highlight.title}</h3>
+                          <p className="text-sm">{highlight.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <p className="text-center pt-4 border-t border-border">
@@ -1337,33 +1292,74 @@ export function Profile() {
             {/* Languages */}
             <Card className="bg-card border-border">
               <CardHeader className="pt-4 px-4 sm:pt-6 sm:px-6 pb-0 sm:pb-0">
-                <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
-                  <Languages className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Languages
-                </h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg sm:text-xl font-bold flex items-center text-foreground">
+                    <Languages className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Languages
+                  </h2>
+                  {isAdmin && (
+                    <Button variant="outline" size="sm" onClick={() => setAddingLanguage(true)}>
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 <div className="space-y-3">
-                  {[
-                    { name: "Telugu", level: "Native", proficiency: 100 },
-                    { name: "English", level: "Fluent", proficiency: 90 },
-                    { name: "Hindi", level: "Conversational", proficiency: 75 }
-                  ].map((language, index) => (
-                    <div key={language.name} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-foreground text-sm sm:text-base">{language.name}</span>
-                        <span className="text-xs text-muted-foreground">{language.level}</span>
+                  {addingLanguage && (
+                    <LanguageEditForm
+                      language={{ id: '', name: '', level: '', proficiency: 50, order_index: languages.length }}
+                      onSave={(data) => addLanguage(data as Omit<Language, 'id'>)}
+                      onCancel={() => setAddingLanguage(false)}
+                    />
+                  )}
+                  {languages.map((language, index) => (
+                    editingLanguage === language.id ? (
+                      <LanguageEditForm
+                        key={language.id}
+                        language={language}
+                        onSave={(data) => updateLanguage(language.id, data)}
+                        onCancel={() => setEditingLanguage(null)}
+                      />
+                    ) : (
+                      <div key={language.id} className="space-y-2 group">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-foreground text-sm sm:text-base">{language.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{language.level}</span>
+                            {isAdmin && (
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0"
+                                  onClick={() => setEditingLanguage(language.id)}
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 hover:text-destructive"
+                                  onClick={() => deleteLanguage(language.id)}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div
+                            className="bg-primary h-2 rounded-full transition-all duration-1000 ease-out"
+                            style={{
+                              width: `${language.proficiency}%`,
+                              animationDelay: `${index * 200}ms`
+                            }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div
-                          className="bg-primary h-2 rounded-full transition-all duration-1000 ease-out"
-                          style={{
-                            width: `${language.proficiency}%`,
-                            animationDelay: `${index * 200}ms`
-                          }}
-                        ></div>
-                      </div>
-                    </div>
+                    )
                   ))}
                 </div>
               </CardContent>
@@ -1435,6 +1431,8 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
     linkedin: personalInfo?.linkedin || '',
     github: personalInfo?.github || '',
     twitter: personalInfo?.twitter || '',
+    avatar_url: personalInfo?.avatar_url || '',
+    highlights: personalInfo?.highlights || [],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1449,8 +1447,33 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
     }));
   };
 
+  const updateHighlight = (index: number, field: keyof PersonalHighlight, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      highlights: prev.highlights.map((h, i) => (i === index ? { ...h, [field]: value } : h)),
+    }));
+  };
+
+  const addHighlight = () => {
+    setFormData(prev => ({
+      ...prev,
+      highlights: [...prev.highlights, { icon: HIGHLIGHT_ICON_OPTIONS[0], title: '', description: '' }],
+    }));
+  };
+
+  const removeHighlight = (index: number) => {
+    setFormData(prev => ({ ...prev, highlights: prev.highlights.filter((_, i) => i !== index) }));
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <ImageUploadField
+        label="Profile photo"
+        value={formData.avatar_url}
+        onChange={(url) => setFormData(prev => ({ ...prev, avatar_url: url }))}
+        fileType="images"
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">Name</Label>
@@ -1484,6 +1507,47 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
           placeholder="Tell us about yourself..."
           rows={4}
         />
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label>About Me highlight cards</Label>
+          <Button type="button" variant="outline" size="sm" onClick={addHighlight}>
+            <Plus className="w-3 h-3 mr-1" />
+            Add
+          </Button>
+        </div>
+        {formData.highlights.map((highlight, index) => (
+          <div key={index} className="flex gap-2 items-start p-3 bg-muted rounded-lg">
+            <select
+              value={highlight.icon}
+              onChange={(e) => updateHighlight(index, 'icon', e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-2 text-sm shrink-0"
+            >
+              {HIGHLIGHT_ICON_OPTIONS.map((icon) => (
+                <option key={icon} value={icon}>{icon}</option>
+              ))}
+            </select>
+            <div className="flex-1 space-y-2">
+              <Input
+                value={highlight.title}
+                onChange={(e) => updateHighlight(index, 'title', e.target.value)}
+                placeholder="Title"
+                className="text-sm"
+              />
+              <Textarea
+                value={highlight.description}
+                onChange={(e) => updateHighlight(index, 'description', e.target.value)}
+                placeholder="Description"
+                rows={2}
+                className="text-sm"
+              />
+            </div>
+            <Button type="button" variant="ghost" size="sm" className="shrink-0" onClick={() => removeHighlight(index)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1836,6 +1900,7 @@ function AchievementEditForm({ achievement, onSave, onCancel }: AchievementEditF
     title: achievement.title || '',
     description: achievement.description || '',
     date_achieved: achievement.date_achieved ? new Date(achievement.date_achieved).toISOString().split('T')[0] : '',
+    certificate_url: achievement.certificate_url || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1844,6 +1909,7 @@ function AchievementEditForm({ achievement, onSave, onCancel }: AchievementEditF
       ...formData,
       description: formData.description || null,
       date_achieved: formData.date_achieved || null,
+      certificate_url: formData.certificate_url || null,
     };
     onSave(submissionData);
   };
@@ -1891,6 +1957,13 @@ function AchievementEditForm({ achievement, onSave, onCancel }: AchievementEditF
           onChange={handleChange}
         />
       </div>
+
+      <ImageUploadField
+        label="Certificate (optional)"
+        value={formData.certificate_url}
+        onChange={(url) => setFormData(prev => ({ ...prev, certificate_url: url }))}
+        fileType="documents"
+      />
 
       <div className="flex gap-2 pt-2">
         <Button type="submit" size="sm" className="flex items-center gap-2">
@@ -1979,28 +2052,22 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
         />
       </div>
 
-      {/* Certificate URL & Institution */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="certificate_url">Certificate URL (optional)</Label>
-          <Input
-            id="certificate_url"
-            name="certificate_url"
-            value={formData.certificate_url}
-            onChange={handleChange}
-            placeholder="https://..."
-          />
-        </div>
-        <div>
-          <Label htmlFor="institution">Institution (optional)</Label>
-          <Input
-            id="institution"
-            name="institution"
-            value={formData.institution}
-            onChange={handleChange}
-            placeholder="University / Platform"
-          />
-        </div>
+      <ImageUploadField
+        label="Certificate (optional)"
+        value={formData.certificate_url}
+        onChange={(url) => setFormData(prev => ({ ...prev, certificate_url: url }))}
+        fileType="documents"
+      />
+
+      <div>
+        <Label htmlFor="institution">Institution (optional)</Label>
+        <Input
+          id="institution"
+          name="institution"
+          value={formData.institution}
+          onChange={handleChange}
+          placeholder="University / Platform"
+        />
       </div>
 
       {/* Completion Date & Order Index */}
@@ -2057,6 +2124,66 @@ function CourseEditForm({ course, onSave, onCancel }: CourseEditFormProps) {
   );
 }
 
+
+// Language Edit Form Component
+interface LanguageEditFormProps {
+  language: Language;
+  onSave: (data: Partial<Language>) => void;
+  onCancel: () => void;
+}
+
+function LanguageEditForm({ language, onSave, onCancel }: LanguageEditFormProps) {
+  const [formData, setFormData] = useState({
+    name: language.name || '',
+    level: language.level || '',
+    proficiency: language.proficiency ?? 50,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2 p-3 bg-muted rounded-lg">
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          placeholder="Language"
+          className="text-sm"
+          required
+        />
+        <Input
+          value={formData.level}
+          onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
+          placeholder="Level (e.g. Native, Fluent)"
+          className="text-sm"
+          required
+        />
+      </div>
+      <Input
+        type="number"
+        min={0}
+        max={100}
+        value={formData.proficiency}
+        onChange={(e) => setFormData(prev => ({ ...prev, proficiency: parseInt(e.target.value) || 0 }))}
+        placeholder="Proficiency %"
+        className="text-sm"
+      />
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" className="flex items-center gap-1">
+          <Save className="w-3 h-3" />
+          Save
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+          <X className="w-3 h-3" />
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
 
 // Skill Edit Form Component
 interface SkillEditFormProps {

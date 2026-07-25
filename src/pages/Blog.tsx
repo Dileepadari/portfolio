@@ -27,6 +27,7 @@ import {
 
 import { BlogPost, useBlogPosts, addBlogPost, updateBlogPost, deleteBlogPost, useBlogEngagement } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
+import { ImageUploadField } from "@/components/ImageUploadField";
 
 const _categories = ["All", "Frontend Development", "Backend Development", "Data Science", "Personal", "Career"];
 
@@ -105,7 +106,7 @@ export function Blog() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 fade-in">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-between items-center mb-4">
@@ -132,8 +133,10 @@ export function Blog() {
               Featured Articles
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {featuredPosts.map((post) => (
-                <FeaturedPostCard key={post.id} post={post} isAdmin={isAdmin} onEdit={setEditingPost} onDelete={handleDeletePost} navigate={navigate} />
+              {featuredPosts.map((post, index) => (
+                <div key={post.id} className="scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <FeaturedPostCard post={post} isAdmin={isAdmin} onEdit={setEditingPost} onDelete={handleDeletePost} navigate={navigate} />
+                </div>
               ))}
             </div>
           </section>
@@ -159,8 +162,10 @@ export function Blog() {
 
             {/* Blog Posts */}
             <div className="space-y-6">
-              {filteredPosts.map((post) => (
-                <BlogPostCard key={post.id} post={post} isAdmin={isAdmin} onEdit={setEditingPost} onDelete={handleDeletePost} navigate={navigate} />
+              {filteredPosts.map((post, index) => (
+                <div key={post.id} className="slide-up" style={{ animationDelay: `${Math.min(index, 8) * 0.06}s` }}>
+                  <BlogPostCard post={post} isAdmin={isAdmin} onEdit={setEditingPost} onDelete={handleDeletePost} navigate={navigate} />
+                </div>
               ))}
             </div>
 
@@ -271,7 +276,7 @@ function FeaturedPostCard({ post, isAdmin, onEdit, onDelete, navigate }: Feature
   };
   
   return (
-    <Card className="bg-card border-border hover:border-primary transition-all duration-200 ring-1 ring-yellow-400/20">
+    <Card className="bg-card border-border hover:border-primary transition-all duration-200 ring-1 ring-yellow-400/20 hover-lift">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -393,7 +398,7 @@ function BlogPostCard({ post, isAdmin, onEdit, onDelete, navigate }: BlogPostCar
   };
   
   return (
-    <Card className="bg-card border-border hover:border-primary transition-all duration-200">
+    <Card className="bg-card border-border hover:border-primary transition-all duration-200 hover-lift">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -535,7 +540,6 @@ function BlogPostForm({ post, onSave, onCancel, allTags }: BlogPostFormProps) {
       tags: tags.length > 0 ? tags : undefined,
       published,
       order_index: orderIndex,
-      images: undefined
     });
   };
 
@@ -638,15 +642,12 @@ function BlogPostForm({ post, onSave, onCancel, allTags }: BlogPostFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="imageUrl">Featured Image URL</Label>
-            <Input
-              id="imageUrl"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
+          <ImageUploadField
+            label="Featured image"
+            value={imageUrl}
+            onChange={setImageUrl}
+            fileType="images"
+          />
 
           <div className="space-y-2">
             <Label>Tags</Label>

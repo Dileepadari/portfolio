@@ -25,3 +25,9 @@ dist-ssr
 
 .env
 .env.local
+
+# Package manager - npm is the standard for this repo
+bun.lockb
+
+# Raw DB dumps should never be committed (contains real user data)
+/portfolio_backup*

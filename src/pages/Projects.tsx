@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,13 +26,16 @@ import {
   X,
   User,
   Users,
-  Globe
+  Globe,
+  Upload,
+  Loader2
 } from "lucide-react";
 
 import { Project } from "@/hooks/usePortfolioData";
 import { useProjects } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
-import { supabase } from "@/integrations/supabase/client";
+import { adminApi } from "@/lib/adminApi";
+import { ImageUploadField } from "@/components/ImageUploadField";
 
 // Helper function to convert timestamp to human-readable format
 const getTimeAgo = (timestamp: string): string => {
@@ -78,13 +81,8 @@ export function Projects() {
   // CRUD Functions
   const updateProject = async (id: string, updatedProject: Partial<Project>) => {
     try {
-      const { error } = await supabase
-        .from('projects')
-        .update(updatedProject)
-        .eq('id', id);
-      
-      if (error) throw error;
-      
+      await adminApi.update('projects', id, updatedProject);
+
       toast({
         title: "Success",
         description: "Project updated successfully!",
@@ -103,12 +101,8 @@ export function Projects() {
 
   const addProject = async (newProject: Omit<Project, 'id'>) => {
     try {
-      const { error } = await supabase
-        .from('projects')
-        .insert([newProject]);
-      
-      if (error) throw error;
-      
+      await adminApi.insert('projects', newProject);
+
       toast({
         title: "Success",
         description: "Project added successfully!",
@@ -127,13 +121,8 @@ export function Projects() {
 
   const deleteProject = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      
+      await adminApi.remove('projects', id);
+
       toast({
         title: "Success",
         description: "Project deleted successfully!",
@@ -158,8 +147,8 @@ export function Projects() {
                          (project.tags && project.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     
     const matchesFilter = selectedFilter === "all" || 
-                         (selectedFilter === "mine" && !project.is_private) ||
-                         (selectedFilter === "contributed" && project.is_private) ||
+                         (selectedFilter === "mine" && !project.is_contributed) ||
+                         (selectedFilter === "contributed" && project.is_contributed) ||
                          (selectedFilter === "deployed" && project.live_url) ||
                          (selectedFilter === project.language);
     
@@ -182,8 +171,8 @@ export function Projects() {
   });
 
   const featuredProjects = projects.filter(p => p.featured);
-  const publicProjects = projects.filter(p => !p.is_private).length;
-  const privateProjects = projects.filter(p => p.is_private).length;
+  const ownedProjects = projects.filter(p => !p.is_contributed).length;
+  const contributedProjects = projects.filter(p => p.is_contributed).length;
   const totalDeployed = projects.filter(p => p.live_url).length;
 
   if (loading) {
@@ -212,12 +201,12 @@ export function Projects() {
                 </div>
                 <div className="flex items-center gap-1">
                   <User className="w-4 h-4" />
-                  <span>{publicProjects} Owned</span>
+                  <span>{ownedProjects} Owned</span>
                 </div>
-                {privateProjects > 0 && (
+                {contributedProjects > 0 && (
                   <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
-                    <span>{privateProjects} Contributed</span>
+                    <span>{contributedProjects} Contributed</span>
                   </div>
                 )}
                 <div className="flex items-center gap-1">
@@ -298,14 +287,14 @@ export function Projects() {
                     placeholder="Find a repository..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-[hsl(var(--github-canvas-inset))] border-[hsl(var(--github-border-default))]"
+                    className="pl-10 bg-muted border-border"
                   />
                 </div>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <Select value={selectedFilter} onValueChange={setSelectedFilter}>
-                  <SelectTrigger className="w-full sm:w-56 bg-[hsl(var(--github-canvas-inset))] border-[hsl(var(--github-border-default))]">
+                  <SelectTrigger className="w-full sm:w-56 bg-muted border-border">
                     <SelectValue placeholder="Filter" />
                   </SelectTrigger>
                   <SelectContent className="max-h-80">
@@ -339,7 +328,7 @@ export function Projects() {
                 </Select>
                 
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-full sm:w-40 bg-[hsl(var(--github-canvas-inset))] border-[hsl(var(--github-border-default))]">
+                  <SelectTrigger className="w-full sm:w-40 bg-muted border-border">
                     <SelectValue placeholder="Sort" />
                   </SelectTrigger>
                   <SelectContent>
@@ -395,7 +384,7 @@ export function Projects() {
                 order_index: 0,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
-                is_private: false,
+                is_contributed: false,
                 stars: 0,
                 forks: 0,
                 language: '',
@@ -509,7 +498,7 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
             <div className="flex items-center justify-between gap-2 mb-2">
               <h3 className="text-base sm:text-lg font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
                 <span className="truncate">{project.title}</span>
-                {project.is_private && <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />}
+                {project.is_contributed && <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />}
                 {featured && <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current flex-shrink-0" />}
               </h3>
               
@@ -559,7 +548,7 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
                 </div>
               )}
               
-              {(project.is_private === false) ? (
+              {(project.is_contributed === false) ? (
                 <div className="flex items-center gap-1">
                   <User className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
                   <span className="hidden sm:inline">Owned</span>
@@ -620,7 +609,7 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     language: project.language || '',
     language_color: project.language_color || '',
     featured: project.featured || false,
-    is_private: project.is_private || false,
+    is_contributed: project.is_contributed || false,
     tags: project.tags?.join(', ') || '',
     category: project.category || '',
     order_index: project.order_index || 0,
@@ -661,6 +650,32 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           ? parseInt(value) || 0
           : value,
     }));
+  };
+
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
+  const { toast } = useToast();
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    try {
+      setUploadingGalleryImage(true);
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+      const url = await adminApi.upload(file, { fileType: 'images', fileName: `${crypto.randomUUID()}-${sanitizedName}` });
+      setFormData(prev => ({ ...prev, images: prev.images ? `${prev.images}, ${url}` : url }));
+      toast({ title: 'Uploaded', description: 'Image added to gallery.' });
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'Something went wrong.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingGalleryImage(false);
+    }
   };
 
   return (
@@ -729,27 +744,41 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
       </div>
 
       {/* Images */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="image_url">Main Image URL</Label>
-          <Input
-            id="image_url"
-            name="image_url"
-            value={formData.image_url}
-            onChange={handleChange}
-            placeholder="https://example.com/image.jpg"
+      <ImageUploadField
+        label="Main image"
+        value={formData.image_url}
+        onChange={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+        fileType="images"
+      />
+
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="images">Gallery images (comma-separated URLs)</Label>
+          <input
+            ref={galleryFileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleGalleryUpload}
           />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={uploadingGalleryImage}
+            onClick={() => galleryFileInputRef.current?.click()}
+          >
+            {uploadingGalleryImage ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+            Upload & add
+          </Button>
         </div>
-        <div>
-          <Label htmlFor="images">Additional Images (comma-separated)</Label>
-          <Input
-            id="images"
-            name="images"
-            value={formData.images}
-            onChange={handleChange}
-            placeholder="https://img1.jpg, https://img2.jpg"
-          />
-        </div>
+        <Input
+          id="images"
+          name="images"
+          value={formData.images}
+          onChange={handleChange}
+          placeholder="https://img1.jpg, https://img2.jpg"
+        />
       </div>
 
       {/* Language Color */}
@@ -863,13 +892,13 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
         <div className="flex items-center space-x-2">
           <input
             type="checkbox"
-            id="is_private"
-            name="is_private"
-            checked={formData.is_private}
+            id="is_contributed"
+            name="is_contributed"
+            checked={formData.is_contributed}
             onChange={handleChange}
             className="rounded"
           />
-          <Label htmlFor="is_private">Private repository</Label>
+          <Label htmlFor="is_contributed">Contributed to (not owned by me)</Label>
         </div>
       </div>
 

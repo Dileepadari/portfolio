@@ -1,203 +1,57 @@
-# Git-Folio Showcase - Portfolio Website
+# Dileep Adari — Portfolio
 
-A modern, dynamic portfolio website built with React, TypeScript, and Supabase. Features a complete content management system with admin controls for projects, blog posts, timeline events, and more.
+Personal portfolio site for [dileepadari.dev](https://dileepadari.dev): a full-stack, fully self-editable portfolio with its own admin CMS, custom authentication, and image hosting — no third-party CMS or SaaS auth provider involved.
 
-## 🚀 Features
+For local setup, environment variables, database migrations, and deployment steps, see **[DEVDOC.md](./DEVDOC.md)**.
 
-- **Dynamic Timeline** - Interactive timeline with admin CRUD operations
-- **Blog System** - Full blog with engagement features (likes, comments)
-- **Project Showcase** - GitHub-style project cards with stats
-- **Admin Dashboard** - Complete content management system
-- **Authentication** - Secure user authentication with role-based access
-- **Responsive Design** - Beautiful UI with dark/light theme support
+## Features
 
-## 🛠️ Technologies
+- **Every piece of content is editable from the site itself** — personal info & highlights, experience, education, skills, achievements, courses, languages, projects, blog posts, and site-wide settings (footer, sign-in copy, admin quick links) all have inline admin edit forms. No separate CMS.
+- **Self-hosted multi-admin authentication** — a hand-rolled username/password + JWT scheme (bcrypt-hashed passwords in a Postgres table, HS256 JWTs signed in a Supabase Edge Function) instead of Supabase Auth, so the app isn't tied to any one auth provider.
+- **Centralized admin gateway** — every authenticated write (and every admin-only read, like blog drafts or the contact inbox) goes through a single Supabase Edge Function that checks the JWT and uses the service-role key server-side; Row Level Security locks out direct client writes entirely.
+- **Image uploads to your own storage** — a reusable upload field wired through the same Edge Function to a self-hosted Oracle Cloud object storage endpoint, with configurable base URLs and app/file-type routing.
+- **Blog with anonymous engagement** — likes and comments scoped per-anonymous-visitor (a client-generated id, not an account), with admin moderation.
+- **Contact & task-request inbox** — visitors can send a message or submit a structured task request; the admin inbox has full detail views and a status flow (pending → sent to a separate task tracker / declined) instead of spinning up internal task/calendar features.
+- **Theming** — light/dark/system mode plus five selectable accent color palettes, applied via CSS custom properties so the whole UI (including the 404 page) follows whichever palette is active.
+- Responsive, animated UI built on Tailwind CSS v4 and shadcn/ui.
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **Backend**: Supabase (PostgreSQL, Auth, RLS)
-- **Deployment**: Vercel/Netlify ready
+## Tech stack
 
-## 📦 Setup Instructions
+- **Frontend**: React 19, TypeScript, Vite, React Router
+- **Styling**: Tailwind CSS v4, shadcn/ui (Radix primitives)
+- **Backend**: Supabase (PostgreSQL, Row Level Security, Edge Functions/Deno)
+- **Storage**: Self-hosted Oracle Cloud object storage (proxied through the Edge Function)
+- **CI**: GitHub Actions — lint, type-check, and build on every push/PR (`.github/workflows/ci.yml`)
 
-### 1. Clone Repository
-```sh
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
-npm install
-```
-
-### 2. Supabase Setup
-1. Create a new Supabase project at [supabase.com](https://supabase.com)
-2. Run the migrations in order:
-   ```sql
-   -- Run these in your Supabase SQL Editor in chronological order:
-   -- 1. Base schema (profiles, projects, blog, etc.)
-   supabase/migrations/20250919195538_22934239-ca60-47d5-ab50-5c4c0ed82ca2.sql
-   
-   -- 2. Add image support
-   supabase/migrations/20250920101121_34013fc8-96aa-4626-8029-2f92150e043d.sql
-   
-   -- 3. Enhanced projects with GitHub-style features
-   supabase/migrations/20250920120000_enhance_projects_table.sql
-   
-   -- 4. Task management system
-   supabase/migrations/20250921154816_955af339-d139-4a6a-9118-e2a83b82a04c.sql
-   
-   -- 5. Courses table
-   supabase/migrations/20250921160000_create_courses_table.sql
-   
-   -- 6. Blog external links
-   supabase/migrations/20250921200000_add_external_link_to_blog_posts.sql
-   
-   -- 7. Blog engagement features
-   supabase/migrations/20250921220000_create_blog_engagement_tables.sql
-   
-   -- 8. Cleanup unused features
-   supabase/migrations/20250922000000_cleanup_blog_shares.sql
-   
-   -- 9. Timeline functionality (all-in-one setup)
-   complete_timeline_setup.sql
-   ```
-
-### 3. Environment Setup
-Create `.env.local`:
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-### 4. Optional Sample Data
-```sql
--- Run this for sample blog content:
-sample_blog_data.sql
-```
-
-### 5. Admin Setup
-1. Sign up through your app
-2. In Supabase SQL Editor, set yourself as admin:
-   ```sql
-   UPDATE profiles SET is_admin = true WHERE email = 'your-email@example.com';
-   ```
-
-## 🗂️ Project Structure
+## Project structure
 
 ```
 src/
-├── components/          # Reusable UI components
-├── hooks/              # Custom React hooks
-├── integrations/       # Supabase client and types
-├── layouts/            # Layout components
-├── pages/              # Main page components
-├── providers/          # Context providers
-└── lib/                # Utilities
+├── components/       # Reusable UI components (incl. shadcn/ui primitives)
+├── hooks/             # Data hooks (usePortfolioData, useManagement, useAuth, useAdmin)
+├── integrations/      # Supabase client + generated database types
+├── layouts/            # App shell / layout
+├── lib/                # adminApi client, image upload helper, color palettes, visitor id
+├── pages/              # Route-level pages (Profile, Projects, Blog, Contact, Settings, Auth, ...)
+└── providers/          # Theme provider
 
 supabase/
-└── migrations/         # Database migrations (chronological order)
+├── functions/admin/    # The single authenticated gateway (login, data CRUD, upload proxy)
+└── migrations/         # Schema migrations, applied in filename order
 
-SQL Files:
-├── complete_timeline_setup.sql    # Timeline feature setup
-└── sample_blog_data.sql          # Optional blog content
+scripts/
+└── create-admin.mjs    # Provisions/updates an admin_users row (env-vars only, never CLI args)
 ```
 
-## 🎯 Development
+## Development
 
 ```sh
-npm run dev              # Start development server
-npm run build           # Build for production
-npm run preview         # Preview production build
+npm install
+npm run dev          # start the dev server
+npm run lint          # ESLint
+npx tsc --noEmit      # type-check
+npm run build         # production build
+npm run preview       # preview the production build locally
 ```
 
-## 📝 License
-
-MIT License - feel free to use this project as a template for your own portfolio!
-
----
-
-## Project Info
-
-**URL**: https://lovable.dev/projects/28db4d20-0212-4f36-b0f6-a6cfac011cc7
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/28db4d20-0212-4f36-b0f6-a6cfac011cc7) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Supabase (Database & Authentication)
-
-## Timeline Feature Setup
-
-This portfolio includes a dynamic Timeline feature with full CRUD functionality. To set it up:
-
-1. **Database Setup**: Run the `complete_timeline_setup.sql` file in your Supabase SQL Editor
-2. **Admin Access**: Uncomment and run the admin setup section in the SQL file to grant yourself admin permissions
-3. **Timeline Management**: Once set up, admins can add, edit, and delete timeline events through the web interface
-
-The Timeline feature includes:
-- ✅ Dynamic timeline events (projects, achievements, education, work, etc.)
-- ✅ Admin-only CRUD operations with proper authentication
-- ✅ Row Level Security (RLS) policies
-- ✅ Sample data for testing
-- ✅ Activity statistics integration
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/28db4d20-0212-4f36-b0f6-a6cfac011cc7) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+See [DEVDOC.md](./DEVDOC.md) for the full setup (Supabase project, environment variables, migrations, Edge Function secrets, admin provisioning) and deployment instructions.

@@ -10,18 +10,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { usePersonalInfo } from "@/hooks/usePortfolioData";
-import { useTasks, useSchedules } from "@/hooks/useManagement";
 import { useAdmin } from "@/hooks/useAdmin";
-import { Mail, Phone, MapPin, Send, MessageCircle, Calendar, Clock, CheckSquare, Info, Eye, Trash2, CalendarPlus, CheckCheck } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageCircle, Calendar, Clock, CheckSquare, Info, Eye, Trash2, CheckCheck, ExternalLink, Ban } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useContactMessages, type ContactMessage } from "@/hooks/useManagement";
+import { useContactMessages, useTaskRequests, type ContactMessage, type TaskRequest } from "@/hooks/useManagement";
 
 export default function Contact() {
   const { data: personalInfo } = usePersonalInfo();
   const { toast } = useToast();
   const { createMessage, data: contactMessages, loading: messagesLoading, updateMessage, deleteMessage } = useContactMessages();
-  const { createTask } = useTasks();
-  const { createSchedule } = useSchedules();
+  const {
+    createTaskRequest,
+    data: taskRequests,
+    loading: taskRequestsLoading,
+    updateTaskRequest,
+    deleteTaskRequest,
+  } = useTaskRequests();
   const { isAdmin } = useAdmin();
   
   const [formData, setFormData] = useState({
@@ -46,77 +50,11 @@ export default function Contact() {
   });
 
   // Admin state
-  const [_selectedMessage, _setSelectedMessage] = useState<ContactMessage | null>(null);
   const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'read' | 'replied'>('all');
-  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
-  const [convertDialog, setConvertDialog] = useState<{ open: boolean; type: 'task' | 'schedule' | null; message: ContactMessage | null }>({
-    open: false,
-    type: null,
-    message: null
-  });
-  // Narrow type for the convert dialog form data
-  type ConvertFormData = {
-    title?: string;
-    description?: string;
-    priority?: 'low' | 'medium' | 'high';
-    dueDate?: string;
-    dueTime?: string;
-    startTime?: string;
-    endTime?: string;
-    type?: 'meeting' | 'call' | 'event' | 'deadline';
-    isPublic?: boolean;
-  };
-
-  const [convertFormData, setConvertFormData] = useState<ConvertFormData>({});
-
-  // Helper function to check if a message is a task request
-  const isTaskRequest = (message: ContactMessage) => {
-    return message.subject.startsWith('Task Request:') && message.message.includes('TASK REQUEST DETAILS:');
-  };
-
-  // Helper function to parse task request details from message
-  const parseTaskRequest = (message: ContactMessage) => {
-    const lines = message.message.split('\n');
-    const taskData = {
-      title: '',
-      description: '',
-      priority: 'medium' as 'low' | 'medium' | 'high',
-      category: 'project',
-      dueDate: '',
-      estimatedDuration: '',
-      budget: '',
-      additionalNotes: ''
-    };
-
-    let currentSection = '';
-    for (const line of lines) {
-      if (line.startsWith('Task: ')) {
-        taskData.title = line.replace('Task: ', '').trim();
-      } else if (line.startsWith('Description: ')) {
-        taskData.description = line.replace('Description: ', '').trim();
-      } else if (line.startsWith('Priority: ')) {
-        taskData.priority = line.replace('Priority: ', '').trim() as 'low' | 'medium' | 'high';
-      } else if (line.startsWith('Category: ')) {
-        taskData.category = line.replace('Category: ', '').trim();
-      } else if (line.startsWith('Due Date: ')) {
-        const dueDateStr = line.replace('Due Date: ', '').trim();
-        if (dueDateStr && dueDateStr !== '') {
-          // Extract just the date part (YYYY-MM-DD)
-          taskData.dueDate = dueDateStr.split(' ')[0];
-        }
-      } else if (line.startsWith('Estimated Duration: ')) {
-        taskData.estimatedDuration = line.replace('Estimated Duration: ', '').trim();
-      } else if (line.startsWith('Budget: ')) {
-        taskData.budget = line.replace('Budget: ', '').trim();
-      } else if (line.startsWith('Additional Notes:')) {
-        currentSection = 'notes';
-      } else if (currentSection === 'notes' && line.trim() && !line.includes('---')) {
-        taskData.additionalNotes += (taskData.additionalNotes ? '\n' : '') + line.trim();
-      }
-    }
-
-    return taskData;
-  };
+  const [deletingItem, setDeletingItem] = useState<{ id: string; kind: 'message' | 'taskRequest' } | null>(null);
+  const [viewingItem, setViewingItem] = useState<
+    { kind: 'message'; item: ContactMessage } | { kind: 'taskRequest'; item: TaskRequest } | null
+  >(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,34 +79,20 @@ export default function Contact() {
   const handleTaskRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // For now, we'll send this as a special contact message with task details
-      // Later this could be stored in a separate task_requests table
-      const taskMessage = {
-        name: taskRequest.requesterName,
-        email: taskRequest.requesterEmail,
-        subject: `Task Request: ${taskRequest.taskTitle}`,
-        message: `
-TASK REQUEST DETAILS:
+      await createTaskRequest({
+        requester_name: taskRequest.requesterName,
+        requester_email: taskRequest.requesterEmail,
+        title: taskRequest.taskTitle,
+        description: taskRequest.taskDescription || undefined,
+        priority: taskRequest.priority,
+        category: taskRequest.category,
+        due_date: taskRequest.dueDate || undefined,
+        due_time: taskRequest.dueTime || undefined,
+        estimated_duration: taskRequest.estimatedDuration || undefined,
+        budget: taskRequest.budget || undefined,
+        additional_notes: taskRequest.additionalNotes || undefined,
+      });
 
-Task: ${taskRequest.taskTitle}
-Description: ${taskRequest.taskDescription}
-Priority: ${taskRequest.priority}
-Category: ${taskRequest.category}
-Due Date: ${taskRequest.dueDate} ${taskRequest.dueTime || ''}
-Estimated Duration: ${taskRequest.estimatedDuration}
-Budget: ${taskRequest.budget}
-
-Additional Notes:
-${taskRequest.additionalNotes}
-
----
-This is an automated task request submission.
-        `.trim()
-      };
-
-      const { error } = await createMessage(taskMessage);
-      if (error) throw error;
-      
       toast({
         title: "Task request submitted!",
         description: "Your task request has been sent. I'll review it and get back to you soon!",
@@ -196,35 +120,35 @@ This is an automated task request submission.
   };
 
   // Admin functions
-  const handleAcceptTaskRequest = async (message: ContactMessage) => {
+  const handleSendToWorkOs = async (request: TaskRequest) => {
     try {
-      const taskData = parseTaskRequest(message);
-      
-      await createTask({
-        title: taskData.title,
-        description: taskData.description,
-        status: 'todo',
-        priority: taskData.priority,
-        due_date: taskData.dueDate || undefined,
-        order_index: 0,
-        category: 'general',
-        tags: [],
-        is_recurring: false
-      });
-      
-      // Mark original message as replied
-      await updateMessage(message.id, { status: 'replied' });
-      
+      await updateTaskRequest(request.id, { status: 'accepted' });
       toast({
-        title: "Task request accepted!",
-        description: `"${taskData.title}" has been added to your tasks.`,
+        title: "Marked as sent to WorkOS",
+        description: `"${request.title}" is now tracked as handled in WorkOS.`,
       });
     } catch {
       toast({
         title: "Error",
-        description: "Failed to accept task request.",
+        description: "Failed to update task request.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDeclineTaskRequest = async (request: TaskRequest) => {
+    try {
+      await updateTaskRequest(request.id, { status: 'declined' });
+      toast({ title: "Task request declined", description: "The request has been marked as declined." });
+    } catch {
+      toast({ title: "Error", description: "Failed to decline task request.", variant: "destructive" });
+    }
+  };
+
+  const openMessageDetail = (message: ContactMessage) => {
+    setViewingItem({ kind: 'message', item: message });
+    if (message.status === 'unread') {
+      handleMarkAsRead(message.id);
     }
   };
 
@@ -260,107 +184,29 @@ This is an automated task request submission.
     }
   };
 
-  const handleDeleteMessage = async (messageId: string) => {
+  const handleDeleteItem = async () => {
+    if (!deletingItem) return;
     try {
-      await deleteMessage(messageId);
+      if (deletingItem.kind === 'taskRequest') {
+        await deleteTaskRequest(deletingItem.id);
+      } else {
+        await deleteMessage(deletingItem.id);
+      }
       toast({
-        title: "Message deleted",
-        description: "The message has been permanently deleted.",
+        title: "Deleted",
+        description: "The item has been permanently deleted.",
       });
-      setDeletingMessageId(null);
+      setDeletingItem(null);
     } catch {
       toast({
         title: "Error",
-        description: "Failed to delete message.",
+        description: "Failed to delete.",
         variant: "destructive",
       });
     }
   };
 
-  const handleConvertToTask = async () => {
-    if (!convertDialog.message) return;
-    
-    try {
-      await createTask({
-        title: convertFormData.title || convertDialog.message.subject,
-        description: convertFormData.description || convertDialog.message.message,
-        status: 'todo',
-        priority: convertFormData.priority || 'medium',
-        due_date: convertFormData.dueDate,
-        order_index: 0,
-        category: 'general',
-        tags: [],
-        is_recurring: false
-      });
-      
-      // Mark original message as replied
-      await updateMessage(convertDialog.message.id, { status: 'replied' });
-      
-      toast({
-        title: "Task created successfully",
-        description: "The message has been converted to a task.",
-      });
-      
-      setConvertDialog({ open: false, type: null, message: null });
-      setConvertFormData({});
-    } catch {
-      toast({
-        title: "Error",
-        description: "Failed to create task.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleConvertToSchedule = async () => {
-    if (!convertDialog.message) return;
-    
-    try {
-      await createSchedule({
-        title: convertFormData.title || convertDialog.message.subject,
-        description: convertFormData.description || convertDialog.message.message,
-        start_time: convertFormData.startTime,
-        end_time: convertFormData.endTime,
-        type: convertFormData.type || 'meeting',
-        status: 'scheduled',
-        attendees: [convertDialog.message.email],
-        is_public: convertFormData.isPublic || false,
-        category: 'work',
-        color: '#3b82f6',
-        reminder_minutes: [15],
-        tags: [],
-        is_recurring: false
-      });
-      
-      // Mark original message as replied
-      await updateMessage(convertDialog.message.id, { status: 'replied' });
-      
-      toast({
-        title: "Schedule created successfully",
-        description: "The message has been converted to a schedule item.",
-      });
-      
-      setConvertDialog({ open: false, type: null, message: null });
-      setConvertFormData({});
-    } catch {
-      toast({
-        title: "Error",
-        description: "Failed to create schedule item.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Separate task requests from regular messages
-  const allMessages = contactMessages || [];
-  const taskRequests = allMessages.filter(message => isTaskRequest(message));
-  const regularMessages = allMessages.filter(message => !isTaskRequest(message));
-
-  // Apply filter to both collections
-  const filteredTaskRequests = taskRequests.filter(message => {
-    if (messageFilter === 'all') return true;
-    return message.status === messageFilter;
-  });
+  const regularMessages = contactMessages || [];
 
   const filteredRegularMessages = regularMessages.filter(message => {
     if (messageFilter === 'all') return true;
@@ -372,7 +218,21 @@ This is an automated task request submission.
       case 'unread': return 'bg-red-500';
       case 'read': return 'bg-yellow-500';
       case 'replied': return 'bg-green-500';
+      case 'pending': return 'bg-red-500';
+      case 'accepted': return 'bg-blue-500';
+      case 'declined': return 'bg-gray-500';
       default: return 'bg-gray-500';
+    }
+  };
+
+  // task_requests.status is stored as pending/accepted/declined (DB check
+  // constraint) — "accepted" means it was taken and is now tracked in the
+  // separate WorkOS app, not that it became an internal Task here.
+  const getTaskRequestStatusLabel = (status: string) => {
+    switch (status) {
+      case 'accepted': return 'Sent to WorkOS';
+      case 'declined': return 'Declined';
+      default: return 'Pending';
     }
   };
 
@@ -392,7 +252,7 @@ This is an automated task request submission.
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 fade-in">
         {/* Admin Panel */}
         {isAdmin && (
           <div className="mb-8 space-y-6">
@@ -401,125 +261,113 @@ This is an automated task request submission.
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckSquare className="w-5 h-5" />
-                  Task Requests ({filteredTaskRequests.length})
+                  Task Requests ({taskRequests.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Filter for task requests */}
-                  <div className="flex items-center gap-4">
-                    <Label htmlFor="taskRequestFilter">Filter by status:</Label>
-                    <Select value={messageFilter} onValueChange={(value: 'all' | 'unread' | 'read' | 'replied') => setMessageFilter(value)}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Requests</SelectItem>
-                        <SelectItem value="unread">Unread</SelectItem>
-                        <SelectItem value="read">Read</SelectItem>
-                        <SelectItem value="replied">Accepted</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Task Requests List */}
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
-                    {messagesLoading ? (
-                      <div className="text-center py-4 text-muted-foreground">Loading task requests...</div>
-                    ) : filteredTaskRequests.length === 0 ? (
-                      <div className="text-center py-4 text-muted-foreground">No task requests found</div>
-                    ) : (
-                      filteredTaskRequests.map((message) => {
-                        const taskData = parseTaskRequest(message);
-                        return (
-                          <Card key={message.id} className="p-4 hover:bg-muted/50 transition-colors border-l-4 border-l-blue-500">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Badge className={`${getStatusColor(message.status)} text-white text-xs`}>
-                                    {message.status === 'replied' ? 'accepted' : message.status}
-                                  </Badge>
-                                  <span className="font-medium truncate">{message.name}</span>
-                                  <span className="text-sm text-muted-foreground truncate">{message.email}</span>
-                                </div>
-                                <h4 className="font-semibold text-base mb-2">{taskData.title}</h4>
-                                <div className="grid grid-cols-2 gap-4 text-sm mb-2">
-                                  <div>
-                                    <span className="text-muted-foreground">Priority:</span>
-                                    <Badge variant="outline" className="ml-1 capitalize">{taskData.priority}</Badge>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Category:</span>
-                                    <Badge variant="outline" className="ml-1 capitalize">{taskData.category}</Badge>
-                                  </div>
-                                  {taskData.dueDate && (
-                                    <div>
-                                      <span className="text-muted-foreground">Due:</span>
-                                      <span className="ml-1">{new Date(taskData.dueDate).toLocaleDateString()}</span>
-                                    </div>
-                                  )}
-                                  {taskData.budget && (
-                                    <div>
-                                      <span className="text-muted-foreground">Budget:</span>
-                                      <span className="ml-1">{taskData.budget}</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{taskData.description}</p>
-                                <div className="text-xs text-muted-foreground">
-                                  {new Date(message.created_at).toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'short', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {message.status !== 'replied' && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleAcceptTaskRequest(message)}
-                                    className="h-8 px-3 bg-green-600 hover:bg-green-700"
-                                  >
-                                    <CheckSquare className="w-3 h-3 mr-1" />
-                                    Accept
-                                  </Button>
-                                )}
-                                {message.status === 'unread' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleMarkAsRead(message.id)}
-                                    className="h-8 px-2"
-                                  >
-                                    <Eye className="w-3 h-3" />
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setConvertDialog({ open: true, type: 'schedule', message })}
-                                  className="h-8 px-2"
-                                >
-                                  <CalendarPlus className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setDeletingMessageId(message.id)}
-                                  className="h-8 px-2 text-red-500 hover:text-red-700"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
+                <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-hidden">
+                  {taskRequestsLoading ? (
+                    <div className="text-center py-4 text-muted-foreground">Loading task requests...</div>
+                  ) : taskRequests.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground">No task requests found</div>
+                  ) : (
+                    taskRequests.map((request) => (
+                      <Card
+                        key={request.id}
+                        className="p-4 hover:bg-muted/50 transition-colors border-l-4 border-l-blue-500 cursor-pointer"
+                        onClick={() => setViewingItem({ kind: 'taskRequest', item: request })}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <Badge className={`${getStatusColor(request.status)} text-white text-xs shrink-0`}>
+                                {getTaskRequestStatusLabel(request.status)}
+                              </Badge>
+                              <span className="font-medium break-words">{request.requester_name}</span>
+                              <span className="text-sm text-muted-foreground break-words">{request.requester_email}</span>
                             </div>
-                          </Card>
-                        );
-                      })
-                    )}
-                  </div>
+                            <h4 className="font-semibold text-base mb-2 break-words">{request.title}</h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm mb-2">
+                              <div>
+                                <span className="text-muted-foreground">Priority:</span>
+                                <Badge variant="outline" className="ml-1 capitalize">{request.priority}</Badge>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Category:</span>
+                                <Badge variant="outline" className="ml-1 capitalize">{request.category}</Badge>
+                              </div>
+                              {request.due_date && (
+                                <div>
+                                  <span className="text-muted-foreground">Due:</span>
+                                  <span className="ml-1">{new Date(request.due_date).toLocaleDateString()}</span>
+                                </div>
+                              )}
+                              {request.budget && (
+                                <div>
+                                  <span className="text-muted-foreground">Budget:</span>
+                                  <span className="ml-1 break-words">{request.budget}</span>
+                                </div>
+                              )}
+                            </div>
+                            {request.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2 mb-2 break-words">{request.description}</p>
+                            )}
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(request.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setViewingItem({ kind: 'taskRequest', item: request })}
+                              className="h-8 px-2"
+                              title="View details"
+                            >
+                              <Eye className="w-3 h-3" />
+                            </Button>
+                            {request.status === 'pending' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleSendToWorkOs(request)}
+                                  className="h-8 px-3 bg-blue-600 hover:bg-blue-700"
+                                  title="Mark as sent to WorkOS"
+                                >
+                                  <ExternalLink className="w-3 h-3 mr-1" />
+                                  Sent to WorkOS
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeclineTaskRequest(request)}
+                                  className="h-8 px-2"
+                                  title="Decline"
+                                >
+                                  <Ban className="w-3 h-3" />
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeletingItem({ id: request.id, kind: 'taskRequest' })}
+                              className="h-8 px-2 text-red-500 hover:text-red-700"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -527,60 +375,80 @@ This is an automated task request submission.
             {/* Regular Messages Section */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5" />
-                  Regular Messages ({filteredRegularMessages.length})
-                </CardTitle>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5" />
+                    Regular Messages ({filteredRegularMessages.length})
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="messageFilter" className="text-sm text-muted-foreground">Filter:</Label>
+                    <Select value={messageFilter} onValueChange={(value: 'all' | 'unread' | 'read' | 'replied') => setMessageFilter(value)}>
+                      <SelectTrigger id="messageFilter" className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Messages</SelectItem>
+                        <SelectItem value="unread">Unread</SelectItem>
+                        <SelectItem value="read">Read</SelectItem>
+                        <SelectItem value="replied">Replied</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {/* Regular Messages List */}
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                  <div className="space-y-3 max-h-96 overflow-y-auto overflow-x-hidden">
                     {messagesLoading ? (
                       <div className="text-center py-4 text-muted-foreground">Loading messages...</div>
                     ) : filteredRegularMessages.length === 0 ? (
                       <div className="text-center py-4 text-muted-foreground">No regular messages found</div>
                     ) : (
                       filteredRegularMessages.map((message) => (
-                        <Card key={message.id} className="p-4 hover:bg-muted/50 transition-colors">
+                        <Card
+                          key={message.id}
+                          className="p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                          onClick={() => openMessageDetail(message)}
+                        >
                           <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Badge className={`${getStatusColor(message.status)} text-white text-xs`}>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <Badge className={`${getStatusColor(message.status)} text-white text-xs shrink-0`}>
                                   {message.status}
                                 </Badge>
-                                <span className="font-medium truncate">{message.name}</span>
-                                <span className="text-sm text-muted-foreground truncate">{message.email}</span>
+                                <span className="font-medium break-words">{message.name}</span>
+                                <span className="text-sm text-muted-foreground break-words">{message.email}</span>
                               </div>
-                              <h4 className="font-medium text-sm mb-1 truncate">{message.subject}</h4>
-                              <p className="text-sm text-muted-foreground line-clamp-2">{message.message}</p>
+                              <h4 className="font-medium text-sm mb-1 break-words">{message.subject}</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-2 break-words">{message.message}</p>
                               <div className="text-xs text-muted-foreground mt-1">
-                                {new Date(message.created_at).toLocaleDateString('en-US', { 
-                                  year: 'numeric', 
-                                  month: 'short', 
+                                {new Date(message.created_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
                                   day: 'numeric',
                                   hour: '2-digit',
                                   minute: '2-digit'
                                 })}
                               </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                              {message.status === 'unread' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleMarkAsRead(message.id)}
-                                  className="h-8 px-2"
-                                >
-                                  <Eye className="w-3 h-3" />
-                                </Button>
-                              )}
+                            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openMessageDetail(message)}
+                                className="h-8 px-2"
+                                title="View details"
+                              >
+                                <Eye className="w-3 h-3" />
+                              </Button>
                               {message.status !== 'replied' && (
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleMarkAsReplied(message.id)}
                                   className="h-8 px-2"
+                                  title="Mark as replied"
                                 >
                                   <CheckCheck className="w-3 h-3" />
                                 </Button>
@@ -588,24 +456,9 @@ This is an automated task request submission.
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => setConvertDialog({ open: true, type: 'task', message })}
-                                className="h-8 px-2"
-                              >
-                                <CheckSquare className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setConvertDialog({ open: true, type: 'schedule', message })}
-                                className="h-8 px-2"
-                              >
-                                <CalendarPlus className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setDeletingMessageId(message.id)}
+                                onClick={() => setDeletingItem({ id: message.id, kind: 'message' })}
                                 className="h-8 px-2 text-red-500 hover:text-red-700"
+                                title="Delete"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </Button>
@@ -1033,168 +886,174 @@ This is an automated task request submission.
           </div>
         </div>
 
-        {/* Convert to Task/Schedule Dialog */}
-        <Dialog open={convertDialog.open} onOpenChange={(open) => {
-          if (!open) {
-            setConvertDialog({ open: false, type: null, message: null });
-            setConvertFormData({});
-          }
-        }}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                Convert to {convertDialog.type === 'task' ? 'Task' : 'Schedule'}
-              </DialogTitle>
-            </DialogHeader>
-            
-            {convertDialog.type === 'task' ? (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="taskTitle">Task Title</Label>
-                  <Input
-                    id="taskTitle"
-                    value={convertFormData.title || convertDialog.message?.subject || ''}
-                    onChange={(e) => setConvertFormData(prev => ({ ...prev, title: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="taskDescription">Description</Label>
-                  <Textarea
-                    id="taskDescription"
-                    value={convertFormData.description || convertDialog.message?.message || ''}
-                    onChange={(e) => setConvertFormData(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select value={convertFormData.priority || 'medium'} onValueChange={(value) => setConvertFormData(prev => ({ ...prev, priority: value as 'low' | 'medium' | 'high' }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
+        {/* Detail View Dialog — full, un-truncated content for a message or task request */}
+        <Dialog open={viewingItem !== null} onOpenChange={(open) => { if (!open) setViewingItem(null); }}>
+          <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+            {viewingItem?.kind === 'message' && (
+              <>
+                <DialogHeader className="min-w-0">
+                  <DialogTitle className="flex items-center gap-2 flex-wrap break-words pr-6 min-w-0">
+                    <Badge className={`${getStatusColor(viewingItem.item.status)} text-white text-xs shrink-0`}>
+                      {viewingItem.item.status}
+                    </Badge>
+                    <span className="break-words">{viewingItem.item.subject}</span>
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 min-w-0">
+                  <div className="text-sm">
+                    <span className="font-medium break-words">{viewingItem.item.name}</span>
+                    <span className="text-muted-foreground"> &lt;</span>
+                    <a href={`mailto:${viewingItem.item.email}`} className="text-muted-foreground hover:text-primary break-words">
+                      {viewingItem.item.email}
+                    </a>
+                    <span className="text-muted-foreground">&gt;</span>
                   </div>
-                  <div>
-                    <Label htmlFor="dueDate">Due Date</Label>
-                    <Input
-                      id="dueDate"
-                      type="date"
-                      value={convertFormData.dueDate || ''}
-                      onChange={(e) => setConvertFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                    />
+                  <p className="text-sm whitespace-pre-wrap break-words">{viewingItem.item.message}</p>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(viewingItem.item.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    })}
                   </div>
                 </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setConvertDialog({ open: false, type: null, message: null })}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleConvertToTask}>
-                    <CheckSquare className="w-4 h-4 mr-2" />
-                    Create Task
+                <div className="flex justify-end gap-2 pt-2 flex-wrap">
+                  {viewingItem.item.status !== 'replied' && (
+                    <Button size="sm" onClick={() => { handleMarkAsReplied(viewingItem.item.id); setViewingItem(null); }}>
+                      <CheckCheck className="w-4 h-4 mr-2" />
+                      Mark as Replied
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => { setDeletingItem({ id: viewingItem.item.id, kind: 'message' }); setViewingItem(null); }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
                   </Button>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="scheduleTitle">Schedule Title</Label>
-                  <Input
-                    id="scheduleTitle"
-                    value={convertFormData.title || convertDialog.message?.subject || ''}
-                    onChange={(e) => setConvertFormData(prev => ({ ...prev, title: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="scheduleDescription">Description</Label>
-                  <Textarea
-                    id="scheduleDescription"
-                    value={convertFormData.description || convertDialog.message?.message || ''}
-                    onChange={(e) => setConvertFormData(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="startTime">Start Time</Label>
-                    <Input
-                      id="startTime"
-                      type="datetime-local"
-                      value={convertFormData.startTime || ''}
-                      onChange={(e) => setConvertFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                    />
+              </>
+            )}
+
+            {viewingItem?.kind === 'taskRequest' && (
+              <>
+                <DialogHeader className="min-w-0">
+                  <DialogTitle className="flex items-center gap-2 flex-wrap break-words pr-6 min-w-0">
+                    <Badge className={`${getStatusColor(viewingItem.item.status)} text-white text-xs shrink-0`}>
+                      {getTaskRequestStatusLabel(viewingItem.item.status)}
+                    </Badge>
+                    <span className="break-words">{viewingItem.item.title}</span>
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 min-w-0">
+                  <div className="text-sm">
+                    <span className="font-medium break-words">{viewingItem.item.requester_name}</span>
+                    <span className="text-muted-foreground"> &lt;</span>
+                    <a href={`mailto:${viewingItem.item.requester_email}`} className="text-muted-foreground hover:text-primary break-words">
+                      {viewingItem.item.requester_email}
+                    </a>
+                    <span className="text-muted-foreground">&gt;</span>
                   </div>
-                  <div>
-                    <Label htmlFor="endTime">End Time</Label>
-                    <Input
-                      id="endTime"
-                      type="datetime-local"
-                      value={convertFormData.endTime || ''}
-                      onChange={(e) => setConvertFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                    />
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Priority:</span>{" "}
+                      <Badge variant="outline" className="capitalize">{viewingItem.item.priority}</Badge>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Category:</span>{" "}
+                      <Badge variant="outline" className="capitalize">{viewingItem.item.category}</Badge>
+                    </div>
+                    {viewingItem.item.due_date && (
+                      <div>
+                        <span className="text-muted-foreground">Due:</span>{" "}
+                        {new Date(viewingItem.item.due_date).toLocaleDateString()}
+                        {viewingItem.item.due_time ? ` ${viewingItem.item.due_time}` : ""}
+                      </div>
+                    )}
+                    {viewingItem.item.estimated_duration && (
+                      <div>
+                        <span className="text-muted-foreground">Duration:</span>{" "}
+                        <span className="break-words">{viewingItem.item.estimated_duration}</span>
+                      </div>
+                    )}
+                    {viewingItem.item.budget && (
+                      <div>
+                        <span className="text-muted-foreground">Budget:</span>{" "}
+                        <span className="break-words">{viewingItem.item.budget}</span>
+                      </div>
+                    )}
+                  </div>
+                  {viewingItem.item.description && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Description</p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{viewingItem.item.description}</p>
+                    </div>
+                  )}
+                  {viewingItem.item.additional_notes && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Additional Notes</p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{viewingItem.item.additional_notes}</p>
+                    </div>
+                  )}
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(viewingItem.item.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    })}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="scheduleType">Type</Label>
-                    <Select value={convertFormData.type || 'meeting'} onValueChange={(value) => setConvertFormData(prev => ({ ...prev, type: value as 'meeting' | 'call' | 'event' | 'deadline' }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="meeting">Meeting</SelectItem>
-                        <SelectItem value="call">Call</SelectItem>
-                        <SelectItem value="event">Event</SelectItem>
-                        <SelectItem value="deadline">Deadline</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center space-x-2 mt-6">
-                    <input
-                      type="checkbox"
-                      id="isPublic"
-                      checked={convertFormData.isPublic || false}
-                      onChange={(e) => setConvertFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
-                    />
-                    <Label htmlFor="isPublic" className="text-sm">Public</Label>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setConvertDialog({ open: false, type: null, message: null })}>
-                    Cancel
+                <div className="flex justify-end gap-2 pt-2 flex-wrap">
+                  {viewingItem.item.status === 'pending' && (
+                    <>
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => { handleSendToWorkOs(viewingItem.item as TaskRequest); setViewingItem(null); }}
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Sent to WorkOS
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => { handleDeclineTaskRequest(viewingItem.item as TaskRequest); setViewingItem(null); }}
+                      >
+                        <Ban className="w-4 h-4 mr-2" />
+                        Decline
+                      </Button>
+                    </>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => { setDeletingItem({ id: viewingItem.item.id, kind: 'taskRequest' }); setViewingItem(null); }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
                   </Button>
-                  <Button onClick={handleConvertToSchedule}>
-                    <CalendarPlus className="w-4 h-4 mr-2" />
-                    Create Schedule
-                  </Button>
                 </div>
-              </div>
+              </>
             )}
           </DialogContent>
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={deletingMessageId !== null} onOpenChange={(open) => {
-          if (!open) setDeletingMessageId(null);
+        <AlertDialog open={deletingItem !== null} onOpenChange={(open) => {
+          if (!open) setDeletingItem(null);
         }}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Message</AlertDialogTitle>
+              <AlertDialogTitle>{deletingItem?.kind === 'taskRequest' ? 'Delete Task Request' : 'Delete Message'}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this message? This action cannot be undone.
+                Are you sure you want to delete this {deletingItem?.kind === 'taskRequest' ? 'task request' : 'message'}? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setDeletingMessageId(null)}>
+              <AlertDialogCancel onClick={() => setDeletingItem(null)}>
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => deletingMessageId && handleDeleteMessage(deletingMessageId)}
+                onClick={handleDeleteItem}
                 className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
               >
                 Delete

@@ -11,8 +11,8 @@ import { BlogPostView } from "./pages/BlogPostView";
 import Contact from "./pages/Contact";
 import { Auth } from "./pages/Auth";
 import { Profile } from "./pages/Profile";
+import { Settings } from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import { Schedule } from "./pages/Schedule";
 
 const queryClient = new QueryClient();
 
@@ -29,8 +29,7 @@ const App = () => (
               <Route path="/projects" element={<Projects />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostView />} />
-              {/* <Route path="/timeline" element={<Timeline />} /> */}
-              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

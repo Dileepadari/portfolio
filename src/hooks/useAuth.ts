@@ -1,67 +1,43 @@
-import { useState, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from 'react';
+import { adminApi } from '@/lib/adminApi';
+import {
+  getAdminToken,
+  setAdminToken,
+  clearAdminToken,
+  decodeAdminToken,
+  type AdminTokenPayload,
+} from '@/lib/adminAuthToken';
 
+/**
+ * Admin-only auth against our own `admin_users` table (see
+ * supabase/functions/admin), not supabase.auth — there is no visitor-facing
+ * sign-up; admins are provisioned via `npm run create-admin`.
+ */
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AdminTokenPayload | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    const token = getAdminToken();
+    setUser(token ? decodeAdminToken(token) : null);
+    setLoading(false);
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
-  };
+  const signIn = useCallback(async (username: string, password: string) => {
+    try {
+      const { token } = await adminApi.login(username, password);
+      setAdminToken(token);
+      setUser(decodeAdminToken(token));
+      return { error: null };
+    } catch (error) {
+      return { error: error instanceof Error ? error : new Error('Login failed') };
+    }
+  }, []);
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
-    return { error };
-  };
+  const signOut = useCallback(async () => {
+    clearAdminToken();
+    setUser(null);
+  }, []);
 
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
-  };
-
-  return {
-    user,
-    session,
-    loading,
-    signIn,
-    signUp,
-    signOut,
-  };
+  return { user, loading, signIn, signOut };
 }
