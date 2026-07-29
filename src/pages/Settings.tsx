@@ -9,6 +9,7 @@ import { Settings as SettingsIcon, Plus, Trash2, Save } from "lucide-react";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useSiteSettings, AdminQuickLink } from "@/hooks/usePortfolioData";
 import { useToast } from "@/hooks/use-toast";
+import { SettingsSkeleton } from "@/components/skeletons/pages";
 
 export function Settings() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -53,11 +54,7 @@ export function Settings() {
   };
 
   if (adminLoading || loading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="animate-pulse">Loading...</div>
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   if (!isAdmin) {

@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { preventAccidentalDialogClose } from "@/lib/utils";
+import { BlogSkeleton } from "@/components/skeletons/pages";
 import { 
   Search, 
   Calendar, 
@@ -89,11 +91,7 @@ export function Blog() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-lg">Loading blog posts...</div>
-      </div>
-    );
+    return <BlogSkeleton />;
   }
 
   if (error) {
@@ -566,7 +564,7 @@ function BlogPostForm({ post, onSave, onCancel, allTags }: BlogPostFormProps) {
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" {...preventAccidentalDialogClose}>
         <DialogHeader>
           <DialogTitle>{post ? 'Edit Blog Post' : 'Add New Blog Post'}</DialogTitle>
         </DialogHeader>

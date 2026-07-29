@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/providers/ThemeProvider";
+import { preventAccidentalDialogClose } from "@/lib/utils";
+import { ProjectsSkeleton } from "@/components/skeletons/pages";
 import { 
   Search, 
   ExternalLink, 
@@ -176,11 +178,7 @@ export function Projects() {
   const totalDeployed = projects.filter(p => p.live_url).length;
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-foreground">Loading projects...</div>
-      </div>
-    );
+    return <ProjectsSkeleton />;
   }
 
   return (
@@ -367,7 +365,7 @@ export function Projects() {
       {/* Add Project Dialog */}
       {addingProject && (
         <Dialog open={addingProject} onOpenChange={setAddingProject}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" {...preventAccidentalDialogClose}>
             <DialogHeader>
               <DialogTitle>Add New Project</DialogTitle>
             </DialogHeader>
@@ -402,7 +400,7 @@ export function Projects() {
       {/* Edit Project Dialog */}
       {editingProject && (
         <Dialog open={!!editingProject} onOpenChange={() => setEditingProject(null)}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" {...preventAccidentalDialogClose}>
             <DialogHeader>
               <DialogTitle>Edit Project</DialogTitle>
             </DialogHeader>

@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { BlogPostViewSkeleton } from "@/components/skeletons/pages";
 import {
   ArrowLeft,
   Calendar,
@@ -207,11 +208,7 @@ export function BlogPostView() {
   };
 
   if (postsLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-lg">Loading blog post...</div>
-      </div>
-    );
+    return <BlogPostViewSkeleton />;
   }
 
   if (!post) {

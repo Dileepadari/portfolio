@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { preventAccidentalDialogClose } from "@/lib/utils";
+import { ProfileSkeleton } from "@/components/skeletons/pages";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -443,11 +445,7 @@ export function Profile() {
   }, {} as Record<string, typeof skills>);
 
   if (!personalInfo) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-foreground">Loading...</div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
@@ -1371,7 +1369,7 @@ export function Profile() {
       {/* Add Course Dialog */}
       {addingCourse && (
         <Dialog open={addingCourse} onOpenChange={setAddingCourse}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md" {...preventAccidentalDialogClose}>
             <DialogHeader>
               <DialogTitle>Add New Course</DialogTitle>
             </DialogHeader>
@@ -1396,7 +1394,7 @@ export function Profile() {
       {/* Edit Course Dialog */}
       {editingCourse && (
         <Dialog open={!!editingCourse} onOpenChange={() => setEditingCourse(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md" {...preventAccidentalDialogClose}>
             <DialogHeader>
               <DialogTitle>Edit Course</DialogTitle>
             </DialogHeader>
