@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/providers/ThemeProvider";
-import { preventAccidentalDialogClose } from "@/lib/utils";
+import { preventAccidentalDialogClose, sanitizeHtml } from "@/lib/utils";
 import { ProjectsSkeleton } from "@/components/skeletons/pages";
 import { 
   Search, 
@@ -495,7 +495,10 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2 mb-2">
               <h3 className="text-base sm:text-lg font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-                <span className="truncate">{project.title}</span>
+                <span
+                  className="truncate"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.title) }}
+                />
                 {project.is_contributed && <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />}
                 {featured && <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current flex-shrink-0" />}
               </h3>
@@ -530,9 +533,10 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
               </div>
             </div>
             
-            <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-3 text-justify">
-              {project.description}
-            </p>
+            <p
+              className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-3 text-justify"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }}
+            />
 
             {/* Language and Stats */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground mb-3">
@@ -542,7 +546,10 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
                     className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
                     style={{ backgroundColor: project.language_color }}
                   />
-                  <span className="truncate">{project.language}</span>
+                  <span
+                    className="truncate"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.language) }}
+                  />
                 </div>
               )}
               

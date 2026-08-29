@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { LogIn, ArrowLeft, Github } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSiteSettings } from '@/hooks/usePortfolioData';
+import { sanitizeHtml } from '@/lib/utils';
 
 export function Auth() {
   const navigate = useNavigate();
@@ -66,9 +67,10 @@ export function Auth() {
           <div className="flex items-center justify-center mb-2">
             <Github className="w-8 h-8 text-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {settings.auth_title}
-          </h1>
+          <h1
+            className="text-2xl font-bold text-foreground"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(settings.auth_title || 'Admin Sign In') }}
+          />
           <p className="text-muted-foreground mt-2">
             Sign in to access admin features
           </p>

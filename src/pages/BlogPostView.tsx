@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { BlogPostViewSkeleton } from "@/components/skeletons/pages";
+import { sanitizeHtml } from "@/lib/utils";
 import {
   ArrowLeft,
   Calendar,
@@ -252,14 +253,16 @@ export function BlogPostView() {
               ))}
             </div>
             
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">
-              {post.title}
-            </h1>
+            <h1
+              className="text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.title) }}
+            />
             
             {post.excerpt && (
-              <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
-                {post.excerpt}
-              </p>
+              <p
+                className="text-xl text-muted-foreground mb-6 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.excerpt) }}
+              />
             )}
 
             <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">

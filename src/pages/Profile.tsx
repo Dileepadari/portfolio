@@ -617,9 +617,11 @@ export function Profile() {
               />
             ) : (
               <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
-                <p>
-                  {personalInfo?.bio || "Hello! I'm a passionate developer with a keen interest in building innovative solutions that make a difference."}
-                </p>
+                <p
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(personalInfo?.bio || "Hello! I'm a passionate developer with a keen interest in building innovative solutions that make a difference.")
+                  }}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                   {(personalInfo?.highlights || []).map((highlight, index) => {
@@ -628,8 +630,14 @@ export function Profile() {
                       <div key={index} className="flex items-start space-x-3">
                         <Icon className="w-5 h-5 text-primary mt-1 shrink-0" />
                         <div>
-                          <h3 className="font-semibold text-foreground mb-1">{highlight.title}</h3>
-                          <p className="text-sm">{highlight.description}</p>
+                          <h3
+                            className="font-semibold text-foreground mb-1"
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlight.title) }}
+                          />
+                          <p
+                            className="text-sm"
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlight.description) }}
+                          />
                         </div>
                       </div>
                     );
@@ -723,11 +731,20 @@ export function Profile() {
                             <div>
                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-1 sm:gap-0">
                                 <div className="flex-1">
-                                  <h3 className="font-semibold text-foreground text-sm sm:text-base">{exp.title}</h3>
-                                  <p className="text-primary font-medium text-sm sm:text-base">{exp.company} ({exp.location})</p>
+                                  <h3
+                                    className="font-semibold text-foreground text-sm sm:text-base"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.title) }}
+                                  />
+                                  <p
+                                    className="text-primary font-medium text-sm sm:text-base"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(`${exp.company}${exp.location ? ` (${exp.location})` : ''}`) }}
+                                  />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs sm:text-sm text-muted-foreground shrink-0 bg-muted px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:scale-105 cursor-default">{exp.duration}</span>
+                                  <span
+                                    className="text-xs sm:text-sm text-muted-foreground shrink-0 bg-muted px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:scale-105 cursor-default"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(exp.duration) }}
+                                  />
                                   {isAdmin && (
                                     <div className="flex gap-1">
                                       <Button
@@ -770,7 +787,10 @@ export function Profile() {
                               {exp.description && (
                                 <ul className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed list-disc list-inside">
                                   {exp.description.map((desc, index) => (
-                                    <li key={index}>{desc}</li>
+                                    <li
+                                      key={index}
+                                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(desc) }}
+                                    />
                                   ))}
                                 </ul>
                               )}
@@ -868,11 +888,20 @@ export function Profile() {
                             <>
                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-1 sm:gap-0">
                                 <div className="flex-1">
-                                  <h3 className="font-semibold text-foreground text-sm sm:text-base">{edu.degree}</h3>
-                                  <p className="text-primary text-sm sm:text-base">{edu.institution}</p>
+                                  <h3
+                                    className="font-semibold text-foreground text-sm sm:text-base"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(edu.degree) }}
+                                  />
+                                  <p
+                                    className="text-primary text-sm sm:text-base"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(edu.institution) }}
+                                  />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs sm:text-sm text-muted-foreground shrink-0 bg-muted px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:scale-105 cursor-default">{edu.duration}</span>
+                                  <span
+                                    className="text-xs sm:text-sm text-muted-foreground shrink-0 bg-muted px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:scale-105 cursor-default"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(edu.duration) }}
+                                  />
                                   {isAdmin && (
                                     <div className="flex gap-1">
                                       <Button
@@ -914,14 +943,23 @@ export function Profile() {
                               </div>
                               <div className="flex justify-between items-center">
                                 {edu.location && (
-                                  <p className="text-xs sm:text-sm text-muted-foreground mb-2">{edu.location}</p>
+                                  <p
+                                    className="text-xs sm:text-sm text-muted-foreground mb-2"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(edu.location) }}
+                                  />
                                 )}
                                 {edu.gpa && (
-                                  <p className="text-xs sm:text-sm text-muted-foreground mb-2">GPA: {edu.gpa}</p>
+                                  <p
+                                    className="text-xs sm:text-sm text-muted-foreground mb-2"
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(`GPA: ${edu.gpa}`) }}
+                                  />
                                 )}
                               </div>
                               {edu.description && (
-                                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{edu.description}</p>
+                                <p
+                                  className="text-xs sm:text-sm text-muted-foreground leading-relaxed"
+                                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(edu.description) }}
+                                />
                               )}
                             </>
                           )}
@@ -964,7 +1002,10 @@ export function Profile() {
                       }}
                     >
                       <div className="flex items-center space-x-3 min-w-0 flex-1">
-                        <span className="font-medium text-foreground text-sm">{course.name}</span>
+                        <span
+                          className="font-medium text-foreground text-sm"
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.name) }}
+                        />
                         {course.is_favorite && (
                           <Star className="w-4 h-4 fill-yellow-500 text-yellow-500 shrink-0" />
                         )}
@@ -1124,9 +1165,10 @@ export function Profile() {
                                 animationDuration: '500ms'
                               }}
                             >
-                              <span className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200">
-                                {skill.skill_name}
-                              </span>
+                              <span
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(skill.skill_name) }}
+                              />
                               {isAdmin && (
                                 <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <Button
@@ -1222,9 +1264,15 @@ export function Profile() {
                       <>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-foreground text-sm sm:text-base">{achievement.title}</h3>
+                            <h3
+                              className="font-semibold text-foreground text-sm sm:text-base"
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievement.title) }}
+                            />
                             {achievement.description && (
-                              <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">{achievement.description}</p>
+                              <p
+                                className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(achievement.description) }}
+                              />
                             )}
                             <div className="flex justify-between items-center">
                             {achievement.date_achieved && (
@@ -1323,9 +1371,15 @@ export function Profile() {
                     ) : (
                       <div key={language.id} className="space-y-2 group">
                         <div className="flex justify-between items-center">
-                          <span className="font-medium text-foreground text-sm sm:text-base">{language.name}</span>
+                          <span
+                            className="font-medium text-foreground text-sm sm:text-base"
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(language.name) }}
+                          />
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{language.level}</span>
+                            <span
+                              className="text-xs text-muted-foreground"
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(language.level) }}
+                            />
                             {isAdmin && (
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button

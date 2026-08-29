@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { preventAccidentalDialogClose } from "@/lib/utils";
+import { preventAccidentalDialogClose, sanitizeHtml } from "@/lib/utils";
 import { BlogSkeleton } from "@/components/skeletons/pages";
 import { 
   Search, 
@@ -336,12 +336,13 @@ function FeaturedPostCard({ post, isAdmin, onEdit, onDelete, navigate }: Feature
         </div>
         <div onClick={handleCardClick} className="cursor-pointer">
           <h3 className="text-xl font-semibold text-primary hover:underline mb-2 flex items-center gap-2">
-            {post.title}
+            <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.title) }} />
             {post.external_link && <ExternalLink className="w-4 h-4" />}
           </h3>
-          <p className="text-muted-foreground leading-relaxed">
-            {post.excerpt || "No excerpt available"}
-          </p>
+          <p
+            className="text-muted-foreground leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.excerpt || "No excerpt available") }}
+          />
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -457,12 +458,13 @@ function BlogPostCard({ post, isAdmin, onEdit, onDelete, navigate }: BlogPostCar
         </div>
         <div onClick={handleCardClick} className="cursor-pointer">
           <h3 className="text-xl font-semibold text-primary hover:underline mb-2 flex items-center gap-2">
-            {post.title}
+            <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.title) }} />
             {post.external_link && <ExternalLink className="w-4 h-4" />}
           </h3>
-          <p className="text-muted-foreground leading-relaxed">
-            {post.excerpt || "No excerpt available"}
-          </p>
+          <p
+            className="text-muted-foreground leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.excerpt || "No excerpt available") }}
+          />
         </div>
       </CardHeader>
       <CardContent className="pt-0">
