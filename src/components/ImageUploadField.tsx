@@ -84,26 +84,27 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
 
         <div className="flex flex-col gap-1 flex-1 min-w-0">
           <div className="flex gap-2">
-            <input
-              id={fileInputId}
-              ref={fileInputRef}
-              type="file"
-              accept={fileType === "images" ? "image/*" : "image/*,.pdf,.doc,.docx"}
-              className="sr-only"
-              onChange={handleFileSelected}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={uploading}
-              asChild
-            >
-              <label htmlFor={fileInputId} className="cursor-pointer flex items-center">
+            <div className="relative inline-flex">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={fileType === "images" ? "image/*" : "image/*,.pdf,.doc,.docx"}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                disabled={uploading}
+                onChange={handleFileSelected}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                tabIndex={-1}
+                className="pointer-events-none"
+              >
                 {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
                 {uploading ? "Uploading..." : "Upload"}
-              </label>
-            </Button>
+              </Button>
+            </div>
             <Button
               type="button"
               variant="ghost"
