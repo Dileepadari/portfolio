@@ -150,14 +150,47 @@ export interface BlogPost {
   updated_at: string;
 }
 
+const memoryCache: Record<string, unknown> = {};
+
+function getCachedData<T>(key: string): T | null {
+  if (memoryCache[key] !== undefined) return memoryCache[key] as T;
+  try {
+    const raw = sessionStorage.getItem(`cache_${key}`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      memoryCache[key] = parsed;
+      return parsed as T;
+    }
+  } catch {}
+  return null;
+}
+
+function setCachedData(key: string, value: unknown): void {
+  memoryCache[key] = value;
+  try {
+    sessionStorage.setItem(`cache_${key}`, JSON.stringify(value));
+  } catch {}
+}
+
+export function clearPortfolioCache(key?: string): void {
+  if (key) {
+    delete memoryCache[key];
+    try { sessionStorage.removeItem(`cache_${key}`); } catch {}
+  } else {
+    Object.keys(memoryCache).forEach(k => delete memoryCache[k]);
+    try { sessionStorage.clear(); } catch {}
+  }
+}
+
 export function usePersonalInfo() {
-  const [data, setData] = useState<PersonalInfo | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedData<PersonalInfo>('personal_info');
+  const [data, setData] = useState<PersonalInfo | null>(cached);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPersonalInfo = async () => {
     try {
-      setLoading(true);
+      if (!data) setLoading(true);
       const { data: result, error } = await supabase
         .from('personal_info')
         .select('*')
@@ -165,6 +198,7 @@ export function usePersonalInfo() {
 
       if (error) throw error;
       setData(result);
+      setCachedData('personal_info', result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -173,20 +207,21 @@ export function usePersonalInfo() {
   };
 
   useEffect(() => {
-    fetchPersonalInfo();
+    if (!cached) fetchPersonalInfo();
   }, []);
 
   return { data, loading, error, refetch: fetchPersonalInfo };
 }
 
 export function useEducation() {
-  const [data, setData] = useState<Education[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedData<Education[]>('education');
+  const [data, setData] = useState<Education[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEducation = async () => {
     try {
-      setLoading(true);
+      if (!data.length) setLoading(true);
       const { data: result, error } = await supabase
         .from('education')
         .select('*')
@@ -194,6 +229,7 @@ export function useEducation() {
 
       if (error) throw error;
       setData(result || []);
+      setCachedData('education', result || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -202,20 +238,21 @@ export function useEducation() {
   };
 
   useEffect(() => {
-    fetchEducation();
+    if (!cached) fetchEducation();
   }, []);
 
   return { data, loading, error, refetch: fetchEducation };
 }
 
 export function useExperience() {
-  const [data, setData] = useState<Experience[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedData<Experience[]>('experience');
+  const [data, setData] = useState<Experience[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const fetchExperience = async () => {
     try {
-      setLoading(true);
+      if (!data.length) setLoading(true);
       const { data: result, error } = await supabase
         .from('experience')
         .select('*')
@@ -223,6 +260,7 @@ export function useExperience() {
 
       if (error) throw error;
       setData(result || []);
+      setCachedData('experience', result || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -231,20 +269,21 @@ export function useExperience() {
   };
 
   useEffect(() => {
-    fetchExperience();
+    if (!cached) fetchExperience();
   }, []);
 
   return { data, loading, error, refetch: fetchExperience };
 }
 
 export function useProjects() {
-  const [data, setData] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedData<Project[]>('projects');
+  const [data, setData] = useState<Project[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProjects = async () => {
     try {
-      setLoading(true);
+      if (!data.length) setLoading(true);
       const { data: result, error } = await supabase
         .from('projects')
         .select('*')
@@ -252,6 +291,7 @@ export function useProjects() {
 
       if (error) throw error;
       setData(result || []);
+      setCachedData('projects', result || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -260,20 +300,21 @@ export function useProjects() {
   };
 
   useEffect(() => {
-    fetchProjects();
+    if (!cached) fetchProjects();
   }, []);
 
   return { data, loading, error, refetch: fetchProjects };
 }
 
 export function useSkills() {
-  const [data, setData] = useState<Skill[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedData<Skill[]>('skills');
+  const [data, setData] = useState<Skill[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSkills = async () => {
     try {
-      setLoading(true);
+      if (!data.length) setLoading(true);
       const { data: result, error } = await supabase
         .from('skills')
         .select('*')
@@ -281,6 +322,7 @@ export function useSkills() {
 
       if (error) throw error;
       setData(result || []);
+      setCachedData('skills', result || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -289,20 +331,21 @@ export function useSkills() {
   };
 
   useEffect(() => {
-    fetchSkills();
+    if (!cached) fetchSkills();
   }, []);
 
   return { data, loading, error, refetch: fetchSkills };
 }
 
 export function useAchievements() {
-  const [data, setData] = useState<Achievement[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedData<Achievement[]>('achievements');
+  const [data, setData] = useState<Achievement[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAchievements = async () => {
     try {
-      setLoading(true);
+      if (!data.length) setLoading(true);
       const { data: result, error } = await supabase
         .from('achievements')
         .select('*')
@@ -310,6 +353,7 @@ export function useAchievements() {
 
       if (error) throw error;
       setData(result || []);
+      setCachedData('achievements', result || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -318,7 +362,7 @@ export function useAchievements() {
   };
 
   useEffect(() => {
-    fetchAchievements();
+    if (!cached) fetchAchievements();
   }, []);
 
   return { data, loading, error, refetch: fetchAchievements };
@@ -332,16 +376,18 @@ export function useAchievements() {
  * delete boilerplate above.
  */
 function useAdminCrud<T extends { id: string }>(table: string, orderBy: string) {
-  const [data, setData] = useState<T[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedData<T[]>(`crud_${table}`);
+  const [data, setData] = useState<T[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!data.length) setLoading(true);
       const { data: result, error } = await supabase.from(table).select('*').order(orderBy);
       if (error) throw error;
       setData((result || []) as T[]);
+      setCachedData(`crud_${table}`, result || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -350,7 +396,7 @@ function useAdminCrud<T extends { id: string }>(table: string, orderBy: string) 
   }, [table, orderBy]);
 
   useEffect(() => {
-    refetch();
+    if (!cached) refetch();
   }, [refetch]);
 
   const create = async (payload: Omit<T, 'id'>) => {
