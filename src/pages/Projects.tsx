@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -172,6 +172,36 @@ export function Projects() {
     }
   });
 
+  const PAGE_SIZE = 6;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset pagination when search or filters change
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [searchTerm, selectedFilter, selectedCategory, sortBy]);
+
+  // Infinite scroll intersection observer
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, filteredProjects.length));
+        }
+      },
+      { rootMargin: "250px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filteredProjects.length, visibleCount]);
+
+  const visibleProjects = filteredProjects.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredProjects.length;
+
   const featuredProjects = projects.filter(p => p.featured);
   const ownedProjects = projects.filter(p => !p.is_contributed).length;
   const contributedProjects = projects.filter(p => p.is_contributed).length;
@@ -340,8 +370,8 @@ export function Projects() {
 
           {/* Projects Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredProjects.map((project, index) => (
-              <div key={project.id} className="scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
+            {visibleProjects.map((project, index) => (
+              <div key={project.id} className="scale-in" style={{ animationDelay: `${(index % PAGE_SIZE) * 0.05}s` }}>
                 <ProjectCard 
                   project={project} 
                   isAdmin={isAdmin}
@@ -351,6 +381,30 @@ export function Projects() {
               </div>
             ))}
           </div>
+
+          {/* Infinite Scroll Sentinel & Loader */}
+          {hasMore && (
+            <div ref={loadMoreRef} className="flex flex-col items-center justify-center py-8 gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span>Loading more projects ({visibleProjects.length} of {filteredProjects.length})...</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-1 text-xs"
+                onClick={() => setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, filteredProjects.length))}
+              >
+                Load more
+              </Button>
+            </div>
+          )}
+
+          {!hasMore && filteredProjects.length > PAGE_SIZE && (
+            <div className="text-center py-6 text-xs text-muted-foreground">
+              Showing all {filteredProjects.length} projects
+            </div>
+          )}
 
           {filteredProjects.length === 0 && (
             <div className="text-center py-12">
