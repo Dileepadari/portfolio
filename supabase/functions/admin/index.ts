@@ -19,7 +19,7 @@ const JWT_SECRET = Deno.env.get("ADMIN_JWT_SECRET")!;
 // (and the upload endpoint's own returned `url` has a domain bug), so the
 // public URL is built here from the known {fileType}/{appName}/{fileName}
 // path convention rather than trusted from the upload response.
-const ORACLE_UPLOAD_BASE_URL = Deno.env.get("ORACLE_UPLOAD_BASE_URL") ?? "https://mystorage.dileepadari.dev";
+const ORACLE_UPLOAD_BASE_URL = Deno.env.get("ORACLE_UPLOAD_BASE_URL") ?? "https://supabase.dileepadari.dev";
 const ORACLE_PUBLIC_BASE_URL = Deno.env.get("ORACLE_PUBLIC_BASE_URL") ?? "https://mystorage.dileepadari.dev";
 const ORACLE_UPLOAD_PATH = Deno.env.get("ORACLE_UPLOAD_PATH") ?? "/upload";
 const SELFHOST_JWT_SECRET = Deno.env.get("SELFHOST_JWT_SECRET") ?? "979fdfbfec9ee36526a7cc292d9108805ca0357a83f20cd50c3958e33a01e2b2";
