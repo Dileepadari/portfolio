@@ -24,6 +24,7 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
   const [uploading, setUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputId = useRef(`file-input-${Math.random().toString(36).slice(2, 9)}`).current;
   const { toast } = useToast();
 
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,10 +85,11 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
         <div className="flex flex-col gap-1 flex-1 min-w-0">
           <div className="flex gap-2">
             <input
+              id={fileInputId}
               ref={fileInputRef}
               type="file"
               accept={fileType === "images" ? "image/*" : "image/*,.pdf,.doc,.docx"}
-              className="hidden"
+              className="sr-only"
               onChange={handleFileSelected}
             />
             <Button
@@ -95,10 +97,12 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
               variant="outline"
               size="sm"
               disabled={uploading}
-              onClick={() => fileInputRef.current?.click()}
+              asChild
             >
-              {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-              {uploading ? "Uploading..." : "Upload"}
+              <label htmlFor={fileInputId} className="cursor-pointer flex items-center">
+                {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                {uploading ? "Uploading..." : "Upload"}
+              </label>
             </Button>
             <Button
               type="button"
