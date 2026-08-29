@@ -21,7 +21,9 @@ const JWT_SECRET = Deno.env.get("ADMIN_JWT_SECRET")!;
 // path convention rather than trusted from the upload response.
 const ORACLE_UPLOAD_BASE_URL = Deno.env.get("ORACLE_UPLOAD_BASE_URL") ?? "https://supabase.dileepadari.dev";
 const ORACLE_PUBLIC_BASE_URL = Deno.env.get("ORACLE_PUBLIC_BASE_URL") ?? "https://mystorage.dileepadari.dev";
-const ORACLE_UPLOAD_API_KEY = Deno.env.get("ORACLE_UPLOAD_API_KEY") ?? "";
+const ORACLE_UPLOAD_PATH = Deno.env.get("ORACLE_UPLOAD_PATH") ?? "/functions/v1/upload";
+const SELFHOST_JWT_SECRET = Deno.env.get("SELFHOST_JWT_SECRET") ?? "979fdfbfec9ee36526a7cc292d9108805ca0357a83f20cd50c3958e33a01e2b2";
+const ORACLE_UPLOAD_API_KEY = Deno.env.get("ORACLE_UPLOAD_API_KEY") ?? "This_is_top_secret_to_upload_to_oracle";
 const ORACLE_APP_NAME = Deno.env.get("ORACLE_APP_NAME") ?? "portfolio";
 
 const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -74,21 +76,21 @@ function base64UrlDecode(str: string): Uint8Array {
   return Uint8Array.from(binary, (c) => c.charCodeAt(0));
 }
 
-async function hmacKey() {
+async function hmacKey(secret = JWT_SECRET) {
   return crypto.subtle.importKey(
     "raw",
-    new TextEncoder().encode(JWT_SECRET),
+    new TextEncoder().encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign", "verify"],
   );
 }
 
-async function signJwt(payload: Record<string, unknown>): Promise<string> {
+async function signJwt(payload: Record<string, unknown>, secret = JWT_SECRET): Promise<string> {
   const encHeader = base64UrlEncode(new TextEncoder().encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
   const encPayload = base64UrlEncode(new TextEncoder().encode(JSON.stringify(payload)));
   const data = `${encHeader}.${encPayload}`;
-  const signature = await crypto.subtle.sign("HMAC", await hmacKey(), new TextEncoder().encode(data));
+  const signature = await crypto.subtle.sign("HMAC", await hmacKey(secret), new TextEncoder().encode(data));
   return `${data}.${base64UrlEncode(new Uint8Array(signature))}`;
 }
 
@@ -206,14 +208,21 @@ async function handleUpload(req: Request): Promise<Response> {
 
   const fileBuffer = await req.arrayBuffer();
 
-  const uploadRes = await fetch(`${ORACLE_UPLOAD_BASE_URL}/upload`, {
+  const now = Math.floor(Date.now() / 1000);
+  const adminToken = await signJwt({ is_admin: true, iat: now, exp: now + 300 }, SELFHOST_JWT_SECRET);
+
+  const headers: Record<string, string> = {
+    "Authorization": `Bearer ${adminToken}`,
+    "x-upload-key": ORACLE_UPLOAD_API_KEY,
+    "x-file-type": fileType,
+    "x-app-name": ORACLE_APP_NAME,
+    "x-file-name": fileName,
+    "Content-Type": "application/octet-stream",
+  };
+
+  const uploadRes = await fetch(`${ORACLE_UPLOAD_BASE_URL.replace(/\/+$/, "")}${ORACLE_UPLOAD_PATH}`, {
     method: "POST",
-    headers: {
-      "x-upload-key": ORACLE_UPLOAD_API_KEY,
-      "x-file-type": fileType,
-      "x-app-name": ORACLE_APP_NAME,
-      "x-file-name": fileName,
-    },
+    headers,
     body: fileBuffer,
   });
 
@@ -222,9 +231,6 @@ async function handleUpload(req: Request): Promise<Response> {
     return json({ error: result.error ?? "Upload to storage failed" }, 502);
   }
 
-  // Built from the known path convention rather than trusting result.url -
-  // the upload endpoint returns a URL on the wrong domain (a bug on the
-  // Oracle server side, not worth depending on here).
   const publicUrl = `${ORACLE_PUBLIC_BASE_URL}/${fileType}/${ORACLE_APP_NAME}/${fileName}`;
   return json({ url: publicUrl });
 }

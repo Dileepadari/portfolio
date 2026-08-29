@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 interface ImageUploadFieldProps {
   label?: string;
   value?: string;
+  fallbackUrl?: string;
   onChange: (url: string) => void;
   /** "images" gets a preview thumbnail; "documents" (PDFs, certificates) gets a file-link instead. */
   fileType?: "images" | "documents";
@@ -19,7 +20,7 @@ interface ImageUploadFieldProps {
  * uploads go through the admin Edge Function (which holds the Oracle
  * storage secret), never directly from the browser.
  */
-export function ImageUploadField({ label, value, onChange, fileType = "images" }: ImageUploadFieldProps) {
+export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType = "images" }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,14 +51,16 @@ export function ImageUploadField({ label, value, onChange, fileType = "images" }
     }
   };
 
+  const previewSrc = value || fallbackUrl;
+
   return (
     <div className="space-y-2">
       {label && <Label>{label}</Label>}
 
       <div className="flex items-center gap-3">
-        {fileType === "images" && value ? (
+        {fileType === "images" && previewSrc ? (
           <img
-            src={value}
+            src={previewSrc}
             alt={label || "Uploaded image"}
             className="w-14 h-14 rounded-md object-cover border border-border shrink-0"
           />

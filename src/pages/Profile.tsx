@@ -1523,6 +1523,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
       <ImageUploadField
         label="Profile photo"
         value={formData.avatar_url}
+        fallbackUrl={profileAvatar}
         onChange={(url) => setFormData(prev => ({ ...prev, avatar_url: url }))}
         fileType="images"
       />
