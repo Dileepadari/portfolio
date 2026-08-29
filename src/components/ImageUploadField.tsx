@@ -24,7 +24,6 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
   const [uploading, setUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const fileInputId = useRef(`file-input-${Math.random().toString(36).slice(2, 9)}`).current;
   const { toast } = useToast();
 
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {

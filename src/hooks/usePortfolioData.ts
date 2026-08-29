@@ -161,7 +161,9 @@ function getCachedData<T>(key: string): T | null {
       memoryCache[key] = parsed;
       return parsed as T;
     }
-  } catch {}
+  } catch (err) {
+    void err;
+  }
   return null;
 }
 
@@ -169,28 +171,37 @@ function setCachedData(key: string, value: unknown): void {
   memoryCache[key] = value;
   try {
     sessionStorage.setItem(`cache_${key}`, JSON.stringify(value));
-  } catch {}
+  } catch (err) {
+    void err;
+  }
 }
 
 export function clearPortfolioCache(key?: string): void {
   if (key) {
     delete memoryCache[key];
-    try { sessionStorage.removeItem(`cache_${key}`); } catch {}
+    try {
+      sessionStorage.removeItem(`cache_${key}`);
+    } catch (err) {
+      void err;
+    }
   } else {
-    Object.keys(memoryCache).forEach(k => delete memoryCache[k]);
-    try { sessionStorage.clear(); } catch {}
+    Object.keys(memoryCache).forEach((k) => delete memoryCache[k]);
+    try {
+      sessionStorage.clear();
+    } catch (err) {
+      void err;
+    }
   }
 }
 
 export function usePersonalInfo() {
-  const cached = getCachedData<PersonalInfo>('personal_info');
-  const [data, setData] = useState<PersonalInfo | null>(cached);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<PersonalInfo | null>(() => getCachedData<PersonalInfo>('personal_info'));
+  const [loading, setLoading] = useState(() => !getCachedData<PersonalInfo>('personal_info'));
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPersonalInfo = async () => {
+  const fetchPersonalInfo = useCallback(async () => {
     try {
-      if (!data) setLoading(true);
+      setLoading(true);
       const { data: result, error } = await supabase
         .from('personal_info')
         .select('*')
@@ -204,24 +215,25 @@ export function usePersonalInfo() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!cached) fetchPersonalInfo();
-  }, []);
+    if (!getCachedData<PersonalInfo>('personal_info')) {
+      fetchPersonalInfo();
+    }
+  }, [fetchPersonalInfo]);
 
   return { data, loading, error, refetch: fetchPersonalInfo };
 }
 
 export function useEducation() {
-  const cached = getCachedData<Education[]>('education');
-  const [data, setData] = useState<Education[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<Education[]>(() => getCachedData<Education[]>('education') || []);
+  const [loading, setLoading] = useState(() => !getCachedData<Education[]>('education'));
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEducation = async () => {
+  const fetchEducation = useCallback(async () => {
     try {
-      if (!data.length) setLoading(true);
+      setLoading(true);
       const { data: result, error } = await supabase
         .from('education')
         .select('*')
@@ -235,24 +247,25 @@ export function useEducation() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!cached) fetchEducation();
-  }, []);
+    if (!getCachedData<Education[]>('education')) {
+      fetchEducation();
+    }
+  }, [fetchEducation]);
 
   return { data, loading, error, refetch: fetchEducation };
 }
 
 export function useExperience() {
-  const cached = getCachedData<Experience[]>('experience');
-  const [data, setData] = useState<Experience[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<Experience[]>(() => getCachedData<Experience[]>('experience') || []);
+  const [loading, setLoading] = useState(() => !getCachedData<Experience[]>('experience'));
   const [error, setError] = useState<string | null>(null);
 
-  const fetchExperience = async () => {
+  const fetchExperience = useCallback(async () => {
     try {
-      if (!data.length) setLoading(true);
+      setLoading(true);
       const { data: result, error } = await supabase
         .from('experience')
         .select('*')
@@ -266,24 +279,25 @@ export function useExperience() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!cached) fetchExperience();
-  }, []);
+    if (!getCachedData<Experience[]>('experience')) {
+      fetchExperience();
+    }
+  }, [fetchExperience]);
 
   return { data, loading, error, refetch: fetchExperience };
 }
 
 export function useProjects() {
-  const cached = getCachedData<Project[]>('projects');
-  const [data, setData] = useState<Project[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<Project[]>(() => getCachedData<Project[]>('projects') || []);
+  const [loading, setLoading] = useState(() => !getCachedData<Project[]>('projects'));
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
-      if (!data.length) setLoading(true);
+      setLoading(true);
       const { data: result, error } = await supabase
         .from('projects')
         .select('*')
@@ -297,24 +311,25 @@ export function useProjects() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!cached) fetchProjects();
-  }, []);
+    if (!getCachedData<Project[]>('projects')) {
+      fetchProjects();
+    }
+  }, [fetchProjects]);
 
   return { data, loading, error, refetch: fetchProjects };
 }
 
 export function useSkills() {
-  const cached = getCachedData<Skill[]>('skills');
-  const [data, setData] = useState<Skill[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<Skill[]>(() => getCachedData<Skill[]>('skills') || []);
+  const [loading, setLoading] = useState(() => !getCachedData<Skill[]>('skills'));
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSkills = async () => {
+  const fetchSkills = useCallback(async () => {
     try {
-      if (!data.length) setLoading(true);
+      setLoading(true);
       const { data: result, error } = await supabase
         .from('skills')
         .select('*')
@@ -328,24 +343,25 @@ export function useSkills() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!cached) fetchSkills();
-  }, []);
+    if (!getCachedData<Skill[]>('skills')) {
+      fetchSkills();
+    }
+  }, [fetchSkills]);
 
   return { data, loading, error, refetch: fetchSkills };
 }
 
 export function useAchievements() {
-  const cached = getCachedData<Achievement[]>('achievements');
-  const [data, setData] = useState<Achievement[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<Achievement[]>(() => getCachedData<Achievement[]>('achievements') || []);
+  const [loading, setLoading] = useState(() => !getCachedData<Achievement[]>('achievements'));
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAchievements = async () => {
+  const fetchAchievements = useCallback(async () => {
     try {
-      if (!data.length) setLoading(true);
+      setLoading(true);
       const { data: result, error } = await supabase
         .from('achievements')
         .select('*')
@@ -359,11 +375,13 @@ export function useAchievements() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!cached) fetchAchievements();
-  }, []);
+    if (!getCachedData<Achievement[]>('achievements')) {
+      fetchAchievements();
+    }
+  }, [fetchAchievements]);
 
   return { data, loading, error, refetch: fetchAchievements };
 }
@@ -376,14 +394,13 @@ export function useAchievements() {
  * delete boilerplate above.
  */
 function useAdminCrud<T extends { id: string }>(table: string, orderBy: string) {
-  const cached = getCachedData<T[]>(`crud_${table}`);
-  const [data, setData] = useState<T[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<T[]>(() => getCachedData<T[]>(`crud_${table}`) || []);
+  const [loading, setLoading] = useState(() => !getCachedData<T[]>(`crud_${table}`));
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     try {
-      if (!data.length) setLoading(true);
+      setLoading(true);
       const { data: result, error } = await supabase.from(table).select('*').order(orderBy);
       if (error) throw error;
       setData((result || []) as T[]);
@@ -396,8 +413,10 @@ function useAdminCrud<T extends { id: string }>(table: string, orderBy: string) 
   }, [table, orderBy]);
 
   useEffect(() => {
-    if (!cached) refetch();
-  }, [refetch]);
+    if (!getCachedData<T[]>(`crud_${table}`)) {
+      refetch();
+    }
+  }, [refetch, table]);
 
   const create = async (payload: Omit<T, 'id'>) => {
     await adminApi.insert(table, payload);
