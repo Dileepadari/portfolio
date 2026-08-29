@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { preventAccidentalDialogClose } from "@/lib/utils";
+import { preventAccidentalDialogClose, sanitizeHtml } from "@/lib/utils";
 import { ProfileSkeleton } from "@/components/skeletons/pages";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -484,9 +484,10 @@ export function Profile() {
                   </div>
                 </div>
 
-                <p className="text-sm sm:text-base md:text-lg lg:text-lg text-muted-foreground mb-4 leading-relaxed w-80 md:w-max mx-auto lg:mx-0">
-                  {personalInfo?.title}
-                </p>
+                <p
+                  className="text-sm sm:text-base md:text-lg lg:text-lg text-muted-foreground mb-4 leading-relaxed mx-auto lg:mx-0"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(personalInfo?.title || '') }}
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 w-max mx-auto lg:mx-0">
                   <a
@@ -1490,7 +1491,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
             name="title"
             value={formData.title}
             onChange={handleChange}
-            placeholder="Your professional title"
+            placeholder="Your professional title (HTML supported, e.g. <br />)"
           />
         </div>
       </div>
