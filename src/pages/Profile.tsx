@@ -45,7 +45,7 @@ import { usePersonalInfo, useEducation, useExperience, useSkills, useAchievement
 import { useAdmin } from "@/hooks/useAdmin";
 import { adminApi } from "@/lib/adminApi";
 import { ImageUploadField } from "@/components/ImageUploadField";
-import profileAvatar from "@/assets/dileepadari.png";
+import profileAvatar from "@/assets/dileepadari.webp";
 import portfolio from "@/assets/portfolio.pdf";
 
 // Icon choices available for "About Me" highlight cards - a fixed set
@@ -459,6 +459,8 @@ export function Profile() {
                 <img
                   src={personalInfo?.avatar_url || profileAvatar}
                   alt={personalInfo?.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full object-cover border-4 border-border transform -scale-x-100"
                 />
               </div>

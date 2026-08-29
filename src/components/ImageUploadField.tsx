@@ -62,6 +62,8 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
           <img
             src={previewSrc}
             alt={label || "Uploaded image"}
+            loading="lazy"
+            decoding="async"
             className="w-14 h-14 rounded-md object-cover border border-border shrink-0"
           />
         ) : fileType === "documents" && value ? (

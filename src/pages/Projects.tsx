@@ -446,6 +446,8 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
         <img 
           src={imageUrl}
           alt={project.title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
         />
         {isAdmin && (

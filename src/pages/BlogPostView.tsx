@@ -322,6 +322,8 @@ export function BlogPostView() {
               <img 
                 src={post.image_url} 
                 alt={post.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-64 sm:h-80 object-cover"
               />
             </div>
