@@ -122,3 +122,114 @@ npm run build   # outputs to dist/
 ```
 
 Point Vercel, Netlify, Cloudflare Pages, or similar at this repo with build command `npm run build` and output directory `dist`, and set the three `VITE_*` environment variables from step 2 in that platform's dashboard. The Supabase Edge Function and database migrations are deployed independently via the Supabase CLI steps above - they aren't part of the static build.
+
+---
+
+## Data model: the project showcase
+
+`/projects/:slug` renders from one row of `public.projects`. Every showcase
+column is nullable and **its section is omitted when it is null**, so an
+existing project keeps working and shows exactly what it has.
+
+| Column | Half | Renders as |
+|---|---|---|
+| `slug` | - | The URL. Unique; backfilled from the title, derived on save when left blank |
+| `tagline` | reader | The line under the title |
+| `overview` | reader | Markdown section |
+| `problem` | reader | Markdown section, "The problem" |
+| `features` | reader | `[{title, description?, icon?}]`, a card grid |
+| `metrics` | reader | `[{label, value}]`, the headline numbers strip |
+| `images` / `images_light` | reader | The gallery, paired by position |
+| `hero_url` / `hero_url_light` | reader | The banner |
+| `image_url` / `image_url_light` | reader | The card image on `/projects` |
+| `tech_stack` | developer | `[{name, role?}]` |
+| `architecture` | developer | Markdown section |
+| `getting_started` | developer | Markdown section |
+| `readme` | developer | Markdown, in full, at the bottom |
+| `docs_url` / `demo_url` | developer | Link buttons in the header |
+| `project_role` / `timeline` / `status` | reader | Header metadata |
+
+`readme` is **authored, not synced.** It is the curated copy, which is what
+makes it work for contributed and private repositories, and it means nothing
+here makes a network call to GitHub at render time.
+
+### The dark/light pairing rule
+
+Each `_light` column is optional. `pickThemedSource()` in `src/lib/themedSource.ts`
+resolves it: a light viewer prefers `light` and settles for `dark`, a dark
+viewer does the reverse, and the fallback is reached only when neither exists.
+So a one-sided pair renders that side in both themes rather than falling through
+to a placeholder.
+
+Gallery arrays are paired **by index**: `images[n]` and `images_light[n]` are the
+same screenshot. A shorter light array is a valid state, not an error; the
+entries past its end fall back to their dark twins.
+
+Resolution always goes through `useTheme().resolvedTheme`, never `theme`.
+`theme` can be the literal string `"system"`, and the project cards used to
+compare it against `"dark"`/`"light"` directly, which meant every visitor who had
+never touched the toggle matched neither branch.
+
+## Performance
+
+The landing page is the only route in the entry chunk. Everything else is
+`React.lazy`, each with its own skeleton so the layout does not jump when the
+chunk lands.
+
+Three things are deliberately deferred and should stay that way:
+
+- **The markdown stack** (`react-markdown` + `rehype-highlight` + highlight.js,
+  around 500kB) is behind `LazyMarkdown`. A project with no README, no overview
+  and no architecture notes never downloads a markdown parser to discover that.
+- **Syntax-highlight auto-detection is restricted to a language subset.**
+  `rehype-highlight` otherwise runs *every* registered grammar over every
+  untagged code block and scores the results; lowlight registers around 190. A
+  README with a handful of untagged blocks was enough to lock the renderer.
+- **The README block is `content-visibility: auto`** with an intrinsic size, so
+  the browser skips its layout and paint entirely until it is near the viewport.
+  It is the longest thing on the page and always at the bottom.
+
+CI fails the build if the entry chunk passes 1.1MB. It is a tripwire against a
+new route being imported eagerly, not a budget to spend.
+
+## Tests
+
+`npm test`, 42 tests, jsdom, no network.
+
+`src/test/setup.ts` stubs `matchMedia` and `IntersectionObserver`, which jsdom
+does not implement and which `ThemeProvider` and the Projects page read on
+mount. A component that throws on mount fails every test for the same
+uninformative reason, so both are stubbed globally rather than per test.
+
+| File | Covers |
+|---|---|
+| `lib/themedSource.test.ts` | The pair-resolution matrix, including one-sided pairs and empty strings |
+| `components/ThemedImage.test.tsx` | Theme resolution including `"system"`, lazy vs eager, the broken-URL fallback and that it does not loop |
+| `components/ProjectGallery.test.tsx` | Index pairing, short light lists, and the lightbox: open, wrap, keyboard, scroll lock |
+| `pages/ProjectDetail.test.tsx` | Section omission: nothing filled, some filled, whitespace-only, empty arrays, and the 404 |
+| `hooks/useDocumentMeta.test.tsx` | Per-page title and description, and restoring them on unmount |
+
+The assertion worth keeping if the rest were deleted is
+`shows no section headings at all when nothing is filled in`. Nothing crashes
+when a heading renders above nothing, so that behaviour would rot silently.
+
+## Migrations
+
+`supabase/migrations/` now begins with `20260724000000_baseline.sql`, which
+creates the twelve tables that were previously made through the Lovable/Supabase
+dashboard and existed only on the hosted project.
+
+Before it, the chain started by altering `public.projects`, so `supabase start`
+failed on the very first migration and **no environment could be built from
+source**. The baseline is reconstructed from `src/integrations/supabase/types.ts`
+and presents the *pre-stage-1* shape (`is_private` not `is_contributed`,
+`blog_likes.user_ip` not `visitor_id`, `tasks`/`schedules` still present) so the
+existing migrations replay truthfully on top of it.
+
+Every statement is `if not exists`, so applying it to the hosted project is a
+no-op. The `migrations` CI job runs the whole chain from nothing on every push,
+which is what stops this regressing.
+
+**The showcase columns are not on the hosted project yet.** Run `npm run db:push`
+or apply `20260910000001_project_showcase.sql` before deploying this code, or
+`/projects/:slug` will 404 on every project.

@@ -46,7 +46,9 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { adminApi } from "@/lib/adminApi";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import profileAvatar from "@/assets/dileepadari.webp";
-import portfolio from "@/assets/portfolio.pdf";
+// The bundled resume is the fallback, not the source of truth: replacing it
+// used to mean a commit and a deploy. personal_info.resume_url wins when set.
+import bundledResume from "@/assets/portfolio.pdf";
 
 // Icon choices available for "About Me" highlight cards - a fixed set
 // (stored as a string key in personal_info.highlights) rather than a full
@@ -590,7 +592,7 @@ export function Profile() {
                     className="w-max bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6"
                     asChild
                   >
-                    <a href={portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                    <a href={personalInfo?.resume_url || bundledResume} target="_blank" rel="noopener noreferrer" className="flex items-center">
                       <Download className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
                       <span className="hidden xs:inline sm:hidden md:inline">Download Resume</span>
                       <span className="sm:inline md:hidden">Resume</span>
@@ -1487,6 +1489,7 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
     github: personalInfo?.github || '',
     twitter: personalInfo?.twitter || '',
     avatar_url: personalInfo?.avatar_url || '',
+    resume_url: personalInfo?.resume_url || '',
     highlights: personalInfo?.highlights || [],
   });
 
@@ -1529,6 +1532,16 @@ function PersonalInfoEditForm({ personalInfo, onSave, onCancel }: PersonalInfoEd
         onChange={(url) => setFormData(prev => ({ ...prev, avatar_url: url }))}
         fileType="images"
       />
+
+      <ImageUploadField
+        label="Resume (PDF)"
+        value={formData.resume_url}
+        onChange={(url) => setFormData(prev => ({ ...prev, resume_url: url }))}
+        fileType="documents"
+      />
+      <p className="-mt-2 text-xs text-muted-foreground">
+        Replaces the Download Resume link. Leave it empty to serve the copy bundled with the site.
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>

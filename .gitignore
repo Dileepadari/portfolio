@@ -31,3 +31,9 @@ bun.lockb
 
 # Raw DB dumps should never be committed (contains real user data)
 /portfolio_backup*
+# Screenshot harness, never committed
+public/__capture.html
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/

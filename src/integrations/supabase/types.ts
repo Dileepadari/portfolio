@@ -440,6 +440,7 @@ export type Database = {
           updated_at: string
           website: string | null
           youtube: string | null
+          resume_url: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -461,6 +462,7 @@ export type Database = {
           updated_at?: string
           website?: string | null
           youtube?: string | null
+          resume_url?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -482,6 +484,7 @@ export type Database = {
           updated_at?: string
           website?: string | null
           youtube?: string | null
+          resume_url?: string | null
         }
         Relationships: []
       }
@@ -538,6 +541,25 @@ export type Database = {
           tags: string[] | null
           title: string
           updated_at: string
+          architecture: string | null
+          demo_url: string | null
+          docs_url: string | null
+          features: Json | null
+          getting_started: string | null
+          hero_url: string | null
+          hero_url_light: string | null
+          image_url_light: string | null
+          images_light: string[] | null
+          metrics: Json | null
+          overview: string | null
+          problem: string | null
+          project_role: string | null
+          readme: string | null
+          slug: string | null
+          status: string | null
+          tagline: string | null
+          tech_stack: Json | null
+          timeline: string | null
         }
         Insert: {
           category?: string | null
@@ -558,6 +580,25 @@ export type Database = {
           tags?: string[] | null
           title: string
           updated_at?: string
+          architecture?: string | null
+          demo_url?: string | null
+          docs_url?: string | null
+          features?: Json | null
+          getting_started?: string | null
+          hero_url?: string | null
+          hero_url_light?: string | null
+          image_url_light?: string | null
+          images_light?: string[] | null
+          metrics?: Json | null
+          overview?: string | null
+          problem?: string | null
+          project_role?: string | null
+          readme?: string | null
+          slug?: string | null
+          status?: string | null
+          tagline?: string | null
+          tech_stack?: Json | null
+          timeline?: string | null
         }
         Update: {
           category?: string | null
@@ -578,6 +619,25 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
+          architecture?: string | null
+          demo_url?: string | null
+          docs_url?: string | null
+          features?: Json | null
+          getting_started?: string | null
+          hero_url?: string | null
+          hero_url_light?: string | null
+          image_url_light?: string | null
+          images_light?: string[] | null
+          metrics?: Json | null
+          overview?: string | null
+          problem?: string | null
+          project_role?: string | null
+          readme?: string | null
+          slug?: string | null
+          status?: string | null
+          tagline?: string | null
+          tech_stack?: Json | null
+          timeline?: string | null
         }
         Relationships: []
       }

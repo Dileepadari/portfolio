@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeRaw from 'rehype-raw';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { BlogPostViewSkeleton } from "@/components/skeletons/pages";
 import { sanitizeHtml } from "@/lib/utils";
+import { Markdown } from "@/components/Markdown";
 import {
   ArrowLeft,
   Calendar,
@@ -41,42 +38,12 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { getVisitorId } from "@/lib/visitor";
-import hljsLightThemeUrl from 'highlight.js/styles/github.css?url';
-import hljsDarkThemeUrl from 'highlight.js/styles/github-dark.css?url';
-
-const HLJS_THEME_LINK_ID = 'hljs-theme-stylesheet';
-
-// The two highlight.js themes both define plain `.hljs` selectors, so they can't
-// coexist as static imports (whichever loads last would just win globally).
-// Swap the <link> based on the site's actual light/dark class instead, so code
-// blocks stay legible in both themes rather than only in dark mode.
-function useHighlightTheme() {
-  useEffect(() => {
-    const applyThemeLink = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      let link = document.getElementById(HLJS_THEME_LINK_ID) as HTMLLinkElement | null;
-      if (!link) {
-        link = document.createElement('link');
-        link.id = HLJS_THEME_LINK_ID;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-      }
-      link.href = isDark ? hljsDarkThemeUrl : hljsLightThemeUrl;
-    };
-
-    applyThemeLink();
-    const observer = new MutationObserver(applyThemeLink);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-}
 
 export function BlogPostView() {
   const { slug } = useParams<{ slug: string }>();
   const { data: blogPosts, loading: postsLoading } = useBlogPosts();
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
-  useHighlightTheme();
   const { toast } = useToast();
   
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -331,14 +298,7 @@ export function BlogPostView() {
 
           {/* Article Content */}
           <div>
-            <div className="markdown-content">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight, rehypeRaw]}
-              >
-                {post.content}
-              </ReactMarkdown>
-            </div>
+            <Markdown>{post.content}</Markdown>
           </div>
         </article>
 

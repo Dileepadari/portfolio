@@ -106,3 +106,28 @@ export function SettingsSkeleton() {
     </div>
   );
 }
+
+export function ProjectDetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <Skeleton className="h-56 w-full sm:h-72 lg:h-80" />
+      <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="space-y-3">
+          <Skeleton className="h-9 w-2/3" />
+          <Skeleton className="h-5 w-1/2" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-7 w-24 rounded-full" />
+          ))}
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-4/5" />
+        </div>
+        <GridSkeleton count={3} />
+      </div>
+    </div>
+  );
+}

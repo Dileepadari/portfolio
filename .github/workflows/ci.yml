@@ -4,26 +4,111 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  web:
+    name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - run: npm run lint
 
       - name: Type check
         run: npx tsc --noEmit
 
+      - run: npm test
+
+      # The build never contacts Supabase, so dummies keep the real project out
+      # of CI while still proving the env plumbing is well formed.
       - name: Build
         run: npm run build
+        env:
+          VITE_SUPABASE_PROJECT_ID: ci
+          VITE_SUPABASE_URL: https://ci.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ci-publishable-key
+
+      # The landing page is the whole point of a portfolio, so a change that
+      # quietly doubles the entry bundle should fail rather than ship. The limit
+      # is generous against the current 754kB; it is a tripwire, not a target.
+      - name: The entry bundle has not ballooned
+        run: |
+          bytes=$(stat -c%s dist/assets/index-*.js)
+          echo "entry bundle: $bytes bytes"
+          if [ "$bytes" -gt 1100000 ]; then
+            echo "The entry chunk is over 1.1MB. Lazy-load the new route rather than raising this."
+            exit 1
+          fi
+
+  functions:
+    name: Typecheck the edge function
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: deno check supabase/functions/admin/index.ts
+
+  migrations:
+    name: Migrations rebuild the database from nothing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Until the baseline migration was written, this was impossible: the
+      # chain began by altering tables that nothing in the repository created,
+      # so `supabase start` failed on the first migration and no environment
+      # could be built from source. This job is what stops that returning.
+      - name: Start Supabase and apply every migration
+        run: npx supabase start
+
+      - name: Seed
+        run: npx supabase db reset
+
+      - name: The showcase columns exist and the seed loaded
+        run: |
+          curl -fsS "http://127.0.0.1:54321/rest/v1/projects?select=slug,readme,image_url_light,images_light&limit=1" \
+            -H "apikey: $(npx supabase status -o json | python3 -c 'import json,sys; print(json.load(sys.stdin)["ANON_KEY"])')" \
+            | tee /dev/stderr | grep -q '"slug"'
+
+      - name: Stop Supabase
+        if: always()
+        run: npx supabase stop --no-backup || true
+
+  readme-pair:
+    name: The light README matches its source
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: |
+          node scripts/build-light-readme.mjs
+          git diff --exit-code README-light.md

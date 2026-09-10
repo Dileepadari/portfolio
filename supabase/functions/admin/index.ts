@@ -22,11 +22,35 @@ const JWT_SECRET = Deno.env.get("ADMIN_JWT_SECRET")!;
 const ORACLE_UPLOAD_BASE_URL = Deno.env.get("ORACLE_UPLOAD_BASE_URL") ?? "https://supabase.dileepadari.dev";
 const ORACLE_PUBLIC_BASE_URL = Deno.env.get("ORACLE_PUBLIC_BASE_URL") ?? "https://mystorage.dileepadari.dev";
 const ORACLE_UPLOAD_PATH = Deno.env.get("ORACLE_UPLOAD_PATH") ?? "/upload";
-const SELFHOST_JWT_SECRET = Deno.env.get("SELFHOST_JWT_SECRET") ?? "979fdfbfec9ee36526a7cc292d9108805ca0357a83f20cd50c3958e33a01e2b2";
-const ORACLE_UPLOAD_API_KEY = Deno.env.get("ORACLE_UPLOAD_API_KEY") ?? "This_is_top_secret_to_upload_to_oracle";
 const ORACLE_APP_NAME = Deno.env.get("ORACLE_APP_NAME") ?? "portfolio";
 
-const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+// No fallbacks. These two were previously written into this file as `??`
+// defaults and shipped to a public repository. SELFHOST_JWT_SECRET is the
+// storage box's signing key, shared with every other project that uploads to
+// it, so a default here is not a convenience: it is publication.
+//
+// Missing values fail at boot rather than at the first upload, so a
+// misconfigured deploy is loud instead of silently unauthenticated.
+const SELFHOST_JWT_SECRET = requiredSecret("SELFHOST_JWT_SECRET");
+const ORACLE_UPLOAD_API_KEY = requiredSecret("ORACLE_UPLOAD_API_KEY");
+
+function requiredSecret(name: string): string {
+  const value = Deno.env.get(name);
+  if (!value) {
+    throw new Error(
+      `${name} is not set. Set it with \`npx supabase secrets set ${name}=...\`; ` +
+        "there is deliberately no default.",
+    );
+  }
+  return value;
+}
+
+// Untyped on purpose. Every query here selects a table by a runtime string
+// from WRITABLE_TABLES, so supabase-js cannot narrow the row type and its
+// generic machinery recurses until tsc gives up with "type instantiation is
+// excessively deep". The safety that matters is the allowlist, not the types.
+// deno-lint-ignore no-explicit-any
+const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY) as any;
 
 const JWT_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
@@ -70,10 +94,15 @@ function base64UrlEncode(bytes: Uint8Array): string {
   return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function base64UrlDecode(str: string): Uint8Array {
+// Backed by an explicitly allocated ArrayBuffer. `Uint8Array.from` yields
+// `Uint8Array<ArrayBufferLike>`, which crypto.subtle.verify rejects because
+// ArrayBufferLike also admits SharedArrayBuffer.
+function base64UrlDecode(str: string): Uint8Array<ArrayBuffer> {
   const padded = str.replace(/-/g, "+").replace(/_/g, "/").padEnd(str.length + ((4 - (str.length % 4)) % 4), "=");
   const binary = atob(padded);
-  return Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
 }
 
 async function hmacKey(secret = JWT_SECRET) {

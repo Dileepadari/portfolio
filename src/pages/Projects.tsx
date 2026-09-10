@@ -38,6 +38,8 @@ import { useProjects } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
 import { adminApi } from "@/lib/adminApi";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { ThemedImage } from "@/components/ThemedImage";
+import { Link } from "react-router-dom";
 
 // Helper function to convert timestamp to human-readable format
 const getTimeAgo = (timestamp: string): string => {
@@ -479,31 +481,39 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDelete }: ProjectCardProps) {
-  const { theme } = useTheme();
-  
-  // Use provided image or fallback to logo based on theme
-  const getImageUrl = () => {
-    if (project.images?.[0]) return project.images[0];
-    if (project.image_url) return project.image_url;
-    
-    // Fallback to logo based on theme
-    if (theme === 'light') return '/adk_dev_logo_dark.png';
-    if (theme === 'dark') return '/adk_dev_logo_light.png';
-    return '/adk_dev_logo_color.png'; // system default
-  };
-  
-  const imageUrl = getImageUrl();
-  
+  const { resolvedTheme } = useTheme();
+
+  // The card image is a dark/light pair. `resolvedTheme` rather than `theme`:
+  // `theme` can be the literal "system", which matched neither branch of the
+  // old comparison and sent every system-preference visitor to the colour logo.
+  const dark = project.image_url || project.images?.[0];
+  const light = project.image_url_light || project.images_light?.[0];
+
+  // With no image at all, the brand mark stands in, and it needs the opposite
+  // of the background it sits on.
+  const fallback =
+    resolvedTheme === 'light' ? '/adk_dev_logo_dark.png' : '/adk_dev_logo_light.png';
+
+  const cardImage = (
+    <ThemedImage
+      dark={dark}
+      light={light}
+      fallback={fallback}
+      alt={project.title}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+    />
+  );
+
   return (
     <Card className={`bg-card border-border hover:border-primary transition-all duration-200 group ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
       <div className="aspect-video w-full overflow-hidden rounded-t-lg relative">
-        <img 
-          src={imageUrl}
-          alt={project.title}
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-        />
+        {project.slug ? (
+          <Link to={`/projects/${project.slug}`} aria-label={`Open ${project.title}`} className="block h-full w-full">
+            {cardImage}
+          </Link>
+        ) : (
+          cardImage
+        )}
         {isAdmin && (
           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
@@ -550,11 +560,21 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2 mb-2">
-              <h3 className="text-base sm:text-lg font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-                <span
-                  className="truncate"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.title) }}
-                />
+              <h3 className="text-base sm:text-lg font-semibold text-primary flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+                {/* The title was styled as a link and did nothing. It goes to
+                    the showcase page now, when the project has a slug. */}
+                {project.slug ? (
+                  <Link
+                    to={`/projects/${project.slug}`}
+                    className="truncate hover:underline"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.title) }}
+                  />
+                ) : (
+                  <span
+                    className="truncate"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.title) }}
+                  />
+                )}
                 {project.is_contributed && <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />}
                 {featured && <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current flex-shrink-0" />}
               </h3>
@@ -653,6 +673,52 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
 }
 
 // Project Edit Form Component
+/**
+ * A JSON array, edited as text.
+ *
+ * `features`, `metrics` and `tech_stack` are two- and three-key shapes. Three
+ * bespoke repeatable-row widgets would be more code than the fields deserve,
+ * and a raw textarea silently saves null on a typo, so this is the middle:
+ * a textarea that shows the parse error inline and refuses to submit.
+ */
+function JsonListField({
+  id,
+  label,
+  hint,
+  value,
+  error,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <Label htmlFor={id}>{label}</Label>
+      <Textarea
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={5}
+        className="font-mono text-xs"
+        placeholder={hint}
+        aria-invalid={!!error}
+      />
+      {error ? (
+        <p className="mt-1 text-xs text-destructive">{error}</p>
+      ) : (
+        <p className="mt-1 text-xs text-muted-foreground">
+          A JSON array. Leave blank to omit the section. Shape: <code>{hint}</code>
+        </p>
+      )}
+    </div>
+  );
+}
+
 interface ProjectEditFormProps {
   project: Project;
   onSave: (data: Partial<Project>) => void;
@@ -662,11 +728,27 @@ interface ProjectEditFormProps {
 function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
   const [formData, setFormData] = useState({
     title: project.title || '',
+    slug: project.slug || '',
+    tagline: project.tagline || '',
     description: project.description || '',
     github_url: project.github_url || '',
     live_url: project.live_url || '',
+    demo_url: project.demo_url || '',
+    docs_url: project.docs_url || '',
     image_url: project.image_url || '',
+    image_url_light: project.image_url_light || '',
+    hero_url: project.hero_url || '',
+    hero_url_light: project.hero_url_light || '',
     images: project.images?.join(', ') || '',
+    images_light: project.images_light?.join(', ') || '',
+    overview: project.overview || '',
+    problem: project.problem || '',
+    architecture: project.architecture || '',
+    getting_started: project.getting_started || '',
+    readme: project.readme || '',
+    project_role: project.project_role || '',
+    timeline: project.timeline || '',
+    status: project.status || '',
     language: project.language || '',
     language_color: project.language_color || '',
     featured: project.featured || false,
@@ -678,6 +760,17 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     forks: project.forks || 0,
   });
 
+  // The three structured lists are edited as JSON. A textarea of JSON is not a
+  // lovely editor, but these are shapes with two or three keys each and the
+  // alternative is three bespoke repeatable-row widgets; the parse error is
+  // shown inline so a typo cannot be saved as null.
+  const [jsonFields, setJsonFields] = useState({
+    features: project.features?.length ? JSON.stringify(project.features, null, 2) : '',
+    metrics: project.metrics?.length ? JSON.stringify(project.metrics, null, 2) : '',
+    tech_stack: project.tech_stack?.length ? JSON.stringify(project.tech_stack, null, 2) : '',
+  });
+  const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -685,19 +778,65 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     const parseList = (str: string) =>
       str ? str.split(',').map(s => s.trim()).filter(Boolean) : [];
 
+    // An empty string is not the same as "no value": the detail page decides
+    // whether to render a section by whether its column is null, so a blank
+    // field has to become null or every section would render empty.
+    const orNull = (value: string) => (value.trim() ? value : null);
+
+    const parsed: Record<string, unknown> = {};
+    const errors: Record<string, string> = {};
+    for (const [key, raw] of Object.entries(jsonFields)) {
+      if (!raw.trim()) {
+        parsed[key] = null;
+        continue;
+      }
+      try {
+        const value = JSON.parse(raw);
+        if (!Array.isArray(value)) throw new Error('must be a JSON array');
+        parsed[key] = value;
+      } catch (error) {
+        errors[key] = error instanceof Error ? error.message : 'invalid JSON';
+      }
+    }
+    if (Object.keys(errors).length > 0) {
+      setJsonErrors(errors);
+      return;
+    }
+    setJsonErrors({});
+
     const submissionData = {
       ...formData,
+      ...parsed,
       tags: parseList(formData.tags),
       images: parseList(formData.images),
-      github_url: formData.github_url || null,
-      live_url: formData.live_url || null,
-      image_url: formData.image_url || null,
-      category: formData.category || null,
-      language: formData.language || null,
-      language_color: formData.language_color || null,
+      images_light: parseList(formData.images_light),
+      // Slug is what the detail page is addressed by, so derive one rather than
+      // leaving the project unreachable when the field is left blank.
+      slug: (formData.slug.trim() ||
+        formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) || null,
+      github_url: orNull(formData.github_url),
+      live_url: orNull(formData.live_url),
+      demo_url: orNull(formData.demo_url),
+      docs_url: orNull(formData.docs_url),
+      image_url: orNull(formData.image_url),
+      image_url_light: orNull(formData.image_url_light),
+      hero_url: orNull(formData.hero_url),
+      hero_url_light: orNull(formData.hero_url_light),
+      tagline: orNull(formData.tagline),
+      overview: orNull(formData.overview),
+      problem: orNull(formData.problem),
+      architecture: orNull(formData.architecture),
+      getting_started: orNull(formData.getting_started),
+      readme: orNull(formData.readme),
+      project_role: orNull(formData.project_role),
+      timeline: orNull(formData.timeline),
+      status: orNull(formData.status),
+      category: orNull(formData.category),
+      language: orNull(formData.language),
+      language_color: orNull(formData.language_color),
     };
 
-    onSave(submissionData);
+    onSave(submissionData as Partial<Project>);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -714,10 +853,20 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
   };
 
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const galleryLightFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
   const { toast } = useToast();
 
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  /**
+   * Appends an uploaded image to one of the two gallery lists.
+   *
+   * `field` is the theme: entry n of `images` and entry n of `images_light`
+   * are the same screenshot, so they are uploaded into the same position by
+   * being appended in the same order.
+   */
+  const handleGalleryUpload = (field: 'images' | 'images_light') => async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
@@ -726,7 +875,7 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
       setUploadingGalleryImage(true);
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
       const url = await adminApi.upload(file, { fileType: 'images', fileName: `${crypto.randomUUID()}-${sanitizedName}` });
-      setFormData(prev => ({ ...prev, images: prev.images ? `${prev.images}, ${url}` : url }));
+      setFormData(prev => ({ ...prev, [field]: prev[field] ? `${prev[field]}, ${url}` : url }));
       toast({ title: 'Uploaded', description: 'Image added to gallery.' });
     } catch (error) {
       toast({
@@ -804,42 +953,298 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
         </div>
       </div>
 
-      {/* Images */}
-      <ImageUploadField
-        label="Main image"
-        value={formData.image_url}
-        onChange={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
-        fileType="images"
-      />
+      {/* ---------------------------------------------------------------- */}
+      {/* Imagery. Every image is a dark/light pair and the light half is    */}
+      {/* optional: leave it blank and the dark one is used in both themes,  */}
+      {/* which is the right answer for a photo or a theme-neutral diagram.  */}
+      {/* ---------------------------------------------------------------- */}
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <p className="text-sm font-medium">Imagery</p>
 
-      <div>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="images">Gallery images (comma-separated URLs)</Label>
-          <input
-            ref={galleryFileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleGalleryUpload}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <ImageUploadField
+            label="Card image (dark)"
+            value={formData.image_url}
+            onChange={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+            fileType="images"
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={uploadingGalleryImage}
-            onClick={() => galleryFileInputRef.current?.click()}
-          >
-            {uploadingGalleryImage ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
-            Upload & add
-          </Button>
+          <ImageUploadField
+            label="Card image (light, optional)"
+            value={formData.image_url_light}
+            onChange={(url) => setFormData(prev => ({ ...prev, image_url_light: url }))}
+            fileType="images"
+          />
+          <ImageUploadField
+            label="Detail banner (dark)"
+            value={formData.hero_url}
+            onChange={(url) => setFormData(prev => ({ ...prev, hero_url: url }))}
+            fileType="images"
+          />
+          <ImageUploadField
+            label="Detail banner (light, optional)"
+            value={formData.hero_url_light}
+            onChange={(url) => setFormData(prev => ({ ...prev, hero_url_light: url }))}
+            fileType="images"
+          />
         </div>
-        <Input
-          id="images"
-          name="images"
-          value={formData.images}
-          onChange={handleChange}
-          placeholder="https://img1.jpg, https://img2.jpg"
+
+        <div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="images">Gallery, dark (comma-separated URLs)</Label>
+            <input
+              ref={galleryFileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleGalleryUpload('images')}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={uploadingGalleryImage}
+              onClick={() => galleryFileInputRef.current?.click()}
+            >
+              {uploadingGalleryImage ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+              Upload & add
+            </Button>
+          </div>
+          <Input
+            id="images"
+            name="images"
+            value={formData.images}
+            onChange={handleChange}
+            placeholder="https://img1.jpg, https://img2.jpg"
+          />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="images_light">Gallery, light (optional, same order)</Label>
+            <input
+              ref={galleryLightFileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleGalleryUpload('images_light')}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={uploadingGalleryImage}
+              onClick={() => galleryLightFileInputRef.current?.click()}
+            >
+              {uploadingGalleryImage ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+              Upload & add
+            </Button>
+          </div>
+          <Input
+            id="images_light"
+            name="images_light"
+            value={formData.images_light}
+            onChange={handleChange}
+            placeholder="Entry 1 here is the light twin of entry 1 above"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Paired by position. A shorter list is fine: the missing entries fall back to their dark twin.
+          </p>
+        </div>
+      </div>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Showcase content. Everything here is optional, and the detail page  */}
+      {/* omits the section for anything left blank rather than rendering an  */}
+      {/* empty heading. Blank is a valid answer.                             */}
+      {/* ---------------------------------------------------------------- */}
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <div>
+          <p className="text-sm font-medium">Showcase: for the reader</p>
+          <p className="text-xs text-muted-foreground">
+            The upper half of the detail page. Someone deciding whether this project is interesting.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="slug">URL slug</Label>
+            <Input
+              id="slug"
+              name="slug"
+              value={formData.slug}
+              onChange={handleChange}
+              placeholder="derived from the title when blank"
+            />
+          </div>
+          <div>
+            <Label htmlFor="status">Status</Label>
+            <Input
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              placeholder="Shipped, In progress, Archived"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="tagline">Tagline</Label>
+          <Input
+            id="tagline"
+            name="tagline"
+            value={formData.tagline}
+            onChange={handleChange}
+            placeholder="One line, shown under the title"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="overview">Overview (markdown)</Label>
+          <Textarea
+            id="overview"
+            name="overview"
+            value={formData.overview}
+            onChange={handleChange}
+            rows={4}
+            placeholder="What it is, in a paragraph or two"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="problem">The problem (markdown)</Label>
+          <Textarea
+            id="problem"
+            name="problem"
+            value={formData.problem}
+            onChange={handleChange}
+            rows={4}
+            placeholder="Why it exists. What was wrong before it."
+          />
+        </div>
+
+        <JsonListField
+          id="features"
+          label="Features"
+          hint='[{ "title": "Live dashboard", "description": "Every sensor, judged" }]'
+          value={jsonFields.features}
+          error={jsonErrors.features}
+          onChange={(value) => setJsonFields(prev => ({ ...prev, features: value }))}
         />
+
+        <JsonListField
+          id="metrics"
+          label="Headline numbers"
+          hint='[{ "label": "Tests", "value": "176" }]'
+          value={jsonFields.metrics}
+          error={jsonErrors.metrics}
+          onChange={(value) => setJsonFields(prev => ({ ...prev, metrics: value }))}
+        />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="project_role">Your role</Label>
+            <Input
+              id="project_role"
+              name="project_role"
+              value={formData.project_role}
+              onChange={handleChange}
+              placeholder="Sole author, Backend, Team of four"
+            />
+          </div>
+          <div>
+            <Label htmlFor="timeline">Timeline</Label>
+            <Input
+              id="timeline"
+              name="timeline"
+              value={formData.timeline}
+              onChange={handleChange}
+              placeholder="Aug 2026 - present"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <div>
+          <p className="text-sm font-medium">Showcase: for developers</p>
+          <p className="text-xs text-muted-foreground">
+            The lower half, below the divider. Someone who has decided to build or read it.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="demo_url">Demo URL</Label>
+            <Input
+              id="demo_url"
+              name="demo_url"
+              value={formData.demo_url}
+              onChange={handleChange}
+              placeholder="https://example.com/demo"
+            />
+          </div>
+          <div>
+            <Label htmlFor="docs_url">Docs URL</Label>
+            <Input
+              id="docs_url"
+              name="docs_url"
+              value={formData.docs_url}
+              onChange={handleChange}
+              placeholder="https://example.com/docs"
+            />
+          </div>
+        </div>
+
+        <JsonListField
+          id="tech_stack"
+          label="Tech stack"
+          hint='[{ "name": "React 18", "role": "Frontend" }]'
+          value={jsonFields.tech_stack}
+          error={jsonErrors.tech_stack}
+          onChange={(value) => setJsonFields(prev => ({ ...prev, tech_stack: value }))}
+        />
+
+        <div>
+          <Label htmlFor="architecture">Architecture (markdown)</Label>
+          <Textarea
+            id="architecture"
+            name="architecture"
+            value={formData.architecture}
+            onChange={handleChange}
+            rows={6}
+            placeholder="How the pieces fit. A fenced code block renders as a diagram."
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="getting_started">Getting started (markdown)</Label>
+          <Textarea
+            id="getting_started"
+            name="getting_started"
+            value={formData.getting_started}
+            onChange={handleChange}
+            rows={6}
+            placeholder="Clone, install, run"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="readme">README (markdown)</Label>
+          <Textarea
+            id="readme"
+            name="readme"
+            value={formData.readme}
+            onChange={handleChange}
+            rows={14}
+            className="font-mono text-xs"
+            placeholder="Paste the project's README here"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Rendered in full at the bottom of the detail page. Not synced from GitHub: this is the
+            curated copy, so it works for contributed and private repos too.
+          </p>
+        </div>
       </div>
 
       {/* Language Color */}

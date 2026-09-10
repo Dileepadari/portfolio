@@ -1,3 +1,5 @@
+<!-- Generated from README.md by scripts/build-light-readme.mjs. Do not edit by hand. -->
+
 <div align="center">
 
 <picture>
@@ -25,7 +27,7 @@
 
 **Live:** [dileepadari.dev](https://dileepadari.dev) &middot; **[Developer documentation](./DEVDOC.md)** &middot; [Screenshots](#screenshots)
 
-<p><b>Dark mode</b> &middot; <a href="./README-light.md">View this page in light mode</a></p>
+<p><b>Light mode</b> &middot; <a href="./README.md">View this page in dark mode</a></p>
 
 </div>
 
@@ -53,18 +55,18 @@ The second constraint is that **a visitor pays for none of it**. The admin surfa
 
 ## Screenshots
 
-This page shows **dark mode**; the same gallery in
-light mode is at **[README-light.md](./README-light.md)**.
+This page shows **light mode**; the same gallery in
+dark mode is at **[README.md](./README.md)**.
 
 | | |
 |---|---|
-| **Projects** <br> Cards carry a dark and a light image and pick per theme <br><br> <img src="docs/screenshots/dark/projects.png" alt="Project list" loading="lazy"> | **Project showcase** <br> One project in full, addressed by slug <br><br> <img src="docs/screenshots/dark/project-detail.png" alt="Project detail page" loading="lazy"> |
+| **Projects** <br> Cards carry a dark and a light image and pick per theme <br><br> <img src="docs/screenshots/light/projects.png" alt="Project list" loading="lazy"> | **Project showcase** <br> One project in full, addressed by slug <br><br> <img src="docs/screenshots/light/project-detail.png" alt="Project detail page" loading="lazy"> |
 
 <p align="center"><b>The showcase, lower half</b> &middot; gallery with a lightbox, then everything a developer needs, behind a divider</p>
-<p align="center"><img src="docs/screenshots/dark/project-showcase.png" alt="Gallery and developer sections" loading="lazy"></p>
+<p align="center"><img src="docs/screenshots/light/project-showcase.png" alt="Gallery and developer sections" loading="lazy"></p>
 
 <p align="center"><b>A partly filled project</b> &middot; sections with no content are omitted, not left as empty headings</p>
-<p align="center"><img src="docs/screenshots/dark/project-partial.png" alt="A project with only some sections filled" loading="lazy"></p>
+<p align="center"><img src="docs/screenshots/light/project-partial.png" alt="A project with only some sections filled" loading="lazy"></p>
 
 ## Features
 

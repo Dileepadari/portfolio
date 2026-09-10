@@ -28,6 +28,8 @@ export interface PersonalInfo {
   youtube?: string;
   twitter?: string;
   avatar_url?: string;
+  /** Uploaded resume. Falls back to the PDF bundled in src/assets when unset. */
+  resume_url?: string;
   highlights: PersonalHighlight[];
 }
 
@@ -83,14 +85,63 @@ export interface Experience {
   order_index: number;
 }
 
+/** One entry in the project showcase's feature list. */
+export interface ProjectFeature {
+  title: string;
+  description?: string;
+  icon?: string;
+}
+
+/** A headline number on the detail page, e.g. `{ label: "Tests", value: "176" }`. */
+export interface ProjectMetric {
+  label: string;
+  value: string;
+}
+
+/** One technology, with the part of the system it is responsible for. */
+export interface ProjectTech {
+  name: string;
+  role?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
   description: string;
+  /** URL segment for the detail page. Unique; backfilled from the title. */
+  slug?: string;
   github_url?: string;
   live_url?: string;
+  demo_url?: string;
+  docs_url?: string;
+
+  /* Imagery. Every `_light` field is optional: when it is missing the dark
+     variant is used for both themes, which is right for a screenshot that has
+     no theme of its own. */
   image_url?: string;
+  image_url_light?: string;
+  hero_url?: string;
+  hero_url_light?: string;
   images?: string[];
+  images_light?: string[];
+
+  /* Showcase, reader-facing. Each is optional and its section is omitted when
+     empty rather than rendered blank. */
+  tagline?: string;
+  overview?: string;
+  problem?: string;
+  features?: ProjectFeature[];
+  metrics?: ProjectMetric[];
+
+  /* Showcase, developer-facing. */
+  tech_stack?: ProjectTech[];
+  architecture?: string;
+  getting_started?: string;
+  readme?: string;
+  project_role?: string;
+  timeline?: string;
+  status?: string;
+
   featured: boolean;
   order_index: number;
   created_at: string;
@@ -290,6 +341,23 @@ export function useExperience() {
   return { data, loading, error, refetch: fetchExperience };
 }
 
+/**
+ * Columns the projects list needs.
+ *
+ * Explicit rather than `*` because the showcase columns added for the detail
+ * page include a full README per project. Selecting those on the list page
+ * would download every project's long-form prose to render a grid of cards
+ * that shows none of it.
+ */
+const PROJECT_LIST_COLUMNS = [
+  'id', 'title', 'description', 'slug', 'tagline',
+  'github_url', 'live_url', 'demo_url', 'docs_url',
+  'image_url', 'image_url_light',
+  'featured', 'order_index', 'created_at', 'updated_at',
+  'is_contributed', 'stars', 'forks', 'language', 'language_color',
+  'tags', 'category', 'status',
+].join(', ');
+
 export function useProjects() {
   const [data, setData] = useState<Project[]>(() => getCachedData<Project[]>('projects') || []);
   const [loading, setLoading] = useState(() => !getCachedData<Project[]>('projects'));
@@ -300,11 +368,11 @@ export function useProjects() {
       setLoading(true);
       const { data: result, error } = await supabase
         .from('projects')
-        .select('*')
+        .select(PROJECT_LIST_COLUMNS)
         .order('order_index');
 
       if (error) throw error;
-      setData(result || []);
+      setData((result as Project[]) || []);
       setCachedData('projects', result || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -320,6 +388,59 @@ export function useProjects() {
   }, [fetchProjects]);
 
   return { data, loading, error, refetch: fetchProjects };
+}
+
+/**
+ * One project in full, for the detail page.
+ *
+ * Cached per slug so going back to the list and returning is instant, and so a
+ * card click that follows a list fetch does not re-download what is already
+ * known. `notFound` is separate from `error`: a slug that matches nothing is a
+ * 404 to render, not a failure to report.
+ */
+export function useProject(slug: string | undefined) {
+  const cacheKey = `project:${slug}`;
+  const [data, setData] = useState<Project | null>(
+    () => (slug ? getCachedData<Project>(cacheKey) ?? null : null)
+  );
+  const [loading, setLoading] = useState(() => !!slug && !getCachedData<Project>(cacheKey));
+  const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProject = useCallback(async () => {
+    if (!slug) return;
+    try {
+      setLoading(true);
+      setNotFound(false);
+      const { data: result, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!result) {
+        setNotFound(true);
+        setData(null);
+        return;
+      }
+      const project = result as unknown as Project;
+      setData(project);
+      setCachedData(cacheKey, project);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  }, [slug, cacheKey]);
+
+  useEffect(() => {
+    if (slug && !getCachedData<Project>(cacheKey)) {
+      fetchProject();
+    }
+  }, [slug, cacheKey, fetchProject]);
+
+  return { data, loading, error, notFound, refetch: fetchProject };
 }
 
 export function useSkills() {
