@@ -1,252 +1,162 @@
--- Local development and screenshot data.
+-- Local development seed. GENERATED - do not edit by hand.
 --
--- Applied by `supabase db reset`, never to the hosted project. Nothing here is
--- a real person's data: the account is a demo one and the projects are the
--- author's own public repositories, described from their public READMEs.
+--   node scripts/build-seed.mjs
 --
--- Two of the projects are deliberately incomplete. The detail page omits a
--- section when its column is null rather than rendering an empty heading, and
--- that behaviour is only visible if something exercises it.
+-- A mirror of the hosted project's **public** content, read with the anon key,
+-- so a local `supabase db reset` reproduces the real site rather than a toy
+-- fixture. 122 rows across 9 tables.
 --
--- Image URLs point at raw.githubusercontent, at screenshots committed in those
--- repositories. Real, public, and stable, so the seed does not need binaries of
--- its own and the dark/light pairing can be seen rather than described.
+-- Because it is read as anon, it contains exactly what any visitor to the live
+-- site can already see. Draft posts, the contact inbox and the admin user table
+-- are invisible to that role and cannot appear here.
+--
+-- Applied by `supabase db reset`. Never applied to the hosted project.
 
-insert into public.personal_info (name, title, bio, location, email, github, linkedin, website)
-values (
-  'Dileep Adari',
-  'Software engineer',
-  'I build things that have to keep working when nobody is watching: distributed
-   file systems, monitoring for greenhouses, placement trackers for a campus of
-   several thousand. Mostly backend, happiest at the boundary between a program
-   and the physical thing it is responsible for.',
-  'Hyderabad, India',
-  'demo@example.com',
-  'https://github.com/Dileepadari',
-  'https://linkedin.com/in/dileepadari',
-  'https://dileepadari.dev'
-)
+insert into public.personal_info (name, title, bio, location, email, phone, website, linkedin, github, instagram, youtube, twitter, avatar_url, medium, codeforces, highlights) values
+  ('Dileep Kumar Adari', 'Software Engineer @ Chubb | B.Tech CS (Honors) @ IIITH<br />GSoC 2026 Mentor & 2025 Contributor @ Joomla!', 'Software Engineer at Chubb and open-source enthusiast specializing in full-stack engineering, distributed systems, and human-centered software design. I architect scalable cloud-native applications using React, Next.js, FastAPI, RabbitMQ, and modern web technologies, with a strong focus on high availability, performance, and intuitive user experiences. Passionate about solving complex distributed systems challenges and mentoring open-source contributors.', 'Visakhapatnam, Andhra Pradesh, India', 'adaridileep@gmail.com', '+91 7330701217', 'https://dileepadari.dev', 'https://www.linkedin.com/in/a-dk/', 'https://github.com/Dileepadari', 'https://www.instagram.com/dileepadari', 'https://www.youtube.com/@dileepadari5182', 'https://twitter.com/Dileepadari1', '', 'https://medium.com/@adaridileep/about', 'https://codeforces.com/profile/adaridileep', '[{"icon":"Layers","title":"Full-Stack & Distributed Systems","description":"Architecting resilient, scalable web platforms, APIs, and event-driven microservices using React, Next.js, FastAPI, RabbitMQ, and PostgreSQL."},{"icon":"GitBranch","title":"Open Source Leadership & Mentorship","description":"Google Summer of Code 2025 Contributor & 2026 Mentor at Joomla! CMS, engineering visual graph workflow engines and driving community collaboration."},{"icon":"Palette","title":"Human-Centered Design & HCI","description":"Applied research at SERC Lab under Dr. Raman Saxena, applying design thinking, usability engineering, and accessibility across enterprise systems with 4,000+ users."},{"icon":"Server","title":"SRE & Cloud Reliability","description":"Engineering high-availability cloud infrastructure, observability telemetry, and fault-tolerant distributed systems at Chubb."}]'::jsonb)
 on conflict do nothing;
 
--- ---------------------------------------------------------------------------
--- A fully populated project: every section on the detail page has content.
--- ---------------------------------------------------------------------------
-insert into public.projects (
-  title, slug, tagline, description, overview, problem,
-  github_url, live_url, docs_url,
-  image_url, image_url_light, hero_url, hero_url_light, images, images_light,
-  features, metrics, tech_stack,
-  architecture, getting_started, readme,
-  project_role, timeline, status,
-  language, language_color, tags, category,
-  featured, order_index, stars, forks
-) values (
-  'NFSDrive',
-  'nfsdrive',
-  'A distributed network file system in C11, with replication and failover',
-  'Storage servers export mounts, a naming server tracks which server owns what, and clients work against one namespace.',
-  'NFSDrive is a network file system built from scratch in C11. **Storage servers**
-export local directories as mounts. A **naming server** keeps the map from paths
-to the server that owns them. **Clients** see one namespace and never need to
-know which machine a file is actually on.
+insert into public.projects (title, description, github_url, live_url, image_url, images, featured, order_index, is_contributed, stars, forks, language, language_color, category, tags) values
+  ('WorkOS', 'An all-in-one team workspace featuring Notion-style block editing, Kanban project boards, task dependency management, meeting agendas, encrypted secret storage, and real-time collaboration.', 'https://github.com/Dileepadari/workos', 'https://workos.dileepadari.dev', null, '{}', true, 1, false, 0, 0, 'TypeScript', '#3178c6', 'web development', array['React 19', 'Vite', 'Tailwind CSS', 'Supabase', 'Radix UI', 'Block Editor']),
+  ('MoneyOS', 'A comprehensive personal finance and budget manager tracking expenses, categorical income, long-term savings goals, recurring EMI schedules, group expense splits, and live net worth calculations.', 'https://github.com/Dileepadari/MoneyOs', 'https://moneyos.dileepadari.dev', null, '{}', true, 2, false, 0, 0, 'TypeScript', '#3178c6', 'web development', array['React', 'Tailwind CSS', 'Radix UI', 'Vite', 'Financial Analytics', 'Budgeting']),
+  ('PlaceTrack (Placement Navigator)', 'A dedicated placement intelligence portal for IIIT Hyderabad tracking company visit history, compensation packages, eligibility criteria, drive schedules, and student interview experiences across academic seasons.', 'https://github.com/Dileepadari/placement-navigator', 'https://placements.dileepadari.dev/', null, '{}', true, 3, false, 0, 0, 'TypeScript', '#3178c6', 'web development', array['Next.js', 'React', 'Tailwind CSS', 'Supabase', 'Placement Analytics']),
+  ('ShopFlow', 'A resilient, distributed e-commerce backend where microservices communicate via RabbitMQ event streams. Features transactional outbox patterns, automated retries with dead-letter queues, idempotent payment handling, and built-in chaos injection testing.', 'https://github.com/Dileepadari/shopflow', null, 'https://mystorage.dileepadari.dev/images/portfolio/project-shopflow-cover.png', '{}', true, 0, false, 0, 0, 'Python', '#3572A5', 'distributed systems', array['FastAPI', 'RabbitMQ', 'PostgreSQL', 'Docker', 'Event-Driven', 'Chaos Testing']),
+  ('RookDB', 'A lightweight, high-performance relational database storage engine implemented in Rust, featuring custom buffer pool management, slotted-page heap files, concurrency control, and query execution operators.', 'https://github.com/Dileepadari/RookDB', 'https://rookdb.github.io/RookDB/', null, '{}', true, 6, true, 0, 0, 'Rust', '#dea584', 'distributed systems', array['Rust', 'Storage Engine', 'Buffer Manager', 'Heap Files', 'Query Execution', 'DBMS']),
+  ('VoteArena', 'A zero-friction real-time audience voting system for conferences and classrooms. Participants scan a QR code without registration to submit votes that update live on the main display wall.', 'https://github.com/Dileepadari/VoteArena', null, null, '{}', false, 16, false, 0, 0, 'JavaScript', '#f1e05a', 'web development', array['React', 'Vite', 'Express', 'WebSockets', 'Real-Time Polling']),
+  ('NFSDrive', 'A distributed network file system built from scratch in C with POSIX sockets. Features a centralized Naming Server, multi-threaded storage servers, asynchronous replication, data redundancy, and automated failover recovery.', 'https://github.com/Dileepadari/NFSDrive', null, null, '{}', true, 8, false, 0, 0, 'C', '#555555', 'distributed systems', array['C', 'POSIX', 'TCP Sockets', 'Concurrency', 'Distributed Systems', 'Fault Tolerance']),
+  ('GridWatch', 'An IoT-enabled energy monitoring and conservation system combining smart sensor data telemetry, interactive consumption dashboards, and remote appliance switching to prevent grid overload.', 'https://github.com/Dileepadari/GridWatch', 'https://gridwatch.dileepadari.dev', null, '{}', false, 11, false, 0, 0, 'Python', '#3572A5', 'iot', array['IoT', 'Flask', 'Energy Monitoring', 'Sensors', 'Appliance Control', 'Visualization']),
+  ('WellnessHub', 'A Bloomberg-terminal-inspired productivity and wellness console consolidating physical fitness, health metrics, insurance coverage, and personal finance into dense tables with inline sparklines and streak gamification.', 'https://github.com/Dileepadari/WellnessHub', null, null, '{}', false, 18, false, 0, 0, 'TypeScript', '#3178c6', 'web development', array['React', 'Tailwind CSS', 'Sparklines', 'Gamification', 'Habit Tracking']),
+  ('Virtual Labs VS Code Web Extension', 'A custom web extension for VS Code enabling 1,000+ educators and students to author, validate, test, and deploy interactive Virtual Labs science simulation experiments directly within the browser.', 'https://github.com/Dileepadari/virtual_web_trial', 'https://marketplace.visualstudio.com/items?itemName=Virtual-Labs.VirtualLabs', null, '{}', false, 15, false, 0, 0, 'TypeScript', '#3178c6', 'developer tools', array['TypeScript', 'VS Code Extension API', 'Webpack', 'Virtual Labs', 'Web IDE']),
+  ('Medico Extractor', 'An intelligent medical document processing engine converting degraded faxes, referral letters, and doctor handwritten notes into validated, structured JSON payloads using computer vision and NLP pipelines.', 'https://github.com/Dileepadari/Medico_Extractor', null, null, '{}', false, 13, false, 0, 0, 'Python', '#3572A5', 'ai/ml', array['Python', 'OCR', 'Document AI', 'FastAPI', 'Computer Vision', 'Data Extraction']),
+  ('Connected Car Fleet Management', 'A high-throughput vehicle fleet telematics API supporting VIN registries, live sensor telemetry streaming (speed, fuel, battery, engine temperature), automated geofence boundary alerts, and fleet health analytics.', 'https://github.com/Dileepadari/connected_car_fleet', null, null, '{}', false, 9, false, 0, 0, 'Python', '#3572A5', 'backend', array['FastAPI', 'Pydantic', 'Telemetry Streaming', 'Geofencing', 'Vehicle Analytics', 'REST API']),
+  ('Joomla! Workflow Graph Editor', 'An interactive, visual drag-and-connect workflow graph editor built during Google Summer of Code 2025. Consolidates multi-step editorial approval pipelines into an intuitive interactive flowchart for Joomla CMS users worldwide.', 'https://github.com/Dileepadari/joomla-cms/tree/6.1-dev', 'https://www.joomla.org/', null, '{}', true, 5, true, 0, 0, 'Vue.js', '#41b883', 'web development', array['Vue.js', 'VueFlow', 'PHP', 'Joomla CMS', 'GSoC 2025', 'Workflows', 'UI/UX']),
+  ('CanteenX', 'A scalable, high-throughput food ordering platform unifying multiple campus vendors, students, and administrators with real-time order lifecycle tracking, inventory management, and instant payments using FastAPI and GraphQL.', 'https://github.com/Dileepadari/CanteenX', 'https://smartcanteen.dileepadari.dev/', null, '{}', true, 4, false, 0, 0, 'TypeScript', '#3178c6', 'web development', array['FastAPI', 'React', 'GraphQL', 'TailwindCSS', 'PostgreSQL']),
+  ('PlantIQ', 'An IoT-driven precision agriculture platform interfacing ESP32 microcontrollers and six environmental sensors to detect plant hydration, nutrient deficiencies, and climate stress with 95% accuracy.', 'https://github.com/Dileepadari/PlantIQ', 'https://greenplant.dileepadari.dev', null, '{}', true, 7, false, 0, 0, 'Python', '#3572A5', 'iot', array['Flask', 'ESP32', 'ThingSpeak', 'OM2M', 'IoT Sensors', 'Real-Time Telemetry']),
+  ('IIIT Resources', 'A centralized collaborative repository for IIIT Hyderabad students to discover, index, upvote, and share lecture notes, previous exam papers, assignment solutions, and reference links by semester and course.', 'https://github.com/Dileepadari/NeverMind-HACKIIITH', null, null, '{}', false, 12, false, 0, 0, 'TypeScript', '#3178c6', 'web development', array['Next.js', 'React', 'Prisma', 'PostgreSQL', 'Full-Stack', 'Community Portal']),
+  ('Enhanced Xv6 Shell & Kernel Enhancements', 'Extensive kernel and shell modifications to the MIT xv6 Unix-like teaching OS, including Multi-Level Feedback Queue (MLFQ), First-Come First-Served (FCFS), and Priority-Based Schedulers (PBS), plus network socket system calls.', 'https://github.com/Dileepadari/Enhanced-Xv6-Shell', null, null, '{}', false, 14, false, 0, 0, 'C', '#555555', 'systems programming', array['C', 'Xv6', 'Operating Systems', 'Kernel Scheduling', 'MLFQ', 'System Calls']),
+  ('BlogNest', 'A modern blogging CMS with rich markdown writing tools, draft management, categorical organization, tag discovery, nested comment discussions, and visitor bookmarks.', 'https://github.com/Dileepadari/BlogNest', null, null, '{}', false, 20, false, 0, 0, 'JavaScript', '#f1e05a', 'web development', array['React', 'Node.js', 'Express', 'MongoDB', 'Markdown', 'Blogging']),
+  ('Conference Room Booking API', 'A high-performance RESTful API for conference room scheduling, conflict resolution, automated waitlist management, attendee invitations, and calendar synchronization.', 'https://github.com/Dileepadari/ConferenceRoomAPI', 'https://conference-api.dileepadari.dev', null, '{}', false, 17, false, 0, 0, 'JavaScript', '#f1e05a', 'web development', array['Node.js', 'Express', 'REST API', 'Booking System', 'Scheduling']),
+  ('Trendify', 'An automated trend scraping engine that captures real-time trending topics on X, records timestamped snapshots with egress routing details, and provides historical trend comparison charts.', 'https://github.com/Dileepadari/Trendify', null, null, '{}', false, 24, false, 0, 0, 'Python', '#3572A5', 'backend', array['Python', 'Flask', 'Web Scraping', 'Analytics', 'Trend Tracking']),
+  ('Music Mania', 'A web platform for music enthusiasts to search the iTunes catalogue, create personalized playlists, rate songs and albums, and share community reviews.', 'https://github.com/Dileepadari/MusicMania', null, null, '{}', false, 25, false, 0, 0, 'Python', '#3572A5', 'web development', array['Python', 'Flask', 'SQLite', 'iTunes API', 'Music Reviews']),
+  ('RGUKT Attendance Management System', 'A mobile-optimized attendance management system designed for RGUKT faculty, featuring period-wise student logging, automated attendance percentages, Excel imports/exports, and parent alert reports.', 'https://github.com/Dileepadari/Attendance_management_system_php', null, null, '{}', false, 22, false, 0, 0, 'PHP', '#4F5D95', 'web development', array['PHP', 'MySQL', 'Google Sheets API', 'Education Management', 'Reporting']),
+  ('TurtleArt Generator', 'A collection of 35 procedural geometric artworks generated using Python standard turtle library, featuring CLI customization, dynamic palette generation, and vector SVG exports.', 'https://github.com/Dileepadari/Turtle_projects', null, null, '{}', false, 28, false, 0, 0, 'Python', '#3572A5', 'creative coding', array['Python', 'Generative Art', 'Turtle Graphics', 'SVG Export', 'Algorithms']),
+  ('FaceClone', 'A comprehensive social media web application featuring user profiles, dynamic news feeds, story broadcasting, instant direct messaging, groups, and friendship connections.', 'https://github.com/Dileepadari/Facebook_using_php', null, null, '{}', false, 21, false, 0, 0, 'PHP', '#4F5D95', 'web development', array['PHP', 'MySQL', 'JavaScript', 'Social Network', 'Real-Time Messaging']),
+  ('MiniShell', 'A POSIX-compliant Unix shell in C supporting command piping, multi-level I/O redirection, custom built-ins (warp, peek, seek, proclore), background job controls, and signal handlers.', 'https://github.com/Dileepadari/MiniShell', null, null, '{}', false, 27, false, 0, 0, 'C', '#555555', 'systems programming', array['C', 'POSIX', 'System Calls', 'Process Management', 'Command Piping', 'I/O Redirection']),
+  ('SplitMate', 'A smart expense management web app utilizing min-cash-flow graph algorithms to simplify multi-party shared expenses into the minimum possible transactions.', 'https://github.com/Dileepadari/SplitMate', null, null, '{}', false, 19, false, 0, 0, 'Python', '#3572A5', 'web development', array['Flask', 'SQLAlchemy', 'Graph Algorithms', 'Expense Tracking', 'Debt Simplification']),
+  ('TimeTrack', 'A drift-resistant web stopwatch using high-resolution timestamps (performance.now()) to maintain precision even across background browser tab throttling, featuring lap analytics and CSV exports.', 'https://github.com/Dileepadari/TimeTrack', null, null, '{}', false, 26, false, 0, 0, 'TypeScript', '#3178c6', 'web development', array['React', 'Vite', 'Tailwind CSS', 'Stopwatch', 'Export Utility']),
+  ('TourismToolKit', 'An AI-powered multilingual travel platform for exploring India, offering real-time speech translation across 13 Indian languages, document OCR, cultural etiquette guides, and offline emergency support via Bhashini AI.', 'https://github.com/Dileepadari/TourismToolKit', 'https://tourismtoolkit.dileepadari.dev', null, '{}', false, 10, true, 0, 0, 'Next.js', '#613583', 'web development', array['Next.js', 'FastAPI', 'Bhashini AI', 'Speech Recognition', 'OCR', 'Multilingual']),
+  ('Digital Library System', 'An online community library allowing readers to discover digital texts, upload books, request additions, and undergo peer review before catalog approval.', 'https://github.com/Dileepadari/DigitalLibrary', null, null, '{}', false, 23, false, 0, 0, 'PHP', '#4F5D95', 'web development', array['PHP', 'MySQL', 'Bootstrap', 'Library Management', 'Peer Review'])
+on conflict do nothing;
 
-Everything is threaded: worker pools on both server roles, heartbeats to detect a
-dead storage server, and asynchronous writes that acknowledge before the commit
-lands.',
-  'The interesting part of a network file system is not reading a file. It is what
-happens when the machine holding it goes away mid-write, and whether the client
-finds out in a way it can act on.
+insert into public.experience (title, company, duration, location, description, technologies, order_index) values
+  ('Tech Team Member', 'Club Council, IIIT Hyderabad', 'August 2023 - April 2026', 'Hyderabad, Telangana', array['Maintaining and modernizing club web infrastructure, centralized servers, and event registration portals for all student organizations across campus.', 'Architected responsive web applications using Next.js, FastAPI, and Tailwind CSS to boost campus-wide student engagement during major festivals.', 'Provided end-to-end technical support and infrastructure scaling during high-traffic hackathons and collegiate events.'], array['Next.js', 'React', 'FastAPI', 'Tailwind CSS', 'Server Deployment'], 5),
+  ('Social Media Team Head', 'National Service Scheme (NSS), IIIT Hyderabad', 'July 2023 - July 2025', 'Hyderabad, Telangana', array['Directed the NSS digital outreach and media initiatives, driving student volunteer engagement for community service, blood donation, and literacy drives.', 'Managed event logistics, cross-functional volunteer coordination, and promotional campaigns across university channels.'], array['Leadership', 'Community Outreach', 'Event Management', 'Digital Strategy'], 6),
+  ('GSoC 2026 Mentor & 2025 Contributor', 'Joomla! CMS (Google Summer of Code)', 'May 2025 - Present', 'Remote', array['Mentoring Google Summer of Code 2026 contributors, guiding architectural system design, code reviews, and community engagement for Joomla! CMS workflows.', 'Engineered the interactive Workflow Graph Editor during GSoC 2025 using Vue.js and VueFlow, enabling visual management of article lifecycle stages and transitions.', 'Consolidated complex multi-step workflows spanning 6-7 pages into a single, cohesive drag-and-connect visual interface, improving authoring efficiency by 300%.'], array['Vue.js', 'VueFlow', 'PHP', 'Joomla Framework', 'Open Source', 'JavaScript'], 1),
+  ('Undergraduate Researcher', 'SERC Lab, IIIT Hyderabad', 'April 2024 - Present', 'Hyderabad, Telangana', array['Investigating principles of applied human-centered design (HCD) and human-computer interaction (HCI) under Dr. Raman Saxena to optimize software usability and workflows.', 'Enhanced institute ERP systems serving 4,000+ students, faculty, and staff by conducting usability testing, cognitive walkthroughs, and accessibility compliance.', 'Streamlined multi-step administrative workflows across 10+ operational use cases, measurably elevating user satisfaction and task completion speeds.'], array['Human-Centered Design', 'Usability Testing', 'HCI', 'Design Thinking', 'Accessibility', 'Figma'], 2),
+  ('Software Engineering Intern', 'Virtual Labs', 'January 2024 - April 2024', 'Hyderabad, Telangana', array['Architected and built the Virtual Labs Authoring Environment VS Code Web Extension using TypeScript, Webpack, and VS Code Extension APIs, supporting 1,000+ students.', 'Integrated automated GitHub deployment, experiment schema validation, and security sandbox features, reducing author setup time by 80%.', 'Facilitated weekly client feedback cycles, iteratively delivering 10+ core product features within a strict 70-day sprint cycle.'], array['TypeScript', 'Webpack', 'VS Code Extensions', 'Node.js', 'GitHub Actions'], 3),
+  ('Web Administrator', 'IT Office, IIIT Hyderabad', 'August 2023 - Present', 'Hyderabad, Telangana', array['Ensuring high availability, security hardening, and reliability for critical university web portals serving 1,000+ daily active campus users.', 'Streamlined continuous deployment pipelines, monitoring server health, and proactively diagnosing and resolving 10-30 technical issues monthly.', 'Designed and launched event portals, conference microsites, and administrative web tools with responsive UI and accessibility standards.'], array['Web Development', 'Nginx', 'Apache', 'Linux', 'Full-Stack Development', 'Server Admin'], 4),
+  ('Site Reliability Engineer', 'Chubb Business Services India', 'June 2026 - Present', 'Hyderabad, India', array['Architecting and maintaining enterprise-grade, high-availability cloud infrastructure and observability telemetry using Dynatrace, OpenTelemetry, and Python.', 'Engineering automated incident detection, performance monitoring, and site reliability workflows to ensure maximum uptime across mission-critical services.', 'Collaborating with cross-functional distributed teams to drive resilient system architecture, CI/CD automation, and cloud-native standards.'], array['.NET', 'Python', 'SRE', 'Dynatrace', 'OpenTelemetry', 'Docker', 'CI/CD'], 0)
+on conflict do nothing;
 
-Most teaching implementations return an error and stop. This one replicates each
-mount, promotes a replica when a heartbeat lapses, and keeps the write path
-correct across the handoff, which is where all the difficulty actually lives.',
-  'https://github.com/Dileepadari/NFSDrive',
-  null,
-  null,
-  'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/dark/namespace.png',
-  'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/light/namespace.png',
-  'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/dark/readwrite.png',
-  'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/light/readwrite.png',
-  array[
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/dark/namespace.png',
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/dark/readwrite.png',
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/dark/files.png',
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/dark/errors.png'
-  ],
-  array[
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/light/namespace.png',
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/light/readwrite.png',
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/light/files.png',
-    'https://raw.githubusercontent.com/Dileepadari/NFSDrive/main/docs/screenshots/light/errors.png'
-  ],
-  '[
-    {"title": "One namespace across servers", "description": "Clients address paths, never machines. The naming server resolves ownership on every operation."},
-    {"title": "Replication and failover", "description": "Each mount has a replica. A lapsed heartbeat promotes it, and in-flight writes survive the promotion."},
-    {"title": "Asynchronous writes", "description": "Large writes acknowledge on staging and commit on a separate thread, with the exclusion held across the handoff."},
-    {"title": "LRU path cache", "description": "The naming server caches recent lookups, so a hot directory does not become a bottleneck."},
-    {"title": "Concurrent readers, exclusive writers", "description": "A hand-built lock table: many readers or one writer per path, releasable by a thread other than the one that took it."},
-    {"title": "Structured error codes", "description": "Every failure reaches the client as a code it can branch on, not as a closed socket."}
-  ]'::jsonb,
-  '[
-    {"label": "Language", "value": "C11"},
-    {"label": "Processes", "value": "4"},
-    {"label": "Data races", "value": "0"},
-    {"label": "CI", "value": "41s"}
-  ]'::jsonb,
-  '[
-    {"name": "C11", "role": "Everything"},
-    {"name": "POSIX threads", "role": "Worker pools, heartbeats, async commit"},
-    {"name": "BSD sockets", "role": "Transport"},
-    {"name": "ThreadSanitizer", "role": "Race detection in CI"},
-    {"name": "GNU Make", "role": "Build"},
-    {"name": "GitHub Actions", "role": "Build, test, sanitize"}
-  ]'::jsonb,
-  '```
-        client
-          |  one namespace, path-addressed
-          v
-    naming server  ----- heartbeats ----->  storage server 1  (/data)
-      path -> owner                          storage server 2  (/archive)
-      LRU cache                              replica of /data
-          |
-          +-- promotes a replica when a heartbeat lapses
-```
+insert into public.education (degree, institution, duration, gpa, location, description, coursework, order_index) values
+  ('B.Tech in Computer Science & Engineering (Honors)', 'International Institute of Information Technology, Hyderabad (IIIT-H)', '2022 - 2026', '7.08 CGPA', 'Hyderabad, Telangana', 'Bachelor of Technology in Computer Science & Engineering with Honors. Focused on Distributed Systems, Cloud Architecture, Human-Centered Software Design, and Systems Programming.', array['Data Structures and Algorithms', 'Operating Systems and Networks', 'Database Management Systems', 'Distributed Systems', 'Design and Analysis of Software Systems', 'Algorithm Analysis and Design', 'Computer Organization and Architecture', 'Internet of Things', 'Information Security', 'Machine Data and Learning', 'Computer Graphics', 'Principles of Programming Languages', 'Embedded Systems Workshop', 'Human-Computer Interaction'], 1),
+  ('Pre University Course (MPC)', 'Rajiv Gandhi University of Knowledge Technologies (RGUKT), Srikakulam', '2020 - 2022', '9.35 CGPA', 'Srikakulam, Andhra Pradesh', 'Completed 2-year Pre-University Course in Mathematics, Physics, and Chemistry with academic distinction.', array['Mathematics', 'Physics', 'Chemistry', 'Intro to Computing'], 2),
+  ('Secondary School Certificate (SSC)', 'Prasanthi Nikethan M.V.V.S Murthy English Medium High School, Anakapalli', '2008 - 2020', '10.0 CGPA', 'Anakapalli, Andhra Pradesh', 'Completed secondary education with a perfect 10.0 CGPA (Grade A+ with Distinction).', array['Mathematics', 'Physical Sciences', 'Biological Sciences', 'Social Studies'], 3)
+on conflict do nothing;
 
-The naming server never holds file data. It answers "who owns this path" and gets
-out of the way; the client then talks to the storage server directly, so the
-naming server is not on the data path and cannot become its bottleneck.',
-  '```sh
-make
-./bin/nfs-naming-server --port 8080
+insert into public.skills (category, skill_name, proficiency, icon_url, order_index) values
+  ('Programming Languages', 'Python', 95, null, 1),
+  ('Programming Languages', 'TypeScript', 90, null, 2),
+  ('Programming Languages', 'JavaScript', 95, null, 3),
+  ('Programming Languages', 'C', 90, null, 4),
+  ('Programming Languages', 'C++', 85, null, 5),
+  ('Programming Languages', 'Rust', 80, null, 6),
+  ('Programming Languages', 'PHP', 80, null, 7),
+  ('Programming Languages', 'SQL', 90, null, 8),
+  ('Programming Languages', 'Bash / Shell', 85, null, 9),
+  ('Frontend Development', 'React', 95, null, 10),
+  ('Frontend Development', 'Next.js', 90, null, 11),
+  ('Frontend Development', 'Vue.js', 85, null, 12),
+  ('Frontend Development', 'Tailwind CSS', 95, null, 13),
+  ('Frontend Development', 'HTML5', 98, null, 14),
+  ('Frontend Development', 'CSS3', 92, null, 15),
+  ('Frontend Development', 'Radix UI / shadcn', 90, null, 16),
+  ('Frontend Development', 'Bootstrap', 80, null, 17),
+  ('Backend Development', 'FastAPI', 92, null, 18),
+  ('Backend Development', 'Node.js', 88, null, 19),
+  ('Backend Development', 'Express.js', 88, null, 20),
+  ('Backend Development', 'Flask', 85, null, 21),
+  ('Backend Development', 'RabbitMQ', 85, null, 22),
+  ('Backend Development', 'REST APIs', 95, null, 23),
+  ('Backend Development', 'GraphQL', 82, null, 24),
+  ('Backend Development', 'Deno / Edge Functions', 85, null, 25),
+  ('Database', 'PostgreSQL', 90, null, 26),
+  ('Database', 'MySQL', 88, null, 27),
+  ('Database', 'SQLite', 88, null, 28),
+  ('Database', 'MongoDB', 82, null, 29),
+  ('Database', 'Redis', 80, null, 30),
+  ('Database', 'Prisma', 85, null, 31),
+  ('Database', 'Supabase', 92, null, 32),
+  ('Devops', 'Docker', 88, null, 33),
+  ('Devops', 'Git & GitHub Actions', 92, null, 34),
+  ('Devops', 'Linux', 90, null, 35),
+  ('Devops', 'Dynatrace & OpenTelemetry', 82, null, 36),
+  ('Devops', 'Nginx', 82, null, 37),
+  ('Devops', 'Apache', 78, null, 38),
+  ('Devops', 'PM2', 80, null, 39),
+  ('Tools & Technologies', 'VS Code', 95, null, 40),
+  ('Tools & Technologies', 'Postman', 90, null, 41),
+  ('Tools & Technologies', 'Vim', 80, null, 42),
+  ('Tools & Technologies', 'Arduino / IoT Sensors', 82, null, 43),
+  ('Tools & Technologies', 'Joomla! CMS', 90, null, 44),
+  ('Tools & Technologies', 'WordPress', 85, null, 45),
+  ('Design', 'Human-Centered Design (HCD)', 92, null, 46),
+  ('Design', 'Usability Testing & HCI', 90, null, 47),
+  ('Design', 'Figma', 85, null, 48),
+  ('Design', 'Design Thinking', 88, null, 49)
+on conflict do nothing;
 
-# In another terminal, per storage server:
-./bin/nfs-storage-server --root ./data --port 8081 --mount /data -n 8080
+insert into public.courses (name, description, institution, completion_date, certificate_url, is_favorite, order_index) values
+  ('Software Engineering', 'Design patterns, agile development, CI/CD, modular architecture and testing.', 'IIIT Hyderabad', null, null, true, 1),
+  ('Design Thinking', 'Human-centered design process, empathy mapping, ideation, and rapid prototyping.', 'IIIT Hyderabad', null, null, true, 2),
+  ('Operating Systems & Networks', 'Kernel architecture, process scheduling, concurrency, virtual memory, and TCP/IP stack.', 'IIIT Hyderabad', null, null, true, 3),
+  ('Design & Analysis of Software Systems', 'Software architecture paradigms, UML modeling, refactoring, and clean code principles.', 'IIIT Hyderabad', null, null, true, 4),
+  ('Distributed Systems & Storage', 'Consensus algorithms, replication, fault tolerance, RPCs, and distributed file systems.', 'IIIT Hyderabad', null, null, true, 5),
+  ('User Interaction & Usability of Digital Products', 'HCI principles, heuristic evaluation, usability metrics, and accessibility guidelines.', 'IIIT Hyderabad', null, null, true, 6),
+  ('Algorithm Analysis & Design', 'Asymptotic complexity, dynamic programming, greedy methods, graph algorithms, and NP-completeness.', 'IIIT Hyderabad', null, null, true, 7),
+  ('Data Structures & Algorithms', 'Trees, heaps, hash tables, disjoint sets, and algorithmic problem-solving paradigms.', 'IIIT Hyderabad', null, null, true, 8),
+  ('Database Management Systems', 'Relational algebra, SQL, query optimization, indexing (B+ trees), and ACID transactions.', 'IIIT Hyderabad', null, null, true, 9),
+  ('Internet of Things', 'Microcontroller programming (ESP32/Arduino), MQTT/HTTP protocols, sensor integration, and cloud platforms.', 'IIIT Hyderabad', null, null, false, 10),
+  ('Introduction to Information Security', 'Cryptography primitives, network security, authentication mechanisms, and vulnerability analysis.', 'IIIT Hyderabad', null, null, false, 11),
+  ('Machine, Data and Learning', 'Statistical learning, regression, classification, clustering, and neural network foundations.', 'IIIT Hyderabad', null, null, false, 12),
+  ('Data Analytics', 'Exploratory data analysis, predictive modeling, data visualization, and pipeline processing.', 'IIIT Hyderabad', null, null, false, 13),
+  ('Computer Systems Organization', 'Instruction set architectures (RISC/MIPS), pipelining, cache memory hierarchy, and digital logic.', 'IIIT Hyderabad', null, null, false, 14),
+  ('Digital Systems & Microcontrollers', 'Combinational and sequential logic design, state machines, microcontrollers, and assembly programming.', 'IIIT Hyderabad', null, null, false, 15),
+  ('Principles of Programming Languages', 'Syntax and semantics, functional programming, type systems, and interpreter construction.', 'IIIT Hyderabad', null, null, false, 16),
+  ('Embedded Systems Workshop', 'Hands-on firmware development, hardware timers, interrupts, and serial communication (I2C/SPI).', 'IIIT Hyderabad', null, null, false, 17),
+  ('Computer Graphics', '2D/3D transformations, rendering pipelines, ray tracing, OpenGL, and shader programming.', 'IIIT Hyderabad', null, null, false, 18),
+  ('Social Science Perspective in HCI', 'Qualitative user research, contextual inquiry, socio-technical systems, and ethics in computing.', 'IIIT Hyderabad', null, null, false, 19),
+  ('Business Fundamentals', 'Entrepreneurship, market research, financial modeling, and product-market fit strategies.', 'IIIT Hyderabad', null, null, false, 20)
+on conflict do nothing;
 
-# Then:
-./bin/nfs-client -n 8080
-nfs> ls /
-```
+insert into public.achievements (title, description, date_achieved, certificate_url, order_index) values
+  ('Codeforces Pupil & Competitive Programming Milestone', 'Achieved a peak rating of 1300 (Pupil) on Codeforces, actively solving complex algorithmic problem sets spanning dynamic programming, graph algorithms, and data structures.', '2024-05-01', 'https://codeforces.com/profile/adaridileep', 1),
+  ('Study With Us C Programming Certification', 'Completed rigorous C Programming and Systems Foundations coursework offered by the RGUKT collegiate academic initiative.', '2022-05-01', null, 4),
+  ('District Level Silver Medal in International Mathematics Olympiad', 'Secured a Silver Medal at the district level in the International Mathematics Olympiad, recognizing top mathematical problem-solving skills.', '2016-08-01', null, 6),
+  ('Google Summer of Code (GSoC) 2025 Contributor & 2026 Mentor', 'Successfully completed GSoC 2025 with Joomla! CMS, engineering the visual Workflow Graph Editor. Appointed as GSoC 2026 Mentor to guide incoming contributors.', '2025-08-01', 'https://raw.githubusercontent.com/Dileepadari/Dileepadari.github.io/main/certificates/Dileep_GSoC_completion.pdf', 0),
+  ('Bharat Intern Full-Stack Development Certification', 'Completed a comprehensive virtual internship building full-stack web applications and APIs, earning top performance certification.', '2024-01-01', 'https://raw.githubusercontent.com/Dileepadari/Dileepadari.github.io/main/certificates/Dileep_Bharat_Intern_completion.pdf', 2),
+  ('DevTown Web Development Certification & Appreciation', 'Earned certification with special appreciation in the DevTown Web Development Bootcamp, building full-stack applications and RESTful architectures.', '2022-05-01', 'https://raw.githubusercontent.com/Dileepadari/Dileepadari.github.io/main/certificates/Dileep_devtown_appreciation.pdf', 3),
+  ('Shape AI Python & Cyber Security Certification', 'Completed an intensive bootcamp in core Python programming, networking principles, and information security fundamentals with certification upon examination.', '2021-06-01', 'https://raw.githubusercontent.com/Dileepadari/Dileepadari.github.io/main/certificates/Dileep_devtown_cybersecurity_completion.pdf', 5)
+on conflict do nothing;
 
-`make test` runs the unit suite; `tests/integration/run.sh` boots a whole
-cluster, exercises failover, and tears it down with a bounded wait.',
-  '# NFSDrive
+insert into public.languages (name, level, proficiency, order_index) values
+  ('Telugu', 'Native', 100, 1),
+  ('English', 'Fluent', 90, 2),
+  ('Hindi', 'Conversational', 75, 3)
+on conflict do nothing;
 
-A distributed network file system in C11.
-
-## What it is
-
-Storage servers export directories as mounts. A naming server tracks which
-server owns which path. Clients work against a single namespace and never
-address a machine directly.
-
-## Building
-
-```sh
-make            # binaries into bin/
-make test       # unit tests
-```
-
-## Running a cluster
-
-Start the naming server first, then any number of storage servers, then a
-client. See `Getting started` above for the exact commands.
-
-## Design notes
-
-- **The naming server is not on the data path.** It answers ownership queries
-  and the client then talks to the storage server directly.
-- **Replication is per mount, not per file.** A storage server registers as a
-  replica of another mount and receives every committed write for it.
-- **Failover is heartbeat driven.** Three missed beats promotes the replica.
-- **The lock table is a mutex, a condition variable, a reader count and a
-  writer flag** rather than a `pthread_rwlock_t`, because an asynchronous write
-  is released by a different thread than the one that acquired it, and
-  unlocking an rwlock from another thread is undefined behaviour.
-
-## Testing
-
-`tests/integration/run.sh` starts a four-process cluster, kills a storage
-server mid-write, and asserts the client sees the replica. CI additionally
-runs the whole thing under ThreadSanitizer with `halt_on_error=1`.
-
-## License
-
-MIT.',
-  'Sole author',
-  'Sep 2023 - Nov 2023',
-  'Shipped',
-  'C',
-  '#555555',
-  array['distributed-systems', 'c', 'threading', 'filesystem', 'replication'],
-  'distributed systems',
-  true, 1, 12, 3
-) on conflict do nothing;
-
--- ---------------------------------------------------------------------------
--- A partially populated project: no README, no architecture, no gallery. The
--- developer half of the page should shrink to just the tech stack.
--- ---------------------------------------------------------------------------
-insert into public.projects (
-  title, slug, tagline, description, overview,
-  github_url, image_url, image_url_light, images, images_light,
-  features, tech_stack,
-  language, language_color, tags, category,
-  featured, order_index, stars, forks, status
-) values (
-  'PlantIQ',
-  'plantiq',
-  'Six sensors on an ESP32, judged against a safe range per plant species',
-  'A plant health monitor for an experimental farm, with alerts pushed from the firmware the moment a reading crosses a threshold.',
-  'A plant under pathogen attack changes the volatile organic compounds it releases
-days before a leaf yellows. PlantIQ reads VOC alongside temperature, humidity,
-soil moisture, light and CO2, and judges each against the safe range for the
-species being grown.',
-  'https://github.com/Dileepadari/PlantIQ',
-  'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/dark/dashboard.png',
-  'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/light/dashboard.png',
-  array[
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/dark/dashboard.png',
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/dark/statistics.png',
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/dark/analysis.png',
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/dark/alerts.png'
-  ],
-  array[
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/light/dashboard.png',
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/light/statistics.png',
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/light/analysis.png',
-    'https://raw.githubusercontent.com/Dileepadari/PlantIQ/main/docs/screenshots/light/alerts.png'
-  ],
-  '[
-    {"title": "Per-species thresholds", "description": "Six safe ranges per plant. 30C is a comfortable afternoon for a Mango and a slow death for a Fern."},
-    {"title": "Device-pushed alerts", "description": "The firmware compares thresholds itself and POSTs the moment one is crossed."},
-    {"title": "Offline honesty", "description": "A silent device is reported as silent. A monitoring page that quietly shows stale numbers is worse than one showing none."}
-  ]'::jsonb,
-  '[
-    {"name": "Flask", "role": "Web application"},
-    {"name": "SQLite", "role": "Storage"},
-    {"name": "ESP32", "role": "Firmware"},
-    {"name": "ThingSpeak MQTT", "role": "Telemetry transport"}
-  ]'::jsonb,
-  'Python', '#3572A5',
-  array['iot', 'esp32', 'flask', 'sensors'],
-  'iot',
-  true, 2, 4, 1, 'Shipped'
-) on conflict do nothing;
-
--- ---------------------------------------------------------------------------
--- The minimum a project can be: a title and a description. The detail page
--- should render a header and stop, with no developer half at all.
--- ---------------------------------------------------------------------------
-insert into public.projects (
-  title, slug, description, github_url, language, language_color,
-  tags, category, featured, order_index
-) values (
-  'MiniShell',
-  'minishell',
-  'A POSIX-ish shell in C: pipelines, redirection, job control, and a few builtins that had no business being as hard as they were.',
-  'https://github.com/Dileepadari/MiniShell',
-  'C', '#555555',
-  array['c', 'shell', 'systems'],
-  'distributed systems',
-  false, 3
-) on conflict do nothing;
+insert into public.blog_posts (title, slug, content, excerpt, image_url, published, tags, order_index, images, external_link) values
+  ('Reflecting on Building the VS Code Web Extension: A Student’s Journey', 'reflecting-on-building-the-vs-code-web-extension-a-students-journey', 'External content', 'A reflective journey through building a web-based version of the Virtual Labs VS Code extension - exploring challenges like bundling Node modules, GitHub API limits, and transforming a desktop tool into a seamless browser experience.', 'https://miro.medium.com/v2/resize:fit:640/format:webp/1*sT9hFmszNvBP5qiTiEeOUw.png', true, array['VS Code Extensions', 'Web Extensions', 'Virtual Labs', 'Software Development', 'Journey', 'Open Source', 'IIIT Hyderabad'], 0, null, 'https://medium.com/p/772936a7fbcc'),
+  ('Workflows Made Visible: Introducing Joomla''s Workflow Graph Editor', 'workflows-made-visible-introducing-joomlas-workflow-graph-editor', 'External content', 'Discover Joomla’s new Workflow Graph Editor - a visual, drag-and-connect way to design and manage workflows. Built with Vue.js and VueFlow, it turns complex approval processes into intuitive flowcharts for admins and authors alike.', 'https://magazine.joomla.org/images/easyblog_articles/3791/September-GSOC-Dileepkuma_20250916-190432_1.jpg', true, array['Joomla', 'Workflow', 'Graph Editor', 'Vue.js', 'VueFlow', 'Open Source', 'CMS', 'Content Management', 'Visualization', 'Google Summer of Code'], 1, null, 'https://magazine.joomla.org/all-issues/september-2025/workflows-made-visible-introducing-joomla%E2%80%99s-workflow-graph-editor'),
+  ('Joomla! Workflows, Reimagined: My GSoC Journey from Form Fields to Flowcharts', 'joomla-workflows-reimagined-my-gsoc-journey-from-form-fields-to-flowcharts', 'External content', 'A behind-the-scenes look at building Joomla’s new visual Workflow Graph Editor during GSoC - from scattered form fields to a sleek, interactive flowchart experience.', 'https://magazine.joomla.org/images/easyblog_articles/3756/August-JCM-JoomlaWorkflowsReimagined1124.jpg', true, array['Google Summer of Code', 'Joomla', 'Workflow', 'Graph Editor', 'Vue.js', 'UI/UX Design', 'CMS'], 3, null, 'https://magazine.joomla.org/all-issues/august-2025/joomla-workflows-reimagined-my-gsoc-journey-from-form-fields-to-flowcharts')
+on conflict do nothing;

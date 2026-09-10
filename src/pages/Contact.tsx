@@ -14,8 +14,13 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { Mail, Phone, MapPin, Send, MessageCircle, Calendar, Clock, CheckSquare, Info, Eye, Trash2, CheckCheck, ExternalLink, Ban } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useContactMessages, useTaskRequests, type ContactMessage, type TaskRequest } from "@/hooks/useManagement";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export default function Contact() {
+  useDocumentMeta(
+    "Contact | Dileep Adari",
+    "Get in touch about work, collaboration or a project."
+  );
   const { data: personalInfo } = usePersonalInfo();
   const { toast } = useToast();
   const { createMessage, data: contactMessages, loading: messagesLoading, updateMessage, deleteMessage } = useContactMessages();

@@ -10,8 +10,10 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useSiteSettings, AdminQuickLink } from "@/hooks/usePortfolioData";
 import { useToast } from "@/hooks/use-toast";
 import { SettingsSkeleton } from "@/components/skeletons/pages";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export function Settings() {
+  useDocumentMeta("Settings | Dileep Adari");
   const { isAdmin, loading: adminLoading } = useAdmin();
   const { settings, loading, updateSetting } = useSiteSettings();
   const { toast } = useToast();

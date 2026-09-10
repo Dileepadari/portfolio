@@ -2,8 +2,10 @@ import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft, Code, Coffee, Bug, Music, Pizza, Zap, Flame } from "lucide-react";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export default function NotFound() {
+  useDocumentMeta("Page not found | Dileep Adari");
   const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
   const [bubbleTransform, setBubbleTransform] = useState("rotate(0deg)");

@@ -49,6 +49,7 @@ import profileAvatar from "@/assets/dileepadari.webp";
 // The bundled resume is the fallback, not the source of truth: replacing it
 // used to mean a commit and a deploy. personal_info.resume_url wins when set.
 import bundledResume from "@/assets/portfolio.pdf";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 // Icon choices available for "About Me" highlight cards - a fixed set
 // (stored as a string key in personal_info.highlights) rather than a full
@@ -72,6 +73,13 @@ export function Profile() {
     remove: removeLanguage,
   } = useLanguages();
   const { isAdmin } = useAdmin();
+
+  // Built from the row rather than hardcoded, so editing the name or title in
+  // the admin UI changes the browser tab and the link preview too.
+  useDocumentMeta(
+    personalInfo ? `${personalInfo.name} | ${personalInfo.title}` : undefined,
+    personalInfo?.bio
+  );
   const { toast } = useToast();
 
   const [editingPersonalInfo, setEditingPersonalInfo] = useState(false);

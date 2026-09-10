@@ -13,6 +13,24 @@
 
 import { useEffect } from "react";
 
+/**
+ * Strips markup and collapses whitespace.
+ *
+ * Several of these fields are rich text edited in the admin UI and rendered
+ * with `dangerouslySetInnerHTML`, so a real value can be
+ * `Software Engineer @ Chubb<br />GSoC 2026 Mentor`. A `<title>` and a meta
+ * description are plain text: the tags would show up literally in the browser
+ * tab and in every link preview.
+ */
+function toPlainText(value: string): string {
+  const el = document.createElement("div");
+  // A line break carries no text, so `textContent` alone would weld the two
+  // sides together: "Engineer @ Chubb<br />GSoC Mentor" becomes
+  // "Engineer @ ChubbGSoC Mentor". Turn the breaks into spaces first.
+  el.innerHTML = value.replace(/<\s*br\s*\/?\s*>|<\/\s*(p|div|li|h[1-6])\s*>/gi, " ");
+  return (el.textContent || "").replace(/\s+/g, " ").trim();
+}
+
 function setMetaDescription(content: string) {
   let tag = document.querySelector<HTMLMetaElement>('meta[name="description"]');
   if (!tag) {
@@ -31,8 +49,8 @@ export function useDocumentMeta(title?: string, description?: string) {
     const previousDescription =
       document.querySelector<HTMLMetaElement>('meta[name="description"]')?.content;
 
-    document.title = title;
-    if (description) setMetaDescription(description);
+    document.title = toPlainText(title);
+    if (description) setMetaDescription(toPlainText(description));
 
     return () => {
       document.title = previousTitle;

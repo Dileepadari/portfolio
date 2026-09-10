@@ -23,8 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Match the shape, not the name: the name is the part that gets typed wrong.
 .env
-.env.local
+.env.*
+!.env.example
+supabase/functions/.env
 
 # Package manager - npm is the standard for this repo
 bun.lockb

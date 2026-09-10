@@ -10,8 +10,10 @@ import { LogIn, ArrowLeft, Github } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSiteSettings } from '@/hooks/usePortfolioData';
 import { sanitizeHtml } from '@/lib/utils';
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export function Auth() {
+  useDocumentMeta("Sign in | Dileep Adari");
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
   const { toast } = useToast();

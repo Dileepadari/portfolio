@@ -289,6 +289,52 @@ create index if not exists projects_order_idx on public.projects (order_index);
 -- later migrations refine these; this only establishes that RLS is on, because
 -- a table created without it is readable *and writable* by anon.
 
+-- Public read on the content the site is *for*.
+--
+-- These policies were missing here for the same reason the tables were: they
+-- were created through the dashboard and existed only on the hosted project. A
+-- database built from these migrations had RLS on and no select policy, which
+-- denies by default, so every one of these tables came back empty to the anon
+-- key and the profile rendered blank. The site worked in production and could
+-- not be made to work anywhere else.
+--
+-- Read only. Every write goes through the `admin` Edge Function on the service
+-- role, which bypasses RLS, so nothing here needs an insert or update policy.
+--
+-- `drop policy if exists` first because Postgres has no
+-- `create policy if not exists`, and this migration has to stay re-runnable.
+
+drop policy if exists "personal_info viewable by everyone" on public.personal_info;
+create policy "personal_info viewable by everyone" on public.personal_info for select using (true);
+
+drop policy if exists "experience viewable by everyone" on public.experience;
+create policy "experience viewable by everyone" on public.experience for select using (true);
+
+drop policy if exists "education viewable by everyone" on public.education;
+create policy "education viewable by everyone" on public.education for select using (true);
+
+drop policy if exists "skills viewable by everyone" on public.skills;
+create policy "skills viewable by everyone" on public.skills for select using (true);
+
+drop policy if exists "achievements viewable by everyone" on public.achievements;
+create policy "achievements viewable by everyone" on public.achievements for select using (true);
+
+drop policy if exists "courses viewable by everyone" on public.courses;
+create policy "courses viewable by everyone" on public.courses for select using (true);
+
+-- Comments are public once approved; an unapproved one is visible only through
+-- the admin gateway.
+drop policy if exists "Approved comments viewable by everyone" on public.blog_comments;
+create policy "Approved comments viewable by everyone"
+  on public.blog_comments for select
+  using (coalesce(is_approved, false) = true);
+
+-- Like counts are public, which is the point of showing them.
+drop policy if exists "Likes viewable by everyone" on public.blog_likes;
+create policy "Likes viewable by everyone"
+  on public.blog_likes for select
+  using (true);
+
 alter table public.achievements     enable row level security;
 alter table public.blog_comments    enable row level security;
 alter table public.blog_likes       enable row level security;

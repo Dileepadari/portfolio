@@ -41,7 +41,7 @@ import { ThemedImage } from "@/components/ThemedImage";
 import { ProjectDetailSkeleton } from "@/components/skeletons/pages";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { useProject, type Project } from "@/hooks/usePortfolioData";
-import { sanitizeHtml } from "@/lib/utils";
+import { cn, sanitizeHtml } from "@/lib/utils";
 
 /** A heading plus its content, rendered only when `children` is worth showing. */
 function Section({
@@ -74,6 +74,11 @@ function Section({
 /** True when a list actually has entries. Guards every list-backed section. */
 function hasItems<T>(value: T[] | undefined | null): value is T[] {
   return Array.isArray(value) && value.length > 0;
+}
+
+/** For comparing two pieces of prose that differ only in wrapping. */
+function normalise(value: string | undefined | null): string {
+  return (value ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 /** True when a text column has something other than whitespace in it. */
@@ -230,7 +235,12 @@ export function ProjectDetail() {
             <p className="text-lg text-muted-foreground sm:text-xl">{project.tagline}</p>
           )}
 
-          <p className="max-w-3xl text-muted-foreground">{project.description}</p>
+          {/* The tagline is often lifted from the README's own one-line summary,
+              which is sometimes the description verbatim. Printing both puts
+              the same sentence on the page twice. */}
+          {normalise(project.description) !== normalise(project.tagline) && (
+            <p className="max-w-3xl text-muted-foreground">{project.description}</p>
+          )}
 
           <LinkButtons project={project} />
 
@@ -257,8 +267,19 @@ export function ProjectDetail() {
             {project.metrics!.map((metric) => (
               <Card key={metric.label} className="border-border">
                 <CardContent className="p-4">
-                  <div className="text-2xl font-semibold tabular-nums">{metric.value}</div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {/* These are usually short numbers, but the value is free
+                      text and sometimes carries a phrase. Shrinking the type
+                      past a threshold keeps a long one inside its tile instead
+                      of pushing the row out of shape. */}
+                  <div
+                    className={cn(
+                      "font-semibold",
+                      metric.value.length > 10 ? "text-base leading-snug" : "text-2xl tabular-nums"
+                    )}
+                  >
+                    {metric.value}
+                  </div>
+                  <div className="mt-0.5 text-xs uppercase tracking-wide text-muted-foreground">
                     {metric.label}
                   </div>
                 </CardContent>

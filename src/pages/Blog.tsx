@@ -30,10 +30,15 @@ import {
 import { BlogPost, useBlogPosts, addBlogPost, updateBlogPost, deleteBlogPost, useBlogEngagement } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 const _categories = ["All", "Frontend Development", "Backend Development", "Data Science", "Personal", "Career"];
 
 export function Blog() {
+  useDocumentMeta(
+    "Blog | Dileep Adari",
+    "Writing about engineering: testing, security, distributed systems and the things that break quietly."
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);

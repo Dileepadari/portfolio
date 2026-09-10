@@ -38,6 +38,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { getVisitorId } from "@/lib/visitor";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export function BlogPostView() {
   const { slug } = useParams<{ slug: string }>();
@@ -47,6 +48,12 @@ export function BlogPostView() {
   const { toast } = useToast();
   
   const [post, setPost] = useState<BlogPost | null>(null);
+
+  // A shared link should preview as the post, not as the site.
+  useDocumentMeta(
+    post ? `${post.title} | Dileep Adari` : undefined,
+    post?.excerpt ?? undefined
+  );
   const [newComment, setNewComment] = useState('');
   const [replyToComment, setReplyToComment] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');

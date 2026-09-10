@@ -348,7 +348,16 @@ export function useExperience() {
  * page include a full README per project. Selecting those on the list page
  * would download every project's long-form prose to render a grid of cards
  * that shows none of it.
+ *
+ * `UNDEFINED_COLUMN` below is why this is not simply hardcoded: this list names
+ * columns that only exist once `20260910000001_project_showcase.sql` has been
+ * applied, and a deployment can reach a database that has not had it yet.
+ * PostgREST answers the whole query with 42703 in that case, so the list would
+ * render empty rather than degrade.
  */
+/** PostgREST surfaces Postgres's undefined_column as this code. */
+const UNDEFINED_COLUMN = '42703';
+
 const PROJECT_LIST_COLUMNS = [
   'id', 'title', 'description', 'slug', 'tagline',
   'github_url', 'live_url', 'demo_url', 'docs_url',
@@ -366,10 +375,19 @@ export function useProjects() {
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: result, error } = await supabase
+      let { data: result, error } = await supabase
         .from('projects')
         .select(PROJECT_LIST_COLUMNS)
         .order('order_index');
+
+      // Schema older than the showcase migration: fall back to everything
+      // rather than showing the visitor an empty projects page.
+      if (error && error.code === UNDEFINED_COLUMN) {
+        ({ data: result, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('order_index'));
+      }
 
       if (error) throw error;
       setData((result as Project[]) || []);
@@ -418,6 +436,14 @@ export function useProject(slug: string | undefined) {
         .eq('slug', slug)
         .maybeSingle();
 
+      // Same case as the list: without the showcase migration there is no slug
+      // column to filter on. A detail page that cannot exist yet is a 404, not
+      // an error banner.
+      if (error?.code === UNDEFINED_COLUMN) {
+        setNotFound(true);
+        setData(null);
+        return;
+      }
       if (error) throw error;
       if (!result) {
         setNotFound(true);

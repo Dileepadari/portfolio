@@ -48,4 +48,16 @@ describe("useDocumentMeta", () => {
     render(<Page />);
     expect(document.title).toBe("Site default");
   });
+
+  it("strips markup out of a title", () => {
+    // personal_info.title is rich text edited in the admin UI, so a real value
+    // can carry tags. They would otherwise show up literally in the tab.
+    render(<Page title="Engineer @ Chubb<br />GSoC Mentor" />);
+    expect(document.title).toBe("Engineer @ Chubb GSoC Mentor");
+  });
+
+  it("strips markup out of the description too", () => {
+    render(<Page title="A" description="<p>Builds <b>things</b>.</p>" />);
+    expect(currentDescription()).toBe("Builds things.");
+  });
 });

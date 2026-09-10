@@ -29,7 +29,6 @@ import {
   User,
   Users,
   Globe,
-  Upload,
   Loader2
 } from "lucide-react";
 
@@ -39,7 +38,9 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { adminApi } from "@/lib/adminApi";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { ThemedImage } from "@/components/ThemedImage";
+import { GalleryField } from "@/components/GalleryField";
 import { Link } from "react-router-dom";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 // Helper function to convert timestamp to human-readable format
 const getTimeAgo = (timestamp: string): string => {
@@ -69,6 +70,10 @@ const projectCategories = [
 ];
 
 export function Projects() {
+  useDocumentMeta(
+    "Projects | Dileep Adari",
+    "Open source projects and repositories: distributed systems, IoT, web applications and the tooling around them."
+  );
   const { data: projects = [], loading, refetch: refetchProjects } = useProjects();
   const { isAdmin } = useAdmin();
   const { toast } = useToast();
@@ -489,19 +494,31 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
   const dark = project.image_url || project.images?.[0];
   const light = project.image_url_light || project.images_light?.[0];
 
-  // With no image at all, the brand mark stands in, and it needs the opposite
-  // of the background it sits on.
-  const fallback =
-    resolvedTheme === 'light' ? '/adk_dev_logo_dark.png' : '/adk_dev_logo_light.png';
+  // Most projects have no screenshot, so the no-image case is the common one,
+  // not the exception. The brand mark stands in for it, but `object-cover` on a
+  // wordmark blows it up to fill the card and turns a grid of projects into a
+  // grid of logos. Contained, dimmed and centred on a muted panel reads as
+  // "no image yet" instead.
+  const hasImage = Boolean(dark || light);
+  const mark = resolvedTheme === 'light' ? '/adk_dev_logo_dark.png' : '/adk_dev_logo_light.png';
 
-  const cardImage = (
+  const cardImage = hasImage ? (
     <ThemedImage
       dark={dark}
       light={light}
-      fallback={fallback}
       alt={project.title}
       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
     />
+  ) : (
+    <div className="flex h-full w-full items-center justify-center bg-muted/30" aria-hidden>
+      <img
+        src={mark}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className="h-8 w-auto opacity-25 transition-opacity duration-200 group-hover:opacity-40 sm:h-10"
+      />
+    </div>
   );
 
   return (
@@ -739,8 +756,6 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     image_url_light: project.image_url_light || '',
     hero_url: project.hero_url || '',
     hero_url_light: project.hero_url_light || '',
-    images: project.images?.join(', ') || '',
-    images_light: project.images_light?.join(', ') || '',
     overview: project.overview || '',
     problem: project.problem || '',
     architecture: project.architecture || '',
@@ -764,6 +779,11 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
   // lovely editor, but these are shapes with two or three keys each and the
   // alternative is three bespoke repeatable-row widgets; the parse error is
   // shown inline so a typo cannot be saved as null.
+  // Galleries are ordered lists, so they are their own state rather than a
+  // comma-separated string inside formData.
+  const [gallery, setGallery] = useState<string[]>(project.images ?? []);
+  const [galleryLight, setGalleryLight] = useState<string[]>(project.images_light ?? []);
+
   const [jsonFields, setJsonFields] = useState({
     features: project.features?.length ? JSON.stringify(project.features, null, 2) : '',
     metrics: project.metrics?.length ? JSON.stringify(project.metrics, null, 2) : '',
@@ -808,8 +828,8 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
       ...formData,
       ...parsed,
       tags: parseList(formData.tags),
-      images: parseList(formData.images),
-      images_light: parseList(formData.images_light),
+      images: gallery.filter(Boolean),
+      images_light: galleryLight.filter(Boolean),
       // Slug is what the detail page is addressed by, so derive one rather than
       // leaving the project unreachable when the field is left blank.
       slug: (formData.slug.trim() ||
@@ -852,41 +872,6 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
     }));
   };
 
-  const galleryFileInputRef = useRef<HTMLInputElement>(null);
-  const galleryLightFileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
-  const { toast } = useToast();
-
-  /**
-   * Appends an uploaded image to one of the two gallery lists.
-   *
-   * `field` is the theme: entry n of `images` and entry n of `images_light`
-   * are the same screenshot, so they are uploaded into the same position by
-   * being appended in the same order.
-   */
-  const handleGalleryUpload = (field: 'images' | 'images_light') => async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-
-    try {
-      setUploadingGalleryImage(true);
-      const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
-      const url = await adminApi.upload(file, { fileType: 'images', fileName: `${crypto.randomUUID()}-${sanitizedName}` });
-      setFormData(prev => ({ ...prev, [field]: prev[field] ? `${prev[field]}, ${url}` : url }));
-      toast({ title: 'Uploaded', description: 'Image added to gallery.' });
-    } catch (error) {
-      toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Something went wrong.',
-        variant: 'destructive',
-      });
-    } finally {
-      setUploadingGalleryImage(false);
-    }
-  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4">
@@ -988,68 +973,19 @@ function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
           />
         </div>
 
-        <div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="images">Gallery, dark (comma-separated URLs)</Label>
-            <input
-              ref={galleryFileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleGalleryUpload('images')}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={uploadingGalleryImage}
-              onClick={() => galleryFileInputRef.current?.click()}
-            >
-              {uploadingGalleryImage ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
-              Upload & add
-            </Button>
-          </div>
-          <Input
-            id="images"
-            name="images"
-            value={formData.images}
-            onChange={handleChange}
-            placeholder="https://img1.jpg, https://img2.jpg"
-          />
-        </div>
+        <GalleryField
+          label="Gallery, dark"
+          value={gallery}
+          onChange={setGallery}
+          hint="Shown on the detail page. Every entry can be uploaded or pasted."
+        />
 
-        <div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="images_light">Gallery, light (optional, same order)</Label>
-            <input
-              ref={galleryLightFileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleGalleryUpload('images_light')}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={uploadingGalleryImage}
-              onClick={() => galleryLightFileInputRef.current?.click()}
-            >
-              {uploadingGalleryImage ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
-              Upload & add
-            </Button>
-          </div>
-          <Input
-            id="images_light"
-            name="images_light"
-            value={formData.images_light}
-            onChange={handleChange}
-            placeholder="Entry 1 here is the light twin of entry 1 above"
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            Paired by position. A shorter list is fine: the missing entries fall back to their dark twin.
-          </p>
-        </div>
+        <GalleryField
+          label="Gallery, light (optional)"
+          value={galleryLight}
+          onChange={setGalleryLight}
+          hint="Paired to the dark gallery by position. A shorter list is fine: the missing entries fall back to their dark twin."
+        />
       </div>
 
       {/* ---------------------------------------------------------------- */}
