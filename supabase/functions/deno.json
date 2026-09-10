@@ -1,0 +1,8 @@
+{
+  "//": "Deno config for the edge functions. `deno check` needs this to resolve the npm: specifiers without a node_modules directory; without --config it looks for a config relative to the working directory, finds the frontend's package.json, and switches to manual node_modules resolution.",
+  "nodeModulesDir": "none",
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "bcryptjs": "npm:bcryptjs@2"
+  }
+}

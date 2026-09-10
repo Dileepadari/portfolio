@@ -64,7 +64,10 @@ jobs:
         with:
           deno-version: v2.x
 
-      - run: deno check supabase/functions/admin/index.ts
+      # --config is not optional. Without it Deno resolves relative to the
+      # working directory, finds the frontend's package.json, switches to
+      # manual node_modules resolution, and fails on the npm: specifiers.
+      - run: deno check --config supabase/functions/deno.json supabase/functions/admin/index.ts
 
   migrations:
     name: Migrations rebuild the database from nothing
