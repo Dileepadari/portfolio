@@ -160,7 +160,7 @@ export function Navigation() {
             </Link>
 
             {/* Desktop Navigation - Centered */}
-            <nav className="hidden md:flex space-x-8 lg:space-x-8 md:space-x-4 flex-1 justify-center">
+            <nav className="hidden min-w-0 flex-1 justify-center md:flex md:gap-3 lg:gap-8">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -239,14 +239,18 @@ export function Navigation() {
             </nav>
 
             {/* Right side - Desktop & Mobile */}
-            <div className="flex items-center space-x-3">
+            {/* shrink-0 and a tighter gap: at exactly 768px the nav links and
+                this cluster both appear, and together they were 70px wider than
+                the viewport. The palette picker waits for lg, where there is
+                room for it. */}
+            <div className="flex shrink-0 items-center gap-2 lg:gap-3">
 
               {/* Theme Toggle - Desktop only */}
               <div className="hidden md:block">
                 <ThemeToggle />
               </div>
-              {/* Color Palette Selector - Desktop only */}
-              <div className="hidden md:block">
+              {/* Color Palette Selector - wide screens only */}
+              <div className="hidden lg:block">
                 <ColorPaletteSelector />
               </div>
 

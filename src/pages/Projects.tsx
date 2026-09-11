@@ -573,8 +573,11 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
         </div>
       
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+        <div className="flex min-w-0 items-start justify-between">
+          {/* min-w-0: a flex child's default min-width is auto, so this column
+              refused to shrink below its longest unbroken word and pushed the
+              whole card past the grid at tablet widths. */}
+          <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2 mb-2">
               <h3 className="text-base sm:text-lg font-semibold text-primary flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
                 {/* The title was styled as a link and did nothing. It goes to

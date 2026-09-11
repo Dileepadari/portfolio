@@ -281,8 +281,10 @@ function FeaturedPostCard({ post, isAdmin, onEdit, onDelete, navigate }: Feature
   return (
     <Card className="bg-card border-border hover:border-primary transition-all duration-200 ring-1 ring-yellow-400/20 hover-lift">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+        {/* flex-wrap and min-w-0: the badges and the admin actions were on one
+            unwrappable line, which overflowed a 360px phone by 21px. */}
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <Badge className="bg-yellow-400/10 text-yellow-400 border-yellow-400/20">Featured</Badge>
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
               {firstTag}
@@ -295,7 +297,7 @@ function FeaturedPostCard({ post, isAdmin, onEdit, onDelete, navigate }: Feature
             )}
           </div>
           {isAdmin && (
-            <div className="flex gap-2">
+            <div className="flex shrink-0 gap-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -404,8 +406,10 @@ function BlogPostCard({ post, isAdmin, onEdit, onDelete, navigate }: BlogPostCar
   return (
     <Card className="bg-card border-border hover:border-primary transition-all duration-200 hover-lift">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+        {/* flex-wrap and min-w-0: the badges and the admin actions were on one
+            unwrappable line, which overflowed a 360px phone by 21px. */}
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
               {firstTag}
             </Badge>
@@ -417,7 +421,7 @@ function BlogPostCard({ post, isAdmin, onEdit, onDelete, navigate }: BlogPostCar
             )}
           </div>
           {isAdmin && (
-            <div className="flex gap-2">
+            <div className="flex shrink-0 gap-1">
               <Button
                 variant="ghost"
                 size="sm"

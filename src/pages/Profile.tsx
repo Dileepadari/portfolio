@@ -474,21 +474,25 @@ export function Profile() {
                   className="w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full object-cover border-4 border-border transform -scale-x-100"
                 />
               </div>
-              <div className="w-max text-center lg:text-left">
-                <div className="flex items-start justify-between mb-2 w-max mx-auto lg:mx-0">
-                  <div className="w-max">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground w-max">
+              {/* max-w-full, not w-max: w-max sizes to content and cannot shrink,
+                  so on a 390px phone the name and the contact rows pushed the
+                  whole page sideways. The centring here was never coming from
+                  w-max anyway, it comes from text-center and mx-auto. */}
+              <div className="max-w-full text-center lg:text-left">
+                <div className="flex items-start justify-between mb-2 mx-auto max-w-full lg:mx-0">
+                  <div className="max-w-full">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground break-words">
                       {personalInfo?.name}
                     </h1>
                   </div>
-                  <div className="flex items-center gap-2 ml-4 shrink-0 w-max">
+                  <div className="flex items-center gap-2 ml-4 shrink-0">
                     {isAdmin && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setEditingPersonalInfo(!editingPersonalInfo)}
                         title={editingPersonalInfo ? "Cancel Edit" : "Edit Profile"}
-                        className="w-max"
+                        className="max-w-full"
                       >
                         {editingPersonalInfo ? <X className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
                       </Button>
@@ -501,17 +505,17 @@ export function Profile() {
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(personalInfo?.title || '') }}
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 w-max mx-auto lg:mx-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 mx-auto max-w-full lg:mx-0">
                   <a
                     href={`tel:${personalInfo?.phone}`}
-                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max"
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   >
                     <Phone className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     {personalInfo?.phone}
                   </a>
                   <a
                     href={`mailto:${personalInfo?.email}`}
-                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max break-all"
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer break-all"
                   >
                     <Mail className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     <span className="truncate">{personalInfo?.email}</span>
@@ -520,7 +524,7 @@ export function Profile() {
                     href={`${personalInfo?.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max"
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   >
                     <Globe className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     <span className="truncate">{personalInfo?.website}</span>
@@ -529,14 +533,14 @@ export function Profile() {
                     href={`https://maps.google.com/?q=${encodeURIComponent(personalInfo?.location || '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer w-max"
+                    className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   >
                     <MapPin className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
                     <span className="truncate">{personalInfo?.location}</span>
                   </a>
                 </div>
 
-                <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 mb-4 sm:mb-6 w-max mx-auto lg:mx-0">
+                <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 mb-4 sm:mb-6 mx-auto max-w-full lg:mx-0">
                   {/* Buttons */}
                   <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
                     <a href={personalInfo?.linkedin} target="_blank" rel="noopener noreferrer">
@@ -583,7 +587,7 @@ export function Profile() {
                   </Button>
                 </div>
 
-                <div className="flex flex-row xs:flex-row justify-center lg:justify-start gap-2 sm:gap-3 w-max mx-auto lg:mx-0">
+                <div className="flex flex-row xs:flex-row justify-center lg:justify-start gap-2 sm:gap-3 mx-auto max-w-full lg:mx-0">
                   <Button
                     variant="outline"
                     className="w-max border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 px-3 sm:px-4 md:px-6"
