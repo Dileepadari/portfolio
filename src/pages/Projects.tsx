@@ -504,7 +504,7 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
         alt=""
         loading="lazy"
         decoding="async"
-        className="h-[42%] w-auto max-w-[64%] object-contain opacity-80 transition-opacity duration-200 group-hover:opacity-100"
+        className="h-[70%] w-auto max-w-[72%] object-contain opacity-80 transition-opacity duration-200 group-hover:opacity-100"
       />
     </div>
   );
