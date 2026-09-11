@@ -22,8 +22,33 @@ const ROOT = path.join(import.meta.dirname, "..");
 const SHOWCASE = JSON.parse(fs.readFileSync(path.join(ROOT, "scripts", "showcase.json"), "utf8"));
 
 const LOCAL_URL = "http://127.0.0.1:54321";
-const LOCAL_SERVICE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
+
+/**
+ * The local stack's service-role key, asked of the stack itself.
+ *
+ * The Supabase CLI's demo key is a published constant, so hardcoding it leaks
+ * nothing, but it trips every secret scanner and it is wrong the moment the
+ * CLI rotates it. Reading `supabase status` is both quieter and correct.
+ *
+ * @returns The key for 127.0.0.1:54321.
+ * @throws If the local stack is not running.
+ */
+function localServiceKey() {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) return process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let status;
+  try {
+    status = execFileSync("npx", ["supabase", "status", "-o", "json"], {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  } catch {
+    throw new Error("local Supabase is not running: start it with `npx supabase start`");
+  }
+  const key = JSON.parse(status).SERVICE_ROLE_KEY;
+  if (!key) throw new Error("`supabase status` returned no SERVICE_ROLE_KEY");
+  return key;
+}
 
 /** The showcase fields, in the order the detail page reads them. */
 const FIELDS = [
@@ -147,7 +172,8 @@ function newRowFor(built) {
 const args = process.argv.slice(2);
 
 if (args.includes("--local")) {
-  const headers = { apikey: LOCAL_SERVICE_KEY, Authorization: `Bearer ${LOCAL_SERVICE_KEY}` };
+  const key = localServiceKey();
+  const headers = { apikey: key, Authorization: `Bearer ${key}` };
   const rows = curlJson(`${LOCAL_URL}/rest/v1/projects?select=*`, headers);
   const { updates, unmatched } = plan(rows);
   for (const u of updates) {
@@ -162,7 +188,8 @@ if (args.includes("--local")) {
   console.log(`\nUpdated ${updates.length} of ${rows.length} projects.`);
   if (unmatched.length) console.log(`No local repo for: ${unmatched.join(", ")}`);
 } else if (args.includes("--local-insert")) {
-  const headers = { apikey: LOCAL_SERVICE_KEY, Authorization: `Bearer ${LOCAL_SERVICE_KEY}` };
+  const key = localServiceKey();
+  const headers = { apikey: key, Authorization: `Bearer ${key}` };
   const rows = curlJson(`${LOCAL_URL}/rest/v1/projects?select=github_url`, headers);
   const present = new Set(rows.map((r) => repoOf(r.github_url)));
   const missing = SHOWCASE.filter(

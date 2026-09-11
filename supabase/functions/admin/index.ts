@@ -228,14 +228,62 @@ async function handleData(req: Request): Promise<Response> {
   return json({ error: "Unknown operation" }, 400);
 }
 
+/** Upload body cap. The largest thing the admin UI sends is a resume PDF. */
+const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
+
+/**
+ * Extensions each file type may carry.
+ *
+ * Not a formality: the storage box serves what it is given from a domain that
+ * is not sandboxed from this one, so an `.html` or `.svg` accepted here is
+ * script running on the storage origin later.
+ */
+const ALLOWED_EXTENSIONS: Record<string, string[]> = {
+  images: ["png", "jpg", "jpeg", "webp", "gif", "avif"],
+  documents: ["pdf"],
+};
+
+/**
+ * Whether a client-supplied name is safe to use as a storage path segment.
+ *
+ * The admin UI builds this name, but the header is set by the caller, and an
+ * admin token is not a reason to hand a path separator to another service.
+ *
+ * @param name The `x-file-name` header value.
+ * @param fileType Already validated against ALLOWED_EXTENSIONS' keys.
+ */
+function isSafeFileName(name: string, fileType: string): boolean {
+  if (name.length === 0 || name.length > 200) return false;
+  if (name.startsWith(".")) return false;
+  // deno-lint-ignore no-control-regex
+  if (/[/\\\x00-\x1f]/.test(name)) return false;
+  if (name.includes("..")) return false;
+  const extension = name.split(".").pop()?.toLowerCase() ?? "";
+  return ALLOWED_EXTENSIONS[fileType].includes(extension);
+}
+
 async function handleUpload(req: Request): Promise<Response> {
   const fileType = req.headers.get("x-file-type");
   const fileName = req.headers.get("x-file-name");
   if (!fileType || !fileName || !["images", "documents"].includes(fileType)) {
     return json({ error: "Missing or invalid x-file-type/x-file-name headers" }, 400);
   }
+  if (!isSafeFileName(fileName, fileType)) {
+    return json(
+      { error: `Invalid file name. Allowed extensions: ${ALLOWED_EXTENSIONS[fileType].join(", ")}` },
+      400,
+    );
+  }
+
+  const declaredLength = Number(req.headers.get("content-length") ?? "0");
+  if (declaredLength > MAX_UPLOAD_BYTES) {
+    return json({ error: `File is larger than ${MAX_UPLOAD_BYTES / 1024 / 1024} MB` }, 413);
+  }
 
   const fileBuffer = await req.arrayBuffer();
+  if (fileBuffer.byteLength > MAX_UPLOAD_BYTES) {
+    return json({ error: `File is larger than ${MAX_UPLOAD_BYTES / 1024 / 1024} MB` }, 413);
+  }
 
   const now = Math.floor(Date.now() / 1000);
   const adminToken = await signJwt({ is_admin: true, iat: now, exp: now + 300 }, SELFHOST_JWT_SECRET);

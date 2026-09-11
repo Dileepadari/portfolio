@@ -33,6 +33,30 @@ async function dataCall(operation: string, table: string, extra: Record<string, 
   return body.data;
 }
 
+/**
+ * Reduces a picked file's name to something that survives being an HTTP header
+ * and a URL path segment.
+ *
+ * Two things force this. `x-file-name` is a header, and `fetch` throws on a
+ * non-ISO-8859-1 header value, so a file called `resume-final.pdf` uploads and
+ * one with an accent in its name fails with nothing useful in the message. The
+ * gateway also rejects path separators, so a name has to arrive already clean.
+ *
+ * @param name The `File.name` the picker gave us.
+ * @returns Lowercase, ASCII, dot-and-hyphen only, never empty.
+ */
+export function safeFileName(name: string): string {
+  const cleaned = name
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9.-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^[.-]+/, '')
+    .toLowerCase()
+    .slice(-120);
+  return cleaned || 'file';
+}
+
 export const adminApi = {
   login: (username: string, password: string) =>
     call('/login', {
@@ -59,7 +83,7 @@ export const adminApi = {
     dataCall('upsert', table, { payload, idColumn }),
 
   upload: async (file: File, opts: { fileType: 'images' | 'documents'; fileName?: string }): Promise<string> => {
-    const fileName = opts.fileName || `${crypto.randomUUID()}-${file.name}`;
+    const fileName = opts.fileName || `${crypto.randomUUID()}-${safeFileName(file.name)}`;
     const buffer = await file.arrayBuffer();
     const token = getAdminToken();
     const res = await fetch(`${FUNCTIONS_BASE}/upload`, {

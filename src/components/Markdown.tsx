@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 /**
  * Languages the highlighter is allowed to guess between.
@@ -25,6 +26,32 @@ import rehypeRaw from "rehype-raw";
  * appear here and turns an unbounded cost into a bounded one. A block that is
  * explicitly tagged is unaffected: its grammar is used directly, no guessing.
  */
+/**
+ * What raw HTML inside markdown is allowed to be.
+ *
+ * `rehype-raw` is here because README headers are hand-written HTML: a centred
+ * `<div>`, a `<picture>` that swaps the logo per GitHub theme, badge `<img>`s.
+ * Parsing that raw HTML also means parsing whatever else is in the document,
+ * and the project `readme` field holds text copied out of other people's
+ * repositories, so it is not first-party content just because an admin pasted
+ * it. This is GitHub's own markdown allow-list plus the few elements and
+ * attributes those headers need, which keeps `<script>`, event handlers and
+ * `javascript:` URLs out by construction.
+ */
+const HTML_SCHEMA = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), "picture", "source", "details", "summary"],
+  attributes: {
+    ...defaultSchema.attributes,
+    "*": [...(defaultSchema.attributes?.["*"] ?? []), "align", "className"],
+    img: [...(defaultSchema.attributes?.img ?? []), "loading", "decoding", "width", "height"],
+    source: ["srcSet", "media", "type"],
+    td: [...(defaultSchema.attributes?.td ?? []), "width", "valign", "align"],
+    th: [...(defaultSchema.attributes?.th ?? []), "width", "valign", "align"],
+    details: ["open"],
+  },
+};
+
 const DETECTABLE_LANGUAGES = [
   "bash", "c", "cpp", "css", "diff", "dockerfile", "go", "html", "ini",
   "java", "javascript", "json", "makefile", "markdown", "python", "rust",
@@ -50,7 +77,10 @@ export function Markdown({ children, className }: MarkdownProps) {
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeHighlight, { subset: DETECTABLE_LANGUAGES }], rehypeRaw]}
+        // Order is load bearing: raw HTML has to be parsed before it can be
+        // filtered, and highlighting has to run after the filter or the
+        // sanitiser strips the `hljs-*` classes it just added.
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, HTML_SCHEMA], [rehypeHighlight, { subset: DETECTABLE_LANGUAGES }]]}
         components={{
           // READMEs routinely link to relative repo paths and to raw badge
           // hosts. Opening them in a new tab keeps the showcase page in place.
