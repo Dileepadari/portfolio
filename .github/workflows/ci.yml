@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    # Monday morning IST. An advisory published against a pinned dependency does
+    # not arrive with a push, so something has to go looking on its own.
+    - cron: "0 3 * * 1"
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -120,3 +124,42 @@ jobs:
       - run: |
           node scripts/build-light-readme.mjs
           git diff --exit-code README-light.md
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Production dependencies are what ships to a visitor's browser, so those
+      # fail the job. Dev-only advisories are reported and do not, because a
+      # build-time package cannot be reached by anyone visiting the site.
+      - name: Runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Everything else, for information
+        if: always()
+        run: npm audit || true
+
+      # depcheck is here for the supply-chain surface rather than for tidiness:
+      # a dependency nothing imports is one more package that can be taken over
+      # and still end up in the lockfile.
+      - name: No unused runtime dependencies
+        run: |
+          npx --yes depcheck --json > /tmp/depcheck.json || true
+          python3 - <<'PY'
+          import json, sys
+          unused = json.load(open("/tmp/depcheck.json")).get("dependencies", [])
+          if unused:
+              print("Unused runtime dependencies:", ", ".join(unused))
+              sys.exit(1)
+          print("none")
+          PY
