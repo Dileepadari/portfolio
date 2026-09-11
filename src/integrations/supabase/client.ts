@@ -1,3 +1,14 @@
+/**
+ * The shared PostgREST client for public reads.
+ *
+ * Anonymous and read-only by design: row level security decides what this can
+ * see, and every write goes through the admin gateway instead. The visitor id
+ * header rides along so like and view counts can be attributed without a
+ * session or a cookie.
+ *
+ * @module data
+ */
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { getVisitorId } from '@/lib/visitor';

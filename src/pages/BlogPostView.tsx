@@ -1,3 +1,13 @@
+/**
+ * One blog post, addressed by slug, plus its likes and comment thread.
+ *
+ * Likes and views are attributed to a generated visitor id rather than an
+ * account, because the site has no public sign-up and asking a reader to
+ * register in order to like a post would mean nobody ever does.
+ *
+ * @module blog
+ */
+
 import { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

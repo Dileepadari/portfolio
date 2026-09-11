@@ -113,7 +113,7 @@ Thumbnails are lazy; the full-size view is not mounted at all until something is
 
 The resume PDF and the profile avatar used to be `import`ed from `src/assets`, so replacing either meant a commit and a deploy. Both are columns now, with the bundled file as the fallback when the column is empty. Uploads go through the same admin gateway to a self-hosted CDN.
 
-**Using it:** **Profile → edit**. The resume field takes a PDF; leave it empty to keep serving the bundled copy.
+**Using it:** **Profile > edit**. The resume field takes a PDF; leave it empty to keep serving the bundled copy.
 
 ### Blog with comments
 

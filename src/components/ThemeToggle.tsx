@@ -1,3 +1,13 @@
+/**
+ * The header control that cycles light, dark and system.
+ *
+ * Three states rather than two, because "system" is a real choice: it is the
+ * default, and a visitor who has never touched this should keep following
+ * their OS when it changes at sunset.
+ *
+ * @module theming
+ */
+
 import { Moon, Sun, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/providers/ThemeProvider";

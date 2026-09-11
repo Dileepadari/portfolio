@@ -1,3 +1,10 @@
+/**
+ * The frame every page renders inside: navigation, then the page, then the
+ * footer text an admin can edit.
+ *
+ * @module app
+ */
+
 import { Navigation } from "@/components/Navigation";
 import { useSiteSettings } from "@/hooks/usePortfolioData";
 import { sanitizeHtml } from "@/lib/utils";

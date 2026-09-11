@@ -1,3 +1,12 @@
+/**
+ * The project index: featured cards, then the full searchable grid.
+ *
+ * Doubles as the admin surface for projects, since editing a project from the
+ * card you are looking at beats a separate table of rows.
+ *
+ * @module projects
+ */
+
 import { useState, useRef, useEffect } from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

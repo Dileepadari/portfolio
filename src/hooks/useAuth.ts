@@ -1,3 +1,13 @@
+/**
+ * Admin sign-in state for the UI.
+ *
+ * Wraps the stored token so components can ask "who is signed in" without
+ * touching `localStorage`, and re-reads it on mount so a reload keeps the
+ * session. Authorisation itself happens in the gateway.
+ *
+ * @module auth
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { adminApi } from '@/lib/adminApi';
 import {

@@ -1,10 +1,14 @@
+/**
+ * Layout-shaped loading blocks the page skeletons compose.
+ *
+ * Deliberately generic: no page-specific spacing lives here, so a page
+ * skeleton can arrange them into its own layout.
+ *
+ * @module ui
+ */
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
-// Building blocks reused by the per-page skeletons in this folder. Keep
-// these generic (no page-specific spacing) - page skeletons compose them
-// inside their own layout so the loading state roughly matches the real
-// page instead of a single centered "Loading..." string.
 
 export function HeroCardSkeleton() {
   return (

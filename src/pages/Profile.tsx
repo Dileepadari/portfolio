@@ -1,3 +1,14 @@
+/**
+ * The landing page: who this is, the highlights, experience, education,
+ * skills, courses, achievements and languages.
+ *
+ * Every block is driven by a table and hides itself when that table is empty,
+ * so the page degrades to whatever has actually been filled in rather than
+ * showing headings with nothing under them.
+ *
+ * @module profile
+ */
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

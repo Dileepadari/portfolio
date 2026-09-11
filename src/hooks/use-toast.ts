@@ -1,3 +1,12 @@
+/**
+ * Toast state, vendored from shadcn/ui and left close to upstream.
+ *
+ * Kept as a reducer over a module-level store rather than a context, which is
+ * how the original ships, so a toast can be raised from outside the tree.
+ *
+ * @module ui
+ */
+
 import * as React from "react";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";

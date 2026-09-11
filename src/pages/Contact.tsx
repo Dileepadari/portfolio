@@ -1,3 +1,9 @@
+/**
+ * The contact form. Writes into the inbox table that only an admin can read.
+ *
+ * @module contact
+ */
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

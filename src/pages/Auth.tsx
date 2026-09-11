@@ -1,3 +1,13 @@
+/**
+ * Admin sign-in. The only route that talks to the gateway's /login endpoint.
+ *
+ * There is deliberately no registration: the one admin account is created out
+ * of band with `scripts/create-admin.mjs`, so there is no public path to a
+ * privileged account at all.
+ *
+ * @module auth
+ */
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

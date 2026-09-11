@@ -1,3 +1,14 @@
+/**
+ * The accent palettes a visitor can pick between, and how one is applied.
+ *
+ * Each palette carries a light and a dark variant of the same three tokens,
+ * so switching accent never has to know which theme is active. Applying a
+ * palette writes CSS custom properties on the document root, which is what the
+ * Tailwind theme reads, so nothing re-renders to change colour.
+ *
+ * @module theming
+ */
+
 export interface ColorPalette {
   name: string;
   light: { primary: string; accent: string; background: string; border?: string };

@@ -19,7 +19,7 @@ npm install
 
 ## 2. Environment variables
 
-Copy `.env.example` to `.env` and fill in your Supabase project's values (Project Settings → API in the Supabase dashboard):
+Copy `.env.example` to `.env` and fill in your Supabase project's values (Project Settings > API in the Supabase dashboard):
 
 ```sh
 cp .env.example .env
@@ -84,7 +84,7 @@ Multiple admins are supported - this can be run again later for additional accou
 
 ```sh
 SUPABASE_URL="https://<your-project-ref>.supabase.co" \
-SUPABASE_SERVICE_ROLE_KEY="<service-role key, from Project Settings → API>" \
+SUPABASE_SERVICE_ROLE_KEY="<service-role key, from Project Settings > API>" \
 ADMIN_BOOTSTRAP_USERNAME="youruser" \
 ADMIN_BOOTSTRAP_PASSWORD="a strong password, 8+ chars" \
 npm run create-admin

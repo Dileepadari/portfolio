@@ -1,3 +1,9 @@
+/**
+ * The 404 page, reached from the router's catch-all route.
+ *
+ * @module app
+ */
+
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";

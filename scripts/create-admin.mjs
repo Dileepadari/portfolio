@@ -1,15 +1,19 @@
 #!/usr/bin/env node
-// Provisions or updates an admin_users row directly via the service-role
-// key. Deliberately a standalone script, not app code or a committed
-// migration - an admin's password hash should never end up in a UI form
-// visible to the browser bundle, or in git history.
-//
-// Username/password are read from env vars, never CLI args - argv gets
-// echoed back by npm/shells/process listings, env vars set via a file
-// (e.g. ~/.bashrc, sourced with `eval`) don't.
-//
-// Usage:
-//   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... ADMIN_BOOTSTRAP_USERNAME=... ADMIN_BOOTSTRAP_PASSWORD=... npm run create-admin
+/**
+ * Provisions or updates the one `admin_users` row, using the service-role key.
+ *
+ * Deliberately a standalone script rather than app code or a committed
+ * migration: an admin's password hash should never be reachable from a UI form
+ * that ships in the browser bundle, and never end up in git history.
+ *
+ * Credentials come from environment variables, never argv, because argv is
+ * echoed back by npm, by shell history and by the process list.
+ *
+ *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
+ *   ADMIN_BOOTSTRAP_USERNAME=... ADMIN_BOOTSTRAP_PASSWORD=... npm run create-admin
+ *
+ * @module admin
+ */
 
 import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';

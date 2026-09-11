@@ -1,3 +1,14 @@
+/**
+ * The site header: brand, routes, theme toggle, accent picker and the admin
+ * menu.
+ *
+ * Also the only place the accent palette is chosen, which is why the picker
+ * lives here rather than under Settings: it is a look-at-it-while-you-change-it
+ * control, and the header is visible on every page.
+ *
+ * @module app
+ */
+
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { COLOR_PALETTES, applyColorPalette } from "@/lib/colorPalettes";

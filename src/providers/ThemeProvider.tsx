@@ -1,3 +1,14 @@
+/**
+ * Theme state for the whole app.
+ *
+ * Exposes both `theme` (what the visitor chose, possibly "system") and
+ * `resolvedTheme` (what is actually on screen). Anything picking an asset per
+ * theme must read `resolvedTheme`: comparing `theme` against "dark" and "light"
+ * silently misses every visitor who never touched the toggle.
+ *
+ * @module theming
+ */
+
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type Theme = "dark" | "light" | "system";

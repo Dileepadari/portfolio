@@ -1,3 +1,9 @@
+/**
+ * Small helpers shared across the app: class merging and HTML sanitising.
+ *
+ * @module app
+ */
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

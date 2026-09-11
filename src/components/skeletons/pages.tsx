@@ -1,10 +1,15 @@
+/**
+ * One skeleton per route, each mirroring that page's real layout.
+ *
+ * A skeleton that matches the page it replaces means the content arriving does
+ * not move anything, which a centred spinner cannot do.
+ *
+ * @module ui
+ */
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { HeroCardSkeleton, SectionCardSkeleton, GridSkeleton, ListRowCardSkeleton } from "./primitives";
-
-// One skeleton per page, each roughly mirroring that page's real layout so
-// the loading state doesn't feel like a jarring "blank screen with a
-// spinner" - it replaces the old bare "Loading..." text states.
 
 export function ProfileSkeleton() {
   return (

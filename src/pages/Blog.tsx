@@ -1,3 +1,9 @@
+/**
+ * The blog index: published posts, newest first, with search and tags.
+ *
+ * @module blog
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

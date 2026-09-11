@@ -1,24 +1,27 @@
-// Single authenticated gateway for every admin write in the app, plus the
-// handful of admin-only reads (drafts, the contact inbox) that public
-// visitors shouldn't see via the anon key.
-//
-// Auth is a self-issued username/password + JWT scheme (admin_users table,
-// bcrypt hashes), not supabase.auth - see src/hooks/useAuth.ts for why.
-// Routing mirrors the same single Deno.serve + pathname-matching style used
-// on the Oracle storage server this also proxies uploads to.
+/**
+ * The single authenticated gateway for every admin write, plus the few
+ * admin-only reads (drafts, the contact inbox) that the anon key must not see.
+ *
+ * This function holds the service-role key so the browser bundle never does.
+ * Authentication is a self-issued username and password scheme over the
+ * `admin_users` table with bcrypt hashes, not `supabase.auth`, because the site
+ * has exactly one privileged user and no public sign-up to build on.
+ *
+ * @module admin
+ * @public
+ */
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import bcrypt from "npm:bcryptjs@2";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const JWT_SECRET = Deno.env.get("ADMIN_JWT_SECRET")!;
+const SUPABASE_URL = requiredSecret("SUPABASE_URL");
+const SERVICE_ROLE_KEY = requiredSecret("SUPABASE_SERVICE_ROLE_KEY");
+const JWT_SECRET = requiredSecret("ADMIN_JWT_SECRET");
 
-// Oracle image/document storage - configurable without touching code.
-// Upload and public-read happen to live on different hosts/domains today
-// (and the upload endpoint's own returned `url` has a domain bug), so the
-// public URL is built here from the known {fileType}/{appName}/{fileName}
-// path convention rather than trusted from the upload response.
+// The storage box. Upload and public read are different hosts today, and the
+// upload endpoint returns a URL on the wrong domain, so the public URL is built
+// here from the {fileType}/{appName}/{fileName} convention rather than trusted
+// from the upload response.
 const ORACLE_UPLOAD_BASE_URL = Deno.env.get("ORACLE_UPLOAD_BASE_URL") ?? "https://supabase.dileepadari.dev";
 const ORACLE_PUBLIC_BASE_URL = Deno.env.get("ORACLE_PUBLIC_BASE_URL") ?? "https://mystorage.dileepadari.dev";
 const ORACLE_UPLOAD_PATH = Deno.env.get("ORACLE_UPLOAD_PATH") ?? "/upload";
@@ -28,12 +31,22 @@ const ORACLE_APP_NAME = Deno.env.get("ORACLE_APP_NAME") ?? "portfolio";
 // defaults and shipped to a public repository. SELFHOST_JWT_SECRET is the
 // storage box's signing key, shared with every other project that uploads to
 // it, so a default here is not a convenience: it is publication.
-//
-// Missing values fail at boot rather than at the first upload, so a
-// misconfigured deploy is loud instead of silently unauthenticated.
 const SELFHOST_JWT_SECRET = requiredSecret("SELFHOST_JWT_SECRET");
 const ORACLE_UPLOAD_API_KEY = requiredSecret("ORACLE_UPLOAD_API_KEY");
 
+/**
+ * Reads a secret that has no sensible default.
+ *
+ * Every secret in this file goes through here so a missing one fails at boot
+ * instead of at the first request that needs it. An empty `ADMIN_JWT_SECRET`
+ * reaching Web Crypto as an HMAC key is the specific failure this prevents: it
+ * throws "Key length is zero" from inside a request handler, which reads like a
+ * bug in the code rather than a missing deploy setting.
+ *
+ * @param name The environment variable to read.
+ * @returns Its value, guaranteed non-empty.
+ * @throws If it is unset or empty.
+ */
 function requiredSecret(name: string): string {
   const value = Deno.env.get(name);
   if (!value) {

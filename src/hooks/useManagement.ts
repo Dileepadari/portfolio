@@ -1,3 +1,14 @@
+/**
+ * Admin-only reads and writes that the public client cannot see.
+ *
+ * The contact inbox and unpublished drafts are hidden from the anon role by row
+ * level security, so they come back through the gateway instead of PostgREST.
+ * Everything here therefore requires a signed-in admin and returns nothing
+ * useful without one.
+ *
+ * @module admin
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { adminApi } from '@/lib/adminApi';

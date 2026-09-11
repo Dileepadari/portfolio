@@ -1,3 +1,14 @@
+/**
+ * Every public read the site makes, one hook per table.
+ *
+ * Each hook holds its own state and caches into `sessionStorage`, so moving
+ * between pages does not refetch what was already loaded, and a reload inside
+ * the same tab is instant. The cache is per tab and never shared, so a visitor
+ * always sees data no older than their session.
+ *
+ * @module data
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';

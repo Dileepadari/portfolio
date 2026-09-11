@@ -1,3 +1,14 @@
+/**
+ * One image or document field, fillable two ways.
+ *
+ * Every image on the site can be uploaded to the storage box or pasted in as a
+ * URL, because some images are screenshots that live in this project and others
+ * already sit in a repository's own `docs/` directory. Offering only upload
+ * would mean copying those a second time.
+ *
+ * @module admin
+ */
+
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -1,12 +1,16 @@
 #!/usr/bin/env node
-// Generates README-light.md from README.md.
-//
-//   npm run docs:readme-light
-//
-// GitHub has no theme toggle, so the toggle is a pair of pages that link to each
-// other. They must stay identical apart from the screenshot paths and that one
-// link, which is why the light page is generated rather than maintained: edit
-// README.md, run this, commit both.
+/**
+ * Generates README-light.md from README.md.
+ *
+ *   npm run docs:readme-light
+ *
+ * GitHub has no theme toggle, so the toggle is a pair of pages that link to
+ * each other. They must stay identical apart from the screenshot paths and that
+ * one link, which is why the light page is generated rather than maintained:
+ * edit README.md, run this, commit both. CI regenerates it and fails on a diff.
+ *
+ * @module docs
+ */
 
 import fs from "node:fs";
 import path from "node:path";

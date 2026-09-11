@@ -1,3 +1,9 @@
+/**
+ * Admin settings: site-wide strings, the contact inbox, and appearance.
+ *
+ * @module admin
+ */
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

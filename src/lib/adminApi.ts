@@ -1,3 +1,15 @@
+/**
+ * The only way the browser writes anything.
+ *
+ * Public reads go straight to PostgREST under row level security. Every write
+ * goes through one Deno edge function that holds the service-role key, so no
+ * privileged credential is ever in the bundle. This module is that function's
+ * client: one place that knows the URL shape, attaches the admin token, and
+ * turns an expired session into a message a person can act on.
+ *
+ * @module admin
+ */
+
 import { getAdminToken, clearAdminToken } from './adminAuthToken';
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin`;
