@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -507,7 +507,10 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
   );
 
   return (
-    <Card className={`bg-card border-border hover:border-primary transition-all duration-200 group ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
+    // h-full + flex column: the grid gives every cell the height of the tallest
+    // card in its row, and this makes the card actually fill it instead of
+    // stopping at its own content and leaving a ragged bottom edge.
+    <Card className={`flex h-full flex-col bg-card border-border hover:border-primary transition-all duration-200 group ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
       {/* bg-muted/40 rather than transparent: with a contained image there
           is always some letterboxing, and it should look like a frame rather
           than a hole in the card. */}
@@ -561,7 +564,7 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
           )}
         </div>
       
-      <CardHeader className="pb-3">
+      <CardHeader className="flex flex-1 flex-col pb-3">
         <div className="flex min-w-0 items-start justify-between">
           {/* min-w-0: a flex child's default min-width is auto, so this column
               refused to shrink below its longest unbroken word and pushed the
@@ -617,8 +620,14 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
               </div>
             </div>
             
+            {/* Clamped to three lines and given the height of three lines, so
+                a short description leaves the same gap a long one fills and
+                every card's meta row starts at the same y. Rewriting the copy
+                to a uniform length gets most of the way there; this is what
+                holds once somebody edits one. */}
             <p
-              className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-3 text-justify"
+              className="mb-3 line-clamp-3 min-h-[3.75rem] text-justify text-xs leading-relaxed text-muted-foreground sm:min-h-[4.125rem] sm:text-sm"
+              title={project.description}
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }}
             />
 
@@ -659,9 +668,13 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
           </div>
         </div>
 
-        {(project.tags) && (
-          <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3">
-            {(project.tags || []).map((tag) => (
+        {/* mt-auto pins the tags to the bottom of the card; showing at most
+            four keeps a heavily tagged project from setting the height for
+            every card beside it, and the rest are still reachable on the
+            project's own page. */}
+        {project.tags && project.tags.length > 0 && (
+          <div className="mt-auto flex flex-wrap gap-1 pt-3 sm:gap-1.5">
+            {project.tags.slice(0, 4).map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
@@ -670,12 +683,18 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
                 {tag}
               </Badge>
             ))}
+            {project.tags.length > 4 && (
+              <Badge
+                variant="secondary"
+                className="border-border bg-muted/50 px-1.5 py-0.5 text-[10px] text-muted-foreground sm:px-2 sm:text-xs"
+                title={project.tags.slice(4).join(", ")}
+              >
+                +{project.tags.length - 4}
+              </Badge>
+            )}
           </div>
         )}
       </CardHeader>
-
-      <CardContent className="pt-0">
-      </CardContent>
     </Card>
   );
 }
