@@ -496,12 +496,15 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
       }}
       aria-hidden
     >
+      {/* Sized as a fraction of the cover rather than a fixed pixel height, so
+          the mark keeps the same presence on a wide featured card as on a
+          narrow one instead of shrinking to a speck in the middle of the box. */}
       <img
         src={mark}
         alt=""
         loading="lazy"
         decoding="async"
-        className="h-10 w-auto opacity-50 transition-opacity duration-200 group-hover:opacity-70 sm:h-12"
+        className="h-[42%] w-auto max-w-[64%] object-contain opacity-80 transition-opacity duration-200 group-hover:opacity-100"
       />
     </div>
   );
