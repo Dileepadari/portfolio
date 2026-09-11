@@ -13,7 +13,7 @@
  */
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { GalleryField } from "@/components/GalleryField";
@@ -31,6 +38,7 @@ import { adminApi } from "@/lib/adminApi";
 import { preventAccidentalDialogClose } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useFullProject, type Project } from "@/hooks/usePortfolioData";
+import { projectCategories } from "@/lib/projectCategories";
 
 function JsonListField({
   id,
@@ -76,7 +84,7 @@ interface ProjectEditFormProps {
   onCancel: () => void;
 }
 
-function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
+export function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormProps) {
   const [formData, setFormData] = useState({
     title: project.title || '',
     slug: project.slug || '',

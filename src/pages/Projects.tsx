@@ -33,7 +33,8 @@ import { useProjects } from "@/hooks/usePortfolioData";
 import { useAdmin } from "@/hooks/useAdmin";
 import { adminApi } from "@/lib/adminApi";
 import { ThemedImage } from "@/components/ThemedImage";
-import { ProjectEditDialog } from "@/components/ProjectEditDialog";
+import { ProjectEditDialog, ProjectEditForm } from "@/components/ProjectEditDialog";
+import { projectCategories } from "@/lib/projectCategories";
 import { Link } from "react-router-dom";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
@@ -51,18 +52,6 @@ const getTimeAgo = (timestamp: string): string => {
   return `${Math.floor(diffInSeconds / 31536000)} years ago`;
 };
 
-// Project categories
-const projectCategories = [
-  "all",
-  "web development",
-  "mobile development",
-  "extension development", 
-  "distributed systems", 
-  "hardware", 
-  "iot", 
-  "machine learning",
-  "game development"
-];
 
 export function Projects() {
   useDocumentMeta(

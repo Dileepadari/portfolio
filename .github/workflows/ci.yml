@@ -27,8 +27,13 @@ jobs:
 
       - run: npm run lint
 
+      # `npm run typecheck`, not `npx tsc --noEmit`. The root tsconfig.json is a
+      # solution file: `"files": []` plus project references. Pointing tsc at
+      # it compiles **zero files** and exits 0, so this step passed for every
+      # commit while checking nothing. A missing import shipped to production
+      # behind it.
       - name: Type check
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - run: npm test
 

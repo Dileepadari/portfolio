@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "create-admin": "node scripts/create-admin.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { getVisitorId } from '@/lib/visitor';
 import { adminApi } from '@/lib/adminApi';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -259,7 +260,9 @@ export function usePersonalInfo() {
         .maybeSingle();
 
       if (error) throw error;
-      setData(result);
+      // `highlights` is jsonb, so the generated row type is `Json`. The shape
+      // is enforced by the admin form that writes it, not by the database.
+      setData(result as unknown as PersonalInfo);
       setCachedData('personal_info', result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -375,10 +378,16 @@ export function useProjects() {
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      let { data: result, error } = await supabase
+      // Typed as unknown because the two queries below select different column
+      // sets, and PostgREST's generated types resolve the narrower one to an
+      // error shape rather than to a row.
+      let result: unknown;
+      let error: { code?: string; message: string } | null;
+
+      ({ data: result, error } = await supabase
         .from('projects')
         .select(PROJECT_LIST_COLUMNS)
-        .order('order_index');
+        .order('order_index'));
 
       // Schema older than the showcase migration: fall back to everything
       // rather than showing the visitor an empty projects page.
@@ -581,7 +590,10 @@ export function useAchievements() {
  * tables should use this instead of hand-copying the fetch/create/update/
  * delete boilerplate above.
  */
-function useAdminCrud<T extends { id: string }>(table: string, orderBy: string) {
+/** A table name supabase-js will accept. */
+type TableName = keyof Database['public']['Tables'];
+
+function useAdminCrud<T extends { id: string }>(table: TableName, orderBy: string) {
   const [data, setData] = useState<T[]>(() => getCachedData<T[]>(`crud_${table}`) || []);
   const [loading, setLoading] = useState(() => !getCachedData<T[]>(`crud_${table}`));
   const [error, setError] = useState<string | null>(null);
@@ -589,7 +601,15 @@ function useAdminCrud<T extends { id: string }>(table: string, orderBy: string) 
   const refetch = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: result, error } = await supabase.from(table).select('*').order(orderBy);
+      // The table name is a runtime string, so supabase-js resolves the row
+      // type to the union of every table it knows. The caller states what it
+      // expects via T; there is nothing more precise available here.
+      // The table is a parameter, so supabase-js widens the row type to the
+      // union of every table. The caller names what it expects through T.
+      const { data: result, error } = (await supabase
+        .from(table)
+        .select('*')
+        .order(orderBy)) as { data: unknown; error: { message: string } | null };
       if (error) throw error;
       setData((result || []) as T[]);
       setCachedData(`crud_${table}`, result || []);
@@ -857,7 +877,9 @@ export function useBlogEngagement(blogPostId: string) {
 export const addBlogComment = async (commentData: Omit<BlogComment, 'id' | 'created_at' | 'updated_at'>) => {
   const { data, error } = await supabase
     .from('blog_comments')
-    .insert(commentData)
+    // BlogComment carries `replies`, which the app assembles client-side and
+    // the table does not have. Insert only the columns that exist.
+    .insert(commentData as Database['public']['Tables']['blog_comments']['Insert'])
     .select()
     .single();
 
