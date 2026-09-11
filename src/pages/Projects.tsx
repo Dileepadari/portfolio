@@ -494,36 +494,60 @@ function ProjectCard({ project, featured = false, isAdmin = false, onEdit, onDel
   const dark = project.image_url || project.images?.[0];
   const light = project.image_url_light || project.images_light?.[0];
 
-  // Most projects have no screenshot, so the no-image case is the common one,
-  // not the exception. The brand mark stands in for it, but `object-cover` on a
-  // wordmark blows it up to fill the card and turns a grid of projects into a
-  // grid of logos. Contained, dimmed and centred on a muted panel reads as
-  // "no image yet" instead.
   const hasImage = Boolean(dark || light);
   const mark = resolvedTheme === 'light' ? '/adk_dev_logo_dark.png' : '/adk_dev_logo_light.png';
 
+  // Contained over a blurred copy of itself, the same treatment as the detail
+  // page banner and for the same reason: a card image is whatever somebody
+  // uploaded. `object-cover` on a full application screenshot crops it to a
+  // zoomed slice of its top-left corner, which is not recognisable as anything.
+  // Contained shows the whole thing, and the blurred fill stops it floating in
+  // an empty box.
   const cardImage = hasImage ? (
-    <ThemedImage
-      dark={dark}
-      light={light}
-      alt={project.title}
-      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-    />
+    <>
+      <ThemedImage
+        dark={dark}
+        light={light}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl saturate-125 opacity-60"
+      />
+      <ThemedImage
+        dark={dark}
+        light={light}
+        alt={project.title}
+        className="relative mx-auto h-full w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+      />
+    </>
   ) : (
-    <div className="flex h-full w-full items-center justify-center bg-muted/30" aria-hidden>
+    // No screenshot yet. A visible, deliberate panel beats a near-invisible
+    // speck: the mark sits on a tint drawn from the project's own language
+    // colour, so a grid of coverless projects still reads as distinct cards.
+    <div
+      className="flex h-full w-full items-center justify-center"
+      style={{
+        background: project.language_color
+          ? `radial-gradient(circle at 50% 45%, ${project.language_color}26, transparent 70%)`
+          : undefined,
+      }}
+      aria-hidden
+    >
       <img
         src={mark}
         alt=""
         loading="lazy"
         decoding="async"
-        className="h-8 w-auto opacity-25 transition-opacity duration-200 group-hover:opacity-40 sm:h-10"
+        className="h-10 w-auto opacity-50 transition-opacity duration-200 group-hover:opacity-70 sm:h-12"
       />
     </div>
   );
 
   return (
     <Card className={`bg-card border-border hover:border-primary transition-all duration-200 group ${featured ? 'ring-1 ring-yellow-400/20' : ''}`}>
-      <div className="aspect-video w-full overflow-hidden rounded-t-lg relative">
+      {/* bg-muted/40 rather than transparent: with a contained image there
+          is always some letterboxing, and it should look like a frame rather
+          than a hole in the card. */}
+      <div className="aspect-video w-full overflow-hidden rounded-t-lg relative bg-muted/40">
         {project.slug ? (
           <Link to={`/projects/${project.slug}`} aria-label={`Open ${project.title}`} className="block h-full w-full">
             {cardImage}
