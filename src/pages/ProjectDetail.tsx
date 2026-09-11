@@ -13,7 +13,7 @@
  * empty headings. That is why there is no placeholder copy anywhere below.
  */
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -29,6 +29,7 @@ import {
   Rocket,
   Star,
   Terminal,
+  Pencil,
   Wrench,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,8 @@ import { LazyMarkdown } from "@/components/LazyMarkdown";
 import { ProjectGallery } from "@/components/ProjectGallery";
 import { ThemedImage } from "@/components/ThemedImage";
 import { ProjectDetailSkeleton } from "@/components/skeletons/pages";
+import { ProjectEditDialog } from "@/components/ProjectEditDialog";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { useProject, type Project } from "@/hooks/usePortfolioData";
 import { cn, sanitizeHtml } from "@/lib/utils";
@@ -117,7 +120,9 @@ function LinkButtons({ project }: { project: Project }) {
 
 export function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: project, loading, notFound } = useProject(slug);
+  const { data: project, loading, notFound, refetch } = useProject(slug);
+  const { isAdmin } = useAdmin();
+  const [editing, setEditing] = useState(false);
 
   // A link to a project should preview as that project, not as the site.
   useDocumentMeta(
@@ -242,7 +247,17 @@ export function ProjectDetail() {
             <p className="max-w-3xl text-muted-foreground">{project.description}</p>
           )}
 
-          <LinkButtons project={project} />
+          <div className="flex flex-wrap items-center gap-2">
+            <LinkButtons project={project} />
+            {/* The page you are reading is where you notice it is wrong, so the
+                editor opens here rather than back on the project grid. */}
+            {isAdmin && (
+              <Button type="button" size="sm" variant="outline" onClick={() => setEditing(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            )}
+          </div>
 
           {(hasText(project.project_role) || hasText(project.timeline)) && (
             <dl className="flex flex-wrap gap-x-8 gap-y-2 pt-2 text-sm">
@@ -444,6 +459,13 @@ export function ProjectDetail() {
           </>
         )}
       </div>
+
+      <ProjectEditDialog
+        projectId={project.id}
+        open={editing}
+        onOpenChange={setEditing}
+        onSaved={refetch}
+      />
     </div>
   );
 }

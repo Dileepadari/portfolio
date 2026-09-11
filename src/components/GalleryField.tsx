@@ -75,9 +75,9 @@ export function GalleryField({ label, hint, value, onChange }: GalleryFieldProps
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Label>{label}</Label>
-        <div className="flex gap-1">
+        <div className="flex shrink-0 gap-1">
           <div className="relative inline-flex">
             <input
               ref={fileInputRef}
@@ -107,7 +107,7 @@ export function GalleryField({ label, hint, value, onChange }: GalleryFieldProps
       ) : (
         <ul className="space-y-2">
           {value.map((url, index) => (
-            <li key={`${index}-${url}`} className="flex items-center gap-2">
+            <li key={`${index}-${url}`} className="flex min-w-0 items-center gap-2">
               <span className="w-5 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                 {index + 1}
               </span>
@@ -128,7 +128,7 @@ export function GalleryField({ label, hint, value, onChange }: GalleryFieldProps
                 value={url}
                 onChange={(e) => replaceAt(index, e.target.value)}
                 placeholder="https://mystorage.dileepadari.dev/images/portfolio/..."
-                className="text-xs"
+                className="min-w-0 flex-1 text-xs"
               />
               <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0"
                       aria-label="Move up" disabled={index === 0} onClick={() => move(index, -1)}>

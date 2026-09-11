@@ -409,6 +409,47 @@ export function useProjects() {
 }
 
 /**
+ * One project in full, by id.
+ *
+ * The list query deliberately omits the showcase columns, which means a row
+ * from `useProjects()` is a *partial* project. Editing one of those and saving
+ * it wrote `images: []` and null over every showcase field, because the form
+ * could not tell "absent from this query" from "cleared by the user". So the
+ * editor loads the whole row first and edits that.
+ */
+export function useFullProject(id: string | null | undefined) {
+  const [data, setData] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      setData(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+      .then(({ data: row, error: err }) => {
+        if (cancelled) return;
+        if (err) setError(err.message);
+        else setData((row as unknown as Project) ?? null);
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  return { data, loading, error };
+}
+
+/**
  * One project in full, for the detail page.
  *
  * Cached per slug so going back to the list and returning is instant, and so a

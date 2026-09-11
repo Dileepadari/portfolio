@@ -57,7 +57,10 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
     <div className="space-y-2">
       {label && <Label>{label}</Label>}
 
-      <div className="flex items-center gap-3">
+      {/* min-w-0 on both the row and the growing column: a flex child defaults
+          to min-width:auto, which refuses to shrink below its content and is
+          what pushed this row out of its grid cell. */}
+      <div className="flex min-w-0 items-center gap-3">
         {fileType === "images" && previewSrc ? (
           <img
             src={previewSrc}
@@ -81,8 +84,10 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
           </div>
         )}
 
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <div className="flex gap-2">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          {/* Wraps instead of overflowing: at a narrow width the URL toggle
+              drops to a second line rather than escaping the dialog. */}
+          <div className="flex flex-wrap gap-2">
             <div className="relative inline-flex">
               <input
                 ref={fileInputRef}
@@ -110,8 +115,8 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
               size="sm"
               onClick={() => setShowUrlInput((prev) => !prev)}
             >
-              <LinkIcon className="w-4 h-4 mr-2" />
-              Or paste URL
+              <LinkIcon className="w-4 h-4 mr-2 shrink-0" />
+              <span className="truncate">URL</span>
             </Button>
             {value && (
               <Button type="button" variant="ghost" size="sm" onClick={() => onChange("")}>
@@ -125,7 +130,7 @@ export function ImageUploadField({ label, value, fallbackUrl, onChange, fileType
               value={value || ""}
               onChange={(e) => onChange(e.target.value)}
               placeholder="https://example.com/image.jpg"
-              className="text-sm"
+              className="w-full min-w-0 text-sm"
             />
           )}
         </div>
