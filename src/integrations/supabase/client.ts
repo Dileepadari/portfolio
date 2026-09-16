@@ -24,6 +24,10 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  // On the box, portfolio's tables live in the `portfolio` schema, not `public`
+  // (which belongs to a different site). Default every read here so
+  // `supabase.from('projects')` resolves to portfolio.projects.
+  db: { schema: 'portfolio' },
   // No `auth` config: admin auth is a self-hosted JWT scheme (see
   // src/hooks/useAuth.ts), not supabase.auth - this client is only ever
   // used for public anon-key reads and the visitor-scoped like/comment
