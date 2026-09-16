@@ -8,5 +8,6 @@ import { useAuth } from './useAuth';
  */
 export function useAdmin() {
   const { user, loading } = useAuth();
-  return { isAdmin: !!user, loading };
+  // A signed-in person is not automatically an admin; check the grant.
+  return { isAdmin: !!user?.isAdmin, loading };
 }

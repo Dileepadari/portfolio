@@ -10,14 +10,16 @@
  * @module admin
  */
 
-import { getAdminToken, clearAdminToken } from './adminAuthToken';
+import { session } from './session';
 
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin`;
+const GATEWAY = import.meta.env.VITE_GATEWAY_URL ?? 'https://api.dileepadari.dev';
+const PORTFOLIO_BASE = `${GATEWAY}/apps/portfolio`;
 
 async function call(path: string, init: RequestInit = {}) {
-  const token = getAdminToken();
-  const res = await fetch(`${FUNCTIONS_BASE}${path}`, {
+  const token = await session.getAccessToken();
+  const res = await fetch(`${PORTFOLIO_BASE}${path}`, {
     ...init,
+    credentials: 'include',
     headers: {
       ...(init.headers || {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -25,7 +27,6 @@ async function call(path: string, init: RequestInit = {}) {
   });
 
   if (res.status === 401) {
-    clearAdminToken();
     throw new Error('Your admin session has expired. Please log in again.');
   }
 
@@ -37,10 +38,12 @@ async function call(path: string, init: RequestInit = {}) {
 }
 
 async function dataCall(operation: string, table: string, extra: Record<string, unknown> = {}) {
+  // The gateway keys entities as `<app>.<table>`; portfolio's admin only ever
+  // touches portfolio tables.
   const body = await call('/data', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ table, operation, ...extra }),
+    body: JSON.stringify({ entity: `portfolio.${table}`, operation, ...extra }),
   });
   return body.data;
 }
@@ -70,12 +73,10 @@ export function safeFileName(name: string): string {
 }
 
 export const adminApi = {
-  login: (username: string, password: string) =>
-    call('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    }),
+  login: async (identifier: string, password: string) => {
+    await session.login(identifier, password);
+    return { ok: true };
+  },
 
   /** Admin-only reads that the public anon key can't see (drafts, the
    *  contact inbox). */
@@ -90,16 +91,21 @@ export const adminApi = {
     await dataCall('delete', table, { id, idColumn });
   },
 
-  /** Insert-or-update keyed on idColumn (e.g. site_settings.key). */
-  upsert: <T = unknown>(table: string, payload: unknown, idColumn = 'id'): Promise<T> =>
-    dataCall('upsert', table, { payload, idColumn }),
+  /** site_settings is a key/value table; it has its own upsert route. */
+  upsert: async <T = unknown>(_table: string, payload: unknown): Promise<T> => {
+    const body = await call('/settings', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    return body.data as T;
+  },
 
   upload: async (file: File, opts: { fileType: 'images' | 'documents'; fileName?: string }): Promise<string> => {
     const fileName = opts.fileName || `${crypto.randomUUID()}-${safeFileName(file.name)}`;
     const buffer = await file.arrayBuffer();
-    const token = getAdminToken();
-    const res = await fetch(`${FUNCTIONS_BASE}/upload`, {
+    const token = await session.getAccessToken();
+    const res = await fetch(`${PORTFOLIO_BASE}/upload`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         'x-file-type': opts.fileType,
@@ -110,7 +116,6 @@ export const adminApi = {
     });
 
     if (res.status === 401) {
-      clearAdminToken();
       throw new Error('Your admin session has expired. Please log in again.');
     }
 

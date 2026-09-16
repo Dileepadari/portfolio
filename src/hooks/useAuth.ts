@@ -1,43 +1,54 @@
 /**
- * Admin sign-in state for the UI.
+ * Admin sign-in state, backed by the shared ecosystem session.
  *
- * Wraps the stored token so components can ask "who is signed in" without
- * touching `localStorage`, and re-reads it on mount so a reload keeps the
- * session. Authorisation itself happens in the gateway.
+ * The interface components rely on is unchanged - `user`, `loading`, `signIn`,
+ * `signOut` - but underneath it is now the ecosystem's single sign-on. Being
+ * signed in is not enough to reach the admin screens: the person must hold a
+ * portfolio admin grant, which `isAdmin` reflects. There is no visitor sign-up;
+ * admin access is granted deliberately.
  *
  * @module auth
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { adminApi } from '@/lib/adminApi';
-import {
-  getAdminToken,
-  setAdminToken,
-  clearAdminToken,
-  decodeAdminToken,
-  type AdminTokenPayload,
-} from '@/lib/adminAuthToken';
+import { session } from '@/lib/session';
+import type { SessionUser } from '@completeos/auth-client';
 
-/**
- * Admin-only auth against our own `admin_users` table (see
- * supabase/functions/admin), not supabase.auth - there is no visitor-facing
- * sign-up; admins are provisioned via `npm run create-admin`.
- */
+export interface AdminUser {
+  id: string;
+  username: string;
+  isAdmin: boolean;
+}
+
+function toAdmin(u: SessionUser): AdminUser {
+  const role = u.apps?.portfolio;
+  return { id: u.id, username: u.username, isAdmin: role === 'admin' || role === 'owner' };
+}
+
 export function useAuth() {
-  const [user, setUser] = useState<AdminTokenPayload | null>(null);
+  const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getAdminToken();
-    setUser(token ? decodeAdminToken(token) : null);
-    setLoading(false);
+    // Restore a session from the shared cookie. Arriving already signed in from
+    // another ecosystem app lands here signed in too.
+    session.init()
+      .then((s) => setUser(s.status === 'authenticated' ? toAdmin(s.user) : null))
+      .finally(() => setLoading(false));
+    return session.subscribe((s) => {
+      if (s.status === 'anonymous') setUser(null);
+      else if (s.status === 'authenticated') setUser(toAdmin(s.user));
+    });
   }, []);
 
-  const signIn = useCallback(async (username: string, password: string) => {
+  const signIn = useCallback(async (identifier: string, password: string) => {
     try {
-      const { token } = await adminApi.login(username, password);
-      setAdminToken(token);
-      setUser(decodeAdminToken(token));
+      const u = await session.login(identifier, password);
+      const admin = toAdmin(u);
+      if (!admin.isAdmin) {
+        await session.logout();
+        return { error: new Error('That account is not a portfolio administrator.') };
+      }
       return { error: null };
     } catch (error) {
       return { error: error instanceof Error ? error : new Error('Login failed') };
@@ -45,7 +56,7 @@ export function useAuth() {
   }, []);
 
   const signOut = useCallback(async () => {
-    clearAdminToken();
+    await session.logout();
     setUser(null);
   }, []);
 

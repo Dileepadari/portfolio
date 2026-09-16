@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Settings as SettingsIcon, Plus, Trash2, Save } from "lucide-react";
+import { AppSwitcher } from "@completeos/ui";
 import { useAdmin } from "@/hooks/useAdmin";
+import { session } from "@/lib/session";
 import { useSiteSettings, AdminQuickLink } from "@/hooks/usePortfolioData";
 import { useToast } from "@/hooks/use-toast";
 import { SettingsSkeleton } from "@/components/skeletons/pages";
@@ -83,10 +85,13 @@ export function Settings() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6 fade-in">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <SettingsIcon className="w-6 h-6" />
-          Site Settings
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <SettingsIcon className="w-6 h-6" />
+            Site Settings
+          </h1>
+          <AppSwitcher current="portfolio" hasApp={(app) => session.hasApp(app)} />
+        </div>
 
         <Card className="bg-card border-border">
           <CardHeader>
