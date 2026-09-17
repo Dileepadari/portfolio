@@ -60,20 +60,23 @@ function lazyRoute(element: ReactNode, fallback: ReactNode) {
 }
 
 /**
- * Cherry, for the signed-in owner only. The gateway enforces sign-in and the
- * registry's required fields on every call, so this gate is just so the public
- * site does not show a launcher a visitor cannot use. She answers "info about
- * me" from portfolio's own content and can add records, always confirming first.
+ * Cherry on the portfolio, for everyone. A visitor can ask about the site (its
+ * public content only - the gateway's anonymous /ask never touches the inbox or
+ * private rows); the signed-in owner can also add and edit, which the gateway
+ * gates on the admin grant. `canAct` keeps a logged-out visitor on the ask-only
+ * path so they never hit a sign-in wall just to enquire.
  */
-function AdminAssistant() {
+function PortfolioAssistant() {
   const { isAdmin } = useAdmin();
-  if (!isAdmin) return null;
   return (
     <Assistant
       app="portfolio"
       baseUrl={GATEWAY_URL}
       getAccessToken={() => session.getAccessToken()}
-      placeholder='Ask about the portfolio, or add to it - like "add a project called Aurora".'
+      canAct={isAdmin}
+      placeholder={isAdmin
+        ? 'Ask about the portfolio, or add to it - like "add a project called Aurora".'
+        : 'Ask me anything about Dileep - projects, experience, skills.'}
     />
   );
 }
@@ -103,7 +106,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={lazyRoute(<NotFound />, <ProjectsSkeleton />)} />
             </Routes>
-            <AdminAssistant />
+            <PortfolioAssistant />
           </Layout>
         </BrowserRouter>
       </TooltipProvider>
