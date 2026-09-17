@@ -13,6 +13,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { Assistant } from "@completeos/ui";
+import { session, GATEWAY_URL } from "@/lib/session";
+import { useAdmin } from "@/hooks/useAdmin";
 import { Layout } from "./layouts/Layout";
 import { Profile } from "./pages/Profile";
 import {
@@ -56,6 +59,25 @@ function lazyRoute(element: ReactNode, fallback: ReactNode) {
   return <Suspense fallback={fallback}>{element}</Suspense>;
 }
 
+/**
+ * Cherry, for the signed-in owner only. The gateway enforces sign-in and the
+ * registry's required fields on every call, so this gate is just so the public
+ * site does not show a launcher a visitor cannot use. She answers "info about
+ * me" from portfolio's own content and can add records, always confirming first.
+ */
+function AdminAssistant() {
+  const { isAdmin } = useAdmin();
+  if (!isAdmin) return null;
+  return (
+    <Assistant
+      app="portfolio"
+      baseUrl={GATEWAY_URL}
+      getAccessToken={() => session.getAccessToken()}
+      placeholder='Ask about the portfolio, or add to it - like "add a project called Aurora".'
+    />
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="dark" storageKey="portfolio-theme">
@@ -81,6 +103,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={lazyRoute(<NotFound />, <ProjectsSkeleton />)} />
             </Routes>
+            <AdminAssistant />
           </Layout>
         </BrowserRouter>
       </TooltipProvider>

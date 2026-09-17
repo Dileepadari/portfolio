@@ -14,3 +14,6 @@ import { createSessionClient } from '@completeos/auth-client';
 const GATEWAY = import.meta.env.VITE_GATEWAY_URL ?? 'https://api.dileepadari.dev';
 
 export const session = createSessionClient({ baseUrl: GATEWAY });
+
+/** The gateway root, for the shared ecosystem assistant. */
+export const GATEWAY_URL = GATEWAY;
