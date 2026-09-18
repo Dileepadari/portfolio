@@ -476,15 +476,17 @@ export function Navigation() {
         </div>
       </header>
 
-      {/* Take-me-up, sitting just above Cherry (who stands in the bottom-right
-          corner) so the two don't overlap. */}
-      <button
-        onClick={handleScrollToTop}
-        className="fixed bottom-44 right-6 z-40 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 flex items-center justify-center"
-        aria-label="Take Me Up"
-      >
-        <Rocket className="w-6 h-6" style={{ transform: 'rotate(-45deg)' }} />
-      </button>
+      {/* Take-me-up, sitting directly above Cherry (who stands in the
+          bottom-right corner) and sharing her centre so the two line up. */}
+      <div className="fixed bottom-44 right-4 z-40 flex w-24 justify-center">
+        <button
+          onClick={handleScrollToTop}
+          className="bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 flex items-center justify-center"
+          aria-label="Take Me Up"
+        >
+          <Rocket className="w-6 h-6" style={{ transform: 'rotate(-45deg)' }} />
+        </button>
+      </div>
     </>
   );
 }
