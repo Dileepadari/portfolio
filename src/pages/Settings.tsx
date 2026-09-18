@@ -12,9 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Settings as SettingsIcon, Plus, Trash2, Save } from "lucide-react";
-import { AppSwitcher } from "@completeos/ui";
+import { AppSwitcher, AiKeySettings } from "@completeos/ui";
 import { useAdmin } from "@/hooks/useAdmin";
-import { session } from "@/lib/session";
+import { session, GATEWAY_URL } from "@/lib/session";
 import { useSiteSettings, AdminQuickLink } from "@/hooks/usePortfolioData";
 import { useToast } from "@/hooks/use-toast";
 import { SettingsSkeleton } from "@/components/skeletons/pages";
@@ -183,6 +183,12 @@ export function Settings() {
           <Save className="w-4 h-4" />
           {saving ? "Saving..." : "Save all settings"}
         </Button>
+
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <AiKeySettings baseUrl={GATEWAY_URL} getAccessToken={() => session.getAccessToken()} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

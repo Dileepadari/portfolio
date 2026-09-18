@@ -476,10 +476,11 @@ export function Navigation() {
         </div>
       </header>
 
-      {/* Absolute Rocket button at bottom right */}
+      {/* Take-me-up, sitting just above Cherry (who stands in the bottom-right
+          corner) so the two don't overlap. */}
       <button
         onClick={handleScrollToTop}
-        className="fixed bottom-6 right-6 z-50 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 flex items-center justify-center"
+        className="fixed bottom-44 right-6 z-40 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/80 transition-all duration-200 flex items-center justify-center"
         aria-label="Take Me Up"
       >
         <Rocket className="w-6 h-6" style={{ transform: 'rotate(-45deg)' }} />
