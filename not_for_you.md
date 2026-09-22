@@ -142,3 +142,137 @@ is not what someone browsing a portfolio wants first.
   showcase page.
 - **There was no `<title>` per route**, so every project link previewed as the
   site's generic title in every chat app.
+
+---
+
+# The move into CompleteOS (2026-09-22)
+
+## The repository this app lives in changed under the overhaul
+
+The standalone `Dileepadari/portfolio` repo was the overhaul target. Three days
+before I picked it up, `d1990e2` "Merge portfolio upstream into apps/portfolio"
+was pushed to its `main`, bringing the monorepo's variant of this app back into
+the standalone repo. That merge added
+
+```json
+"@completeos/auth-client": "*",
+"@completeos/ui": "*"
+```
+
+which are workspace packages. They are not on npm, not vendored, and not in that
+repo's lockfile, so `npm ci` 404s there. The standalone repo had been red for
+three days and could not install, build, typecheck, test or run.
+
+The owner's call was that the standalone repo is superseded and the overhaul
+targets `CompleteOS/apps/portfolio` instead. So the standalone repo keeps its
+red CI and needs a disposition decision (archive, revert, or delete); it is not
+this app's problem any more.
+
+One thing did go back to it: `not_for_you.md` there was quoting the storage
+box's upload key in full, and that repo is public. That single redaction was
+pushed on its own.
+
+## The typecheck had never actually compiled this app
+
+The monorepo CI had six jobs and not one of them built an app. The portfolio app
+was carrying **33 standing type errors** the whole time, and CI was green.
+
+The root cause was one line. The merge moved the client onto the `portfolio`
+schema:
+
+```ts
+db: { schema: 'portfolio' }
+```
+
+while `src/integrations/supabase/types.ts` still declared only `public`. That is
+a type error at the `createClient` call, and from there every query loses its row
+type, so `.eq('slug', ...)` stops resolving to a real column and the failure
+lands in thirty other places that each look like their own bug.
+
+Two halves to the fix, and doing only one makes it worse:
+
+1. the generated types declare the `portfolio` schema;
+2. `createClient<Database, 'portfolio'>` passes the schema as a **type**
+   argument, not only a runtime option.
+
+With just the first, the default schema lookup finds nothing and every insert
+payload becomes `never`, which is a stranger error than the one you started
+with.
+
+The types file now carries a header saying it was hand-adjusted, because a plain
+`supabase gen types` would silently undo it.
+
+## The dead argument the broken typecheck was hiding
+
+`adminApi.upsert` was rewritten by the merge to take two arguments and PUT to the
+gateway's `/settings` route. Its one caller still passed three. Nothing caught
+it, because typecheck was never green enough to be read.
+
+## Two security bugs, found by reading rather than by a scanner
+
+Neither gitleaks nor `npm audit` had anything to say about this app. Both of
+these came out of reading the code.
+
+**The inline sanitiser unwrapped elements without cleaning them.** `sanitizeHtml`
+drops a tag it does not allow but keeps the text inside, which is right. It was
+hoisting those children into the document without ever visiting them, and the
+scan loop had already passed that index, so nothing looked at them again:
+
+```
+<section><img src=x onerror="alert(1)"></section>   ->   <img src=x onerror="alert(1)">
+<article><a href="javascript:alert(1)">x</a></article> -> the href survived
+```
+
+A top-level `<img onerror>` was stripped correctly, which is presumably why it
+read as working. The fix cleans a disallowed element's subtree before unwrapping
+it, and drops the subtree outright for the seven tags where the subtree *is* the
+payload. Five of the ten new tests in `utils.test.ts` fail without it.
+
+Worth saying why this is reachable rather than theoretical: project titles and
+descriptions are scraped out of other people's READMEs by
+`scripts/apply-showcase.mjs`. "Only an admin can type this" was never the threat
+model.
+
+**The blog published commenter emails and visitor ids.** The comment read was
+`select('*')`, and the table holds `author_email` (typed into the form by
+whoever commented) and `visitor_id`. Both went to every reader of the post.
+
+The visitor id is the value the delete policy trusts, via a client-set
+`x-visitor-id` header, so publishing it meant any visitor could delete any
+comment by copying someone else's id out of the response. The likes read had the
+same shape: `select('visitor_id')` for every like on the post.
+
+Fixes, all client-side, no migration:
+
+- the comment read names its columns and omits both;
+- likes became two server-side counts instead of a list of ids;
+- the delete button now asks `ownsComment(id)`, which reads this browser's own
+  record of what it posted.
+
+That last one has exactly the same reach as the old comparison, which is the
+reason it is acceptable: the visitor id lives in this browser's `localStorage`
+too, so a comment posted from another browser was never deletable from here
+anyway.
+
+## Left alone deliberately
+
+- **`supabase/functions/admin/` is retired and still in the tree.** The gateway's
+  `services/gateway/apps/portfolio.ts` owns those routes now, and nothing in this
+  app calls the function. I did not delete it: whether that Supabase function is
+  still deployed is a deploy question, not a source question, and deleting source
+  does not undeploy anything. Flagged for the owner instead.
+- **`supabase/migrations/` likewise.** They built this schema before it moved to
+  the shared box. They are history, not provisioning.
+- **Sign-in still has no rate limit.** The gateway is the right place for it and
+  it is not mine to invent here.
+- **`className` is allowed on any tag** by the markdown allow-list. Untrusted
+  README content can therefore set classes, which is a cosmetic nuisance rather
+  than an escalation. Left, but noted.
+
+## A commit boundary I got wrong
+
+`usePortfolioData.ts` carried three unrelated changes into one commit: the
+engagement privacy fix, the `Database['portfolio']` rename and the dead
+`upsert` argument. They are all correct and all verified, but the commit message
+only describes the first. Splitting it afterwards would have meant rewriting
+pushed-adjacent history for a cosmetic gain, so it stands.
