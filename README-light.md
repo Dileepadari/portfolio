@@ -33,6 +33,13 @@
 
 ---
 
+> **Where this builds.** This repository is a read-only mirror of `apps/portfolio` in the
+> [CompleteOS](https://github.com/Dileepadari/CompleteOS) monorepo, kept in sync as a git subtree. It depends on workspace packages (`@completeos/auth-client`, `@completeos/ui`) that are
+> not published to npm, so `npm ci` inside this repository alone cannot resolve them.
+> Clone the monorepo and run `npm ci` from its root, then work in `apps/portfolio`;
+> CI for this app runs there, not here.
+
+
 ## Contents
 
 - [Why this project matters](#why-this-project-matters)
