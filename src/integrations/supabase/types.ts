@@ -37,7 +37,7 @@ export type Database = {
       [_ in never]: never
     }
   }
-  public: {
+  portfolio: {
     Tables: {
       achievements: {
         Row: {
@@ -764,7 +764,10 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+// The tables live in the `portfolio` schema on the box, not `public`, and
+// `createClient` is configured with `db: { schema: "portfolio" }`. This has to
+// name the same schema or every query below loses its row types.
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "portfolio">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -883,7 +886,7 @@ export const Constants = {
   graphql_public: {
     Enums: {},
   },
-  public: {
+  portfolio: {
     Enums: {},
   },
 } as const
