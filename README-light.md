@@ -17,13 +17,13 @@
 <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" loading="lazy">
 <br>
 <img alt="Supabase" src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" loading="lazy">
-<img alt="Deno" src="https://img.shields.io/badge/Deno_edge_function-000000?style=for-the-badge&logo=deno&logoColor=white" loading="lazy">
-<img alt="Tests" src="https://img.shields.io/badge/Vitest_42_tests-6E9F18?style=for-the-badge&logo=vitest&logoColor=white" loading="lazy">
+<img alt="Deno" src="https://img.shields.io/badge/Deno_gateway-000000?style=for-the-badge&logo=deno&logoColor=white" loading="lazy">
+<img alt="Tests" src="https://img.shields.io/badge/Vitest_72_tests-6E9F18?style=for-the-badge&logo=vitest&logoColor=white" loading="lazy">
 <img alt="MIT License" src="https://img.shields.io/badge/License-MIT-3DA639?style=for-the-badge" loading="lazy">
 
 <br><br>
 
-[![CI](https://github.com/Dileepadari/portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/Dileepadari/portfolio/actions/workflows/ci.yml)
+[![CI](https://github.com/Dileepadari/CompleteOS/actions/workflows/ci.yml/badge.svg)](https://github.com/Dileepadari/CompleteOS/actions/workflows/ci.yml)
 
 **Live:** [dileepadari.dev](https://dileepadari.dev) &middot; **[Developer documentation](./DEVDOC.md)** &middot; [Screenshots](#screenshots)
 
@@ -85,7 +85,7 @@ dark mode is at **[README.md](./README.md)**.
 
 ### Editable in place
 
-Sign in as the admin account and edit controls appear inline on whatever you are looking at. Writes go through a single Deno edge function that holds the service-role key and checks a self-issued JWT; the browser never has write access to the database.
+Sign in as the admin account and edit controls appear inline on whatever you are looking at. Writes go through the ecosystem gateway, which holds the privileged credentials and checks that your account carries a portfolio admin grant; the browser never has write access to the database. The access token it uses is held in memory only, and the refresh token is an HttpOnly cookie, so nothing reusable is left in web storage.
 
 **Using it:** **Sign In**, then the pencil icons. Every table the gateway will accept is named explicitly in an allowlist, so a new table is a deliberate act rather than an accident.
 
