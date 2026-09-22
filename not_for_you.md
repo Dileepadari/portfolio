@@ -276,3 +276,28 @@ engagement privacy fix, the `Database['portfolio']` rename and the dead
 `upsert` argument. They are all correct and all verified, but the commit message
 only describes the first. Splitting it afterwards would have meant rewriting
 pushed-adjacent history for a cosmetic gain, so it stands.
+
+## From walking every route for the screenshots
+
+- **`/blog/:slug` is unreachable with the content that exists.** All three posts
+  carry an `external_link`, and `BlogPostView` opens that and `<Navigate>`s to
+  `/blog`. The route is fine; nothing reaches it. I went looking for a blog-post
+  screenshot and got the blog index back, which is how this surfaced.
+- That redirect calls `window.open` in the component body rather than in an
+  effect, so it runs on every render and a popup blocker eats it (which is what
+  happened inside the capture iframe). Pre-existing, outside this pass's scope,
+  left alone.
+- **The theme storage key is `portfolio-theme`.** `ThemeProvider` defaults to
+  `vite-ui-theme`, but `App.tsx` mounts it with `storageKey="portfolio-theme"`.
+  The first light capture came back dark with `localStorage` reading `light`,
+  because the harness had set the default key and the app was reading the other
+  one.
+- **Three gallery tiles were blank in a screenshot while fully loaded**
+  (`naturalWidth` 1152, `complete` true). They carry
+  `transition-transform group-hover:scale-105`; clearing `transition` and
+  `transform` before the capture fixed it. Checking `naturalWidth` first is what
+  kept this from being written up as a broken-image bug, since
+  `pickThemedSource` does `light || dark` and has tests.
+- The assistant widget floats over the lower-right corner of every page and
+  overlaps body text at 390 px. Cosmetic, recorded, not touched.
+- No console errors, no failed requests, no horizontal overflow at 390 or 820.
