@@ -12,7 +12,7 @@ contribute to this site. Everything a newcomer actually needs is in
 
 ```ts
 const SELFHOST_JWT_SECRET = Deno.env.get("SELFHOST_JWT_SECRET") ?? "979fdfbf...e2b2";
-const ORACLE_UPLOAD_API_KEY = Deno.env.get("ORACLE_UPLOAD_API_KEY") ?? "This_is_top_secret_to_upload_to_oracle";
+const ORACLE_UPLOAD_API_KEY = Deno.env.get("ORACLE_UPLOAD_API_KEY") ?? "This_is_top_...oracle";
 ```
 
 Both live, both written as `??` defaults, committed on 2026-08-29 and still at
