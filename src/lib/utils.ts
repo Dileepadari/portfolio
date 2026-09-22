@@ -26,6 +26,15 @@ const ALLOWED_TAGS = new Set(['BR', 'SPAN', 'B', 'STRONG', 'I', 'EM', 'U', 'SMAL
 const ALLOWED_ATTRS = new Set(['class', 'style', 'title', 'target', 'rel', 'href']);
 
 /**
+ * Disallowed elements whose children go with them.
+ *
+ * Every other disallowed element is unwrapped instead: `<section>hello</section>`
+ * should still read "hello". These seven carry their payload in their own
+ * subtree, so hoisting the children out would be the whole attack.
+ */
+const DROP_SUBTREE_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META']);
+
+/**
  * Strips any script injection, iframes, on* event handlers, and javascript: protocols,
  * preserving only whitelisted inline styling/formatting tags (e.g. <br />, <span>, <strong>, <b>).
  */
@@ -58,6 +67,12 @@ export function sanitizeHtml(dirty: string): string {
         const tagName = el.tagName.toUpperCase();
 
         if (!ALLOWED_TAGS.has(tagName)) {
+          // Unwrapped children have to be cleaned *before* they are hoisted
+          // into this node. The scan loop above has already passed this index
+          // by the time the unwrap happens, so nothing would ever look at them
+          // again: `<section><img src=x onerror=...></section>` used to come
+          // out of here as a live `<img onerror>`.
+          if (!DROP_SUBTREE_TAGS.has(tagName)) cleanNode(child);
           toRemove.push(child);
         } else {
           const attrNames = Array.from(el.attributes).map((a) => a.name);
@@ -81,7 +96,7 @@ export function sanitizeHtml(dirty: string): string {
 
     for (const rem of toRemove) {
       const tag = (rem as HTMLElement).tagName?.toUpperCase();
-      if (['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META'].includes(tag)) {
+      if (DROP_SUBTREE_TAGS.has(tag)) {
         node.removeChild(rem);
       } else {
         while (rem.firstChild) {
