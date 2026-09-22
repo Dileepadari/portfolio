@@ -1,11 +1,16 @@
 /**
  * The only way the browser writes anything.
  *
- * Public reads go straight to PostgREST under row level security. Every write
- * goes through one Deno edge function that holds the service-role key, so no
- * privileged credential is ever in the bundle. This module is that function's
- * client: one place that knows the URL shape, attaches the admin token, and
+ * Public reads go straight to PostgREST under row level security, in the
+ * `portfolio` schema. Every write goes through the ecosystem gateway at
+ * `/apps/portfolio`, which holds the privileged credentials, so nothing in the
+ * bundle can write on its own. This module is that gateway's client: one place
+ * that knows the URL shape, attaches the shared session's access token, and
  * turns an expired session into a message a person can act on.
+ *
+ * Writes used to go to a Deno edge function in this repo
+ * (`supabase/functions/admin`). The gateway replaced it; that function is no
+ * longer called from anywhere here.
  *
  * @module admin
  */
