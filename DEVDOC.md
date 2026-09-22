@@ -1,235 +1,444 @@
-# Developer Guide
+# Portfolio - Developer Documentation
 
-Setup, environment configuration, and deployment instructions for maintaining or redeploying this site. For a feature overview, see [README.md](./README.md).
+Dileep Adari's personal site: profile, project showcase, blog and contact, all of it editable from
+the browser by the one account that holds the grant.
 
-## Prerequisites
+This document is the technical reference. For what the site is and what it looks like, see
+[README.md](./README.md).
 
-- Node.js **>= 20.19** (the repo pins this in `package.json#engines` - `@tailwindcss/oxide`'s native binary requires it). Use [nvm](https://github.com/nvm-sh/nvm): `nvm install 22 && nvm use 22`.
-- A [Supabase](https://supabase.com) project (Postgres + Edge Functions).
-- The [Supabase CLI](https://supabase.com/docs/guides/cli) (`npx supabase ...` works without a global install).
-- An Oracle Cloud (or any HTTP-reachable) object storage endpoint if you want image uploads to work - see [Oracle storage contract](#oracle-storage-contract) below. Not required to run the site; uploads will just fail until configured.
+## Table of contents
 
-## 1. Clone and install
+- [Tech stack](#tech-stack)
+- [Architecture overview](#architecture-overview)
+- [Where this app sits in the ecosystem](#where-this-app-sits-in-the-ecosystem)
+- [Data model](#data-model)
+- [The project showcase](#the-project-showcase)
+- [The dark and light pairing rule](#the-dark-and-light-pairing-rule)
+- [Auth model](#auth-model)
+- [Anonymous engagement](#anonymous-engagement)
+- [API surface](#api-surface)
+- [Frontend structure](#frontend-structure)
+- [Routing](#routing)
+- [Theming](#theming)
+- [Markdown rendering and sanitising](#markdown-rendering-and-sanitising)
+- [Environment variables](#environment-variables)
+- [Local development](#local-development)
+- [Testing](#testing)
+- [Continuous integration](#continuous-integration)
+- [Deployment](#deployment)
+- [Performance](#performance)
+- [Security notes](#security-notes)
+- [Known constraints and future work](#known-constraints-and-future-work)
+- [Glossary](#glossary)
 
-```sh
-git clone https://github.com/Dileepadari/portfolio.git
-cd portfolio
-npm install
+## Tech stack
+
+| Layer | Choice | Version |
+|---|---|---|
+| UI | React | 19 |
+| Language | TypeScript | 5.9 |
+| Build | Vite | 7 |
+| Styling | Tailwind CSS | 4 |
+| Components | shadcn/ui on Radix primitives | - |
+| Routing | react-router-dom | 7 |
+| Server cache | TanStack Query | 5 |
+| Data client | @supabase/supabase-js (PostgREST only) | 2 |
+| Markdown | react-markdown, remark-gfm, rehype-raw, rehype-sanitize, rehype-highlight | - |
+| Tests | Vitest + Testing Library + jsdom | 5 |
+| Session | `@completeos/auth-client` (workspace package) | - |
+| Shared UI | `@completeos/ui` (workspace package) | - |
+
+Versions are read from `package.json`; check there rather than trusting this table after a bump.
+
+## Architecture overview
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    UI["React SPA<br/>src/pages, src/components"]
+    DATA["usePortfolioData<br/>public reads"]
+    ADMIN["adminApi<br/>src/lib/adminApi.ts"]
+    SESS["session<br/>src/lib/session.ts"]
+    UI --> DATA
+    UI --> ADMIN
+    ADMIN -- "access token, in memory" --> SESS
+  end
+
+  subgraph Host["Oracle VM (Docker)"]
+    GW["ecosystem gateway<br/>services/gateway"]
+    PR["portfolioRouter<br/>apps/portfolio.ts"]
+    REST["PostgREST"]
+    PG[("PostgreSQL<br/>schema: portfolio")]
+    CDN["public CDN volume"]
+    GW -- "/apps/portfolio/*" --> PR
+    PR --> REST --> PG
+    PR -- "uploads" --> CDN
+  end
+
+  DATA -- "HTTPS, anon key, Accept-Profile: portfolio" --> REST
+  ADMIN -- "HTTPS /apps/portfolio/*" --> GW
+  CDN -. "served at mystorage.dileepadari.dev" .-> UI
 ```
 
-## 2. Environment variables
+What each box owns:
 
-Copy `.env.example` to `.env` and fill in your Supabase project's values (Project Settings > API in the Supabase dashboard):
+- **React SPA** owns presentation. It renders what it is given and computes nothing that another
+  screen could disagree about.
+- **usePortfolioData** owns every public read. Those go straight to PostgREST with the anon key,
+  under row level security, so the site is fast and needs no session to be readable.
+- **adminApi** owns every write. Nothing else in the frontend calls `fetch` against the gateway.
+- **session** owns identity. The access token lives in memory only; the refresh token is an
+  HttpOnly cookie on `.dileepadari.dev` that JavaScript cannot read.
+- **portfolioRouter** owns the two operations the generic gateway route cannot express: the
+  key/value `site_settings` upsert, and file upload to the CDN volume.
+- **PostgreSQL** owns constraints and the row level security policies that make anonymous reads
+  safe in the first place.
 
-```sh
-cp .env.example .env
+### The read path
+
+Public reads do not go through the gateway at all.
+
+```mermaid
+sequenceDiagram
+  participant V as Visitor
+  participant UI as Projects page
+  participant C as supabase client
+  participant P as PostgREST
+  V->>UI: open /projects
+  UI->>C: from('projects').select(...)
+  C->>P: GET /rest/v1/projects (anon key, Accept-Profile: portfolio)
+  P->>P: RLS: "Projects viewable by everyone"
+  P-->>C: rows
+  C-->>UI: render
 ```
 
-```env
-VITE_SUPABASE_URL="https://<your-project-ref>.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY="<your anon/publishable key>"
-VITE_SUPABASE_PROJECT_ID="<your-project-ref>"
+### The write path
+
+```mermaid
+sequenceDiagram
+  participant A as Admin
+  participant UI as Settings page
+  participant AD as adminApi
+  participant S as session
+  participant GW as gateway
+  participant P as PostgREST
+  A->>UI: Save a project
+  UI->>AD: adminApi.update('projects', id, payload)
+  AD->>S: getAccessToken()
+  S-->>AD: short-lived access token
+  AD->>GW: POST /apps/portfolio/data (Bearer)
+  GW->>GW: requireApp(req, 'portfolio', 'admin')
+  GW->>P: write with privileged credentials
+  P-->>GW: updated row
+  GW-->>AD: { data }
 ```
 
-These are the only client-side secrets - everything else (service-role key, JWT signing secret, Oracle upload key) lives server-side in the Edge Function and is never sent to the browser.
+The browser never holds a credential that can write. That is the whole point of the split: the anon
+key it does hold reaches only what row level security already publishes.
 
-## 3. Link and migrate the database
+## Where this app sits in the ecosystem
 
-```sh
-npx supabase link --project-ref <your-project-ref>
-npx supabase db push
-```
+This app is `apps/portfolio` in the **CompleteOS** monorepo, alongside `workos`, `moneyos` and
+`lifebook`. It shares four workspace packages:
 
-This applies every file in `supabase/migrations/` in order. Current migrations, for reference:
-
-| Migration | What it does |
+| Package | What it gives this app |
 |---|---|
-| `20260725000001_stage1_cleanup_and_fixes.sql` | Drops unused tables/functions, fixes RLS gaps, adds visitor-scoped blog engagement |
-| `20260725000002_stage2_custom_auth.sql` | Adds `admin_users`, locks direct client writes behind the Edge Function |
-| `20260726000001_stage4_full_editability.sql` | Adds `personal_info.highlights`, `languages`, `site_settings` |
-| `20260726000002_stage5_task_requests.sql` | Adds the structured `task_requests` table |
-| `20260726000004_drop_diag_function.sql`, `20260726000006_fix_disabled_rls.sql`, `20260726000007_drop_diag_functions2.sql` | Production RLS fix + cleanup of temporary diagnostic functions |
-| `20260726000008_drop_tasks_schedules.sql` | Removes the internal task/schedule manager tables (superseded by an external tracker) |
+| `@completeos/auth-client` | `createSessionClient`, the single sign-on session |
+| `@completeos/ui` | `AppSwitcher`, `Assistant`, `AiKeySettings` |
+| `@completeos/tokens` | the design tokens and the WCAG contrast gate |
+| `@completeos/registry` | the shared entity registry the gateway validates against |
 
-Re-run `supabase gen types typescript --linked > src/integrations/supabase/types.ts` after any schema change so the frontend types stay in sync.
+Signing in on any ecosystem app signs you in here too, because the refresh cookie is set on the
+parent domain. The apps share one Postgres for cost, not because they are entangled: each keeps its
+own schema, and CI has a `check-separability.sh` gate that fails if one app's schema references
+another's.
 
-## 4. Deploy the `admin` Edge Function
+## Data model
 
-Every authenticated write, every admin-only read, and the image upload proxy go through one Edge Function (`supabase/functions/admin`):
+Sixteen tables in the `portfolio` schema. They fall into four groups.
 
-```sh
-npx supabase functions deploy admin
+| Group | Tables |
+|---|---|
+| Profile content | `personal_info`, `experience`, `education`, `skills`, `achievements`, `courses`, `languages` |
+| Showcase | `projects` |
+| Blog | `blog_posts`, `blog_comments`, `blog_likes` |
+| Operational | `site_settings`, `contact_messages`, `task_requests`, `admin_users`, `profiles` |
+
+Row level security is the public contract:
+
+| Table | Anonymous can |
+|---|---|
+| `projects`, `personal_info`, `experience`, `education`, `skills`, `achievements`, `courses`, `languages`, `site_settings` | select, unconditionally |
+| `blog_posts` | select where `published = true` |
+| `blog_comments` | select where `is_approved = true`; delete its own by `x-visitor-id` |
+| `blog_likes` | select; insert; delete its own by `x-visitor-id` |
+| `contact_messages`, `task_requests` | insert only; never select |
+
+Everything else is denied to the anon key and reachable only through the gateway.
+
+## The project showcase
+
+`projects` is the widest table because a project row is both a card and a full page. Beyond the card
+fields (`title`, `description`, `tags`, `language`, `stars`, `forks`, `featured`, `order_index`), a
+row carries the showcase page:
+
+| Column | Holds |
+|---|---|
+| `slug` | the URL segment for `/projects/:slug` |
+| `tagline`, `overview`, `problem` | the prose at the top of the page |
+| `features`, `tech_stack`, `architecture`, `metrics`, `timeline` | structured sections |
+| `getting_started`, `readme` | long-form markdown |
+| `project_role`, `status`, `is_contributed` | provenance |
+| `hero_url`, `image_url`, `images` | dark-theme imagery |
+| `hero_url_light`, `image_url_light`, `images_light` | the light-theme counterparts |
+| `github_url`, `live_url`, `demo_url`, `docs_url` | outbound links |
+
+**A section with no content is omitted, not rendered empty.** A half-filled project should read as a
+shorter page, not a broken one.
+
+### The dark and light pairing rule
+
+Every image field has a `_light` counterpart. `src/lib/themedSource.ts` picks between them, and it
+reads `resolvedTheme`, never `theme`: `theme` can be the literal string `"system"`, which matches
+neither. When a light variant is absent the dark one is used for both, which is why a project with
+one screenshot still renders.
+
+## Auth model
+
+There is **no public sign-up**. One person administers this site.
+
+- Sign-in posts to the gateway through `session.login(identifier, password)`.
+- The gateway returns a short-lived access token, held **in memory only**, and sets a refresh token
+  as an HttpOnly cookie on `.dileepadari.dev`.
+- `useAuth` maps the session user to `{ id, username, isAdmin }`. `isAdmin` is true only when the
+  user's `apps.portfolio` grant is `admin` or `owner`; a valid ecosystem session with no portfolio
+  grant is signed in but is not an administrator, and `signIn` logs it straight back out with a
+  message saying so.
+- Nothing is written to `localStorage` or `sessionStorage`. The helper that used to do that
+  (`src/lib/adminAuthToken.ts`) was removed when the shared session replaced it.
+
+## Anonymous engagement
+
+Blog likes and comments need ownership without accounts. A random uuid in `localStorage`
+(`portfolio_visitor_id`) is sent as the `x-visitor-id` header, and the RLS delete policies compare
+against it.
+
+That header is set by the client, so it is only ever as private as the id itself. **Nothing may
+publish one browser's visitor id to another**, which is why:
+
+- the public comment read names its columns instead of using `select('*')`, omitting both
+  `visitor_id` and the `author_email` commenters type into the form;
+- the like state is two server-side counts (all likes, then likes matching this visitor) rather than
+  a list of everyone's ids;
+- the delete affordance is drawn from `ownsComment(id)`, which reads this browser's own record of
+  what it posted, in `src/lib/visitor.ts`.
+
+## API surface
+
+Everything the browser writes goes to `${VITE_GATEWAY_URL}/apps/portfolio`.
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/data` | POST | generic row operations, entity `portfolio.<table>`, `operation` one of select, insert, update, upsert, delete |
+| `/settings` | PUT | upsert one `site_settings` key, which is text-keyed and does not fit `/data` |
+| `/upload` | POST | put an image or document on the public CDN and return its URL |
+
+All three require a portfolio admin grant, checked by the gateway's `requireApp`.
+
+## Frontend structure
+
+```
+src/
+  pages/          one file per route
+  components/     app components; components/ui is vendored shadcn/ui
+  hooks/          usePortfolioData (public reads), useManagement (admin lists),
+                  useAuth, useAdmin, useDocumentMeta, useHighlightTheme
+  lib/            adminApi (all writes), session, visitor, themedSource,
+                  utils (incl. sanitizeHtml), colorPalettes, projectCategories
+  providers/      ThemeProvider
+  integrations/   the generated PostgREST types and the client
+  layouts/        Layout, the shared chrome
 ```
 
-Set its secrets (never pass these as CLI arguments - use `secrets set` so they're not written to shell history):
+`src/components/ui/` is vendored third-party code. It is excluded from the doc-comment rule; every
+other own source file carries a module docblock, per [docs/COMMENT_STYLE.md](./docs/COMMENT_STYLE.md).
 
-```sh
-npx supabase secrets set ADMIN_JWT_SECRET="$(openssl rand -hex 32)"
+## Routing
 
-# Oracle object storage - see the contract below. Skip these if you don't
-# need image uploads yet; the rest of the site works without them.
-npx supabase secrets set ORACLE_UPLOAD_BASE_URL="https://your-upload-host"
-npx supabase secrets set ORACLE_PUBLIC_BASE_URL="https://your-public-read-host"
-npx supabase secrets set ORACLE_UPLOAD_API_KEY="your-upload-api-key"
-npx supabase secrets set ORACLE_APP_NAME="portfolio"
+| Path | Page | Notes |
+|---|---|---|
+| `/` | `Profile` | eager, it is the landing page |
+| `/projects` | `Projects` | lazy |
+| `/projects/:slug` | `ProjectDetail` | lazy, the showcase page |
+| `/blog` | `Blog` | lazy |
+| `/blog/:slug` | `BlogPostView` | lazy |
+| `/contact` | `Contact` | lazy |
+| `/auth` | `Auth` | lazy, admin sign-in |
+| `/settings` | `Settings` | lazy, admin only |
+| `*` | `NotFound` | lazy |
+
+Every route except `/` is code-split, which is what keeps the entry bundle inside the CI tripwire.
+
+## Theming
+
+Light, dark and system, cycled by the toggle in the header. The choice is stored under
+`vite-ui-theme` in `localStorage`, and `ThemeProvider` exposes both `theme` (what was chosen,
+possibly `"system"`) and `resolvedTheme` (what is actually on screen).
+
+**Anything picking an asset per theme must read `resolvedTheme`.** Comparing `theme` against
+`"dark"`/`"light"` silently fails for every visitor on the default.
+
+## Markdown rendering and sanitising
+
+`src/components/Markdown.tsx` is the single renderer, used by blog posts and project READMEs.
+
+Plugin order is load bearing:
+
+```
+rehypeRaw -> [rehypeSanitize, HTML_SCHEMA] -> [rehypeHighlight, { subset }]
 ```
 
-`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically into every Edge Function by Supabase - don't set those yourself.
+Raw HTML has to be parsed before it can be filtered, and highlighting has to run after the filter or
+the sanitiser strips the `hljs-*` classes it just added.
 
-`supabase/config.toml` sets `verify_jwt = false` for this function deliberately: it implements its own JWT scheme (checked against `admin_users`), so Supabase's platform-level "must have a Supabase-issued JWT" gate has to be off, or no request would ever reach the function's own auth check.
+Two details that were each a bug once:
 
-## 5. Create your first admin user
+- **The subset is not optional.** `rehype-highlight` auto-detects across roughly 190 grammars for
+  every untagged code block. A README with a handful of them locked the renderer hard enough to time
+  out a screenshot capture.
+- **`readme` is not first-party content.** It holds text copied out of other people's repositories,
+  so the allow-list is GitHub's own schema plus only what a README header needs.
 
-Multiple admins are supported - this can be run again later for additional accounts.
+Short inline strings (titles, excerpts, footer text) go through `sanitizeHtml` in `src/lib/utils.ts`
+instead, which allows a small set of formatting tags. It unwraps an element it does not allow but
+keeps the text, and it sanitises that element's subtree *before* hoisting it, which is the fix for a
+bypass where `<section><img src=x onerror=...></section>` came through intact.
+
+## Environment variables
+
+Only `VITE_*` reaches the browser, and everything under that prefix is public by definition.
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `VITE_SUPABASE_URL` | yes | PostgREST origin for public reads |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | yes | the anon key; ships in the bundle by design |
+| `VITE_SUPABASE_PROJECT_ID` | yes | project reference |
+| `VITE_GATEWAY_URL` | no | defaults to `https://api.dileepadari.dev` |
+
+The gateway's own secrets live on the box, never here. See `.env.example`.
+
+**Do not create `.env.local`.** Vite gives it precedence over `.env`, which is how a local run once
+silently pointed at a different database. Pass values inline instead:
 
 ```sh
-SUPABASE_URL="https://<your-project-ref>.supabase.co" \
-SUPABASE_SERVICE_ROLE_KEY="<service-role key, from Project Settings > API>" \
-ADMIN_BOOTSTRAP_USERNAME="youruser" \
-ADMIN_BOOTSTRAP_PASSWORD="a strong password, 8+ chars" \
-npm run create-admin
+VITE_SUPABASE_URL=... VITE_SUPABASE_PUBLISHABLE_KEY=... npm run dev
 ```
 
-Env vars only, deliberately - the script refuses to read a username/password from `argv` so a password never ends up echoed in a shell history or process listing. Sign in at `/auth`.
-
-## 6. Run it locally
+## Local development
 
 ```sh
-npm run dev       # http://localhost:8080
+git clone git@github.com:Dileepadari/CompleteOS.git
+cd CompleteOS
+npm ci                      # installs the workspace, including the shared packages
+cd apps/portfolio
+npm run dev                 # with the VITE_* values set inline, as above
+```
+
+`npm ci` must be run from the repository root. The app depends on workspace packages that do not
+exist on the public npm registry, so installing from inside `apps/portfolio` alone will fail.
+
+## Testing
+
+```sh
+npm test          # vitest run, 72 tests across 9 files, jsdom, no network
 npm run lint
-npx tsc --noEmit
-npm run build
-npm run preview
+npm run typecheck
 ```
 
-CI (`.github/workflows/ci.yml`) runs `lint`, a type-check, and `build` on every push and pull request against `main`.
+`npm run typecheck`, not `npx tsc --noEmit`: the root `tsconfig.json` is a solution file
+(`"files": []` plus references), so pointing tsc at it compiles zero files and exits 0.
 
-## Oracle storage contract
+What the suites pin:
 
-The Edge Function proxies uploads so the upload API key never reaches the browser. It expects:
+| File | Guards |
+|---|---|
+| `src/lib/utils.test.ts` | the inline sanitiser, including the unwrap bypass |
+| `src/lib/visitor.test.ts` | that comment ownership is answered locally, not from server ids |
+| `src/lib/adminApi.test.ts` | filename normalisation before it becomes a header and a path |
+| `src/components/Markdown.test.tsx` | the sanitise/highlight plugin order and the allow-list |
+| `src/components/ProjectGallery.test.tsx` | gallery behaviour with missing light variants |
+| `src/components/ThemedImage.test.tsx` | that assets follow `resolvedTheme` |
+| `src/hooks/useDocumentMeta.test.tsx` | per-page titles and meta |
+| `src/pages/ProjectDetail.test.tsx` | that empty showcase sections are omitted |
 
-- **Upload**: `POST {ORACLE_UPLOAD_BASE_URL}/upload` with headers `x-upload-key`, `x-file-type` (`images`|`documents`), `x-app-name`, `x-file-name`, and the raw file bytes as the body. Expected response: `{ success: true, url: "..." }`.
-- **Public read**: the Edge Function builds the public URL itself from the known convention `{ORACLE_PUBLIC_BASE_URL}/{fileType}/{ORACLE_APP_NAME}/{fileName}` rather than trusting the upload response's `url` field.
+## Continuous integration
 
-Any HTTP storage service that implements the same contract works as a drop-in replacement - swap the three `ORACLE_*` secrets.
+`.github/workflows/ci.yml` at the repository root, on push to `main`, on pull request, and on
+`workflow_dispatch`. There is deliberately **no scheduled run**.
+
+| Job | Checks |
+|---|---|
+| `packages` | the four shared packages: tests, typecheck, WCAG contrast gate |
+| `gateway` | `deno check` over every gateway module, and a guard against checking nothing |
+| `registry` | replays migrations into a throwaway Postgres, and app separability |
+| `portfolio` | this app: lint, typecheck, test, build, entry-bundle tripwire |
+| `audit` | fails on high or critical runtime advisories |
+| `secrets` | fails if any `.env` file is tracked |
+
+The `portfolio` job exists because of what its absence hid: nothing in CI had ever compiled an app,
+and this one was carrying 33 standing type errors while CI stayed green.
 
 ## Deployment
 
-The frontend is a static Vite build with no server-side rendering, so it deploys to any static host:
+The frontend is a static build on Vercel: build command `npm run build`, output `dist`, with the
+`VITE_*` variables set in the project's dashboard. `vercel.json` rewrites every extensionless path
+to `index.html` so client-side routes survive a hard refresh.
 
-```sh
-npm run build   # outputs to dist/
-```
-
-Point Vercel, Netlify, Cloudflare Pages, or similar at this repo with build command `npm run build` and output directory `dist`, and set the three `VITE_*` environment variables from step 2 in that platform's dashboard. The Supabase Edge Function and database migrations are deployed independently via the Supabase CLI steps above - they aren't part of the static build.
-
----
-
-## Data model: the project showcase
-
-`/projects/:slug` renders from one row of `public.projects`. Every showcase
-column is nullable and **its section is omitted when it is null**, so an
-existing project keeps working and shows exactly what it has.
-
-| Column | Half | Renders as |
-|---|---|---|
-| `slug` | - | The URL. Unique; backfilled from the title, derived on save when left blank |
-| `tagline` | reader | The line under the title |
-| `overview` | reader | Markdown section |
-| `problem` | reader | Markdown section, "The problem" |
-| `features` | reader | `[{title, description?, icon?}]`, a card grid |
-| `metrics` | reader | `[{label, value}]`, the headline numbers strip |
-| `images` / `images_light` | reader | The gallery, paired by position |
-| `hero_url` / `hero_url_light` | reader | The banner |
-| `image_url` / `image_url_light` | reader | The card image on `/projects` |
-| `tech_stack` | developer | `[{name, role?}]` |
-| `architecture` | developer | Markdown section |
-| `getting_started` | developer | Markdown section |
-| `readme` | developer | Markdown, in full, at the bottom |
-| `docs_url` / `demo_url` | developer | Link buttons in the header |
-| `project_role` / `timeline` / `status` | reader | Header metadata |
-
-`readme` is **authored, not synced.** It is the curated copy, which is what
-makes it work for contributed and private repositories, and it means nothing
-here makes a network call to GitHub at render time.
-
-### The dark/light pairing rule
-
-Each `_light` column is optional. `pickThemedSource()` in `src/lib/themedSource.ts`
-resolves it: a light viewer prefers `light` and settles for `dark`, a dark
-viewer does the reverse, and the fallback is reached only when neither exists.
-So a one-sided pair renders that side in both themes rather than falling through
-to a placeholder.
-
-Gallery arrays are paired **by index**: `images[n]` and `images_light[n]` are the
-same screenshot. A shorter light array is a valid state, not an error; the
-entries past its end fall back to their dark twins.
-
-Resolution always goes through `useTheme().resolvedTheme`, never `theme`.
-`theme` can be the literal string `"system"`, and the project cards used to
-compare it against `"dark"`/`"light"` directly, which meant every visitor who had
-never touched the toggle matched neither branch.
+The gateway and PostgREST run in Docker on the Oracle VM and are deployed independently of this
+build.
 
 ## Performance
 
-The landing page is the only route in the entry chunk. Everything else is
-`React.lazy`, each with its own skeleton so the layout does not jump when the
-chunk lands.
+- Every route except the landing page is lazy-loaded; skeletons in `src/components/skeletons` hold
+  the layout so the page does not jump.
+- CI fails if the entry chunk passes 1.1 MB. It sits around 836 kB.
+- The markdown chunk is large (about 515 kB) because of the highlighter, which is precisely why it
+  is split out of the entry bundle.
+- Images are `loading="lazy"` and `decoding="async"` throughout.
 
-Three things are deliberately deferred and should stay that way:
+## Security notes
 
-- **The markdown stack** (`react-markdown` + `rehype-highlight` + highlight.js,
-  around 500kB) is behind `LazyMarkdown`. A project with no README, no overview
-  and no architecture notes never downloads a markdown parser to discover that.
-- **Syntax-highlight auto-detection is restricted to a language subset.**
-  `rehype-highlight` otherwise runs *every* registered grammar over every
-  untagged code block and scores the results; lowlight registers around 190. A
-  README with a handful of untagged blocks was enough to lock the renderer.
-- **The README block is `content-visibility: auto`** with an intrinsic size, so
-  the browser skips its layout and paint entirely until it is near the viewport.
-  It is the longest thing on the page and always at the bottom.
+- The browser holds no credential that can write. The anon key reaches only what RLS publishes.
+- The access token is memory-only; the refresh token is an HttpOnly cookie.
+- Raw HTML in markdown is filtered by `rehype-sanitize` against an extended GitHub schema; inline
+  strings go through `sanitizeHtml`.
+- Uploads validate the client-supplied filename server side and cap the body size.
+- All external links carry `rel="noreferrer noopener"`.
+- **Sign-in has no rate limit.** It is recorded rather than solved; the gateway is the right place
+  for it, and it is not built.
+- `supabase/functions/admin` is retired and unreferenced. It is still in the tree; see
+  [not_for_you.md](./not_for_you.md).
 
-CI fails the build if the entry chunk passes 1.1MB. It is a tripwire against a
-new route being imported eagerly, not a budget to spend.
+## Known constraints and future work
 
-## Tests
+- The generated `src/integrations/supabase/types.ts` carries a hand-applied schema rename. Regenerate
+  it with `--schema portfolio` or the rename is lost and every call site breaks instead of the file.
+- `supabase/migrations` built the schema before it moved onto the shared box; they are history, not
+  the way the current database is provisioned.
+- Four featured projects have little or no showcase content written yet.
+- The contact inbox has no notification; messages are read in the admin screen.
 
-`npm test`, 42 tests, jsdom, no network.
+## Glossary
 
-`src/test/setup.ts` stubs `matchMedia` and `IntersectionObserver`, which jsdom
-does not implement and which `ThemeProvider` and the Projects page read on
-mount. A component that throws on mount fails every test for the same
-uninformative reason, so both are stubbed globally rather than per test.
-
-| File | Covers |
+| Term | Meaning |
 |---|---|
-| `lib/themedSource.test.ts` | The pair-resolution matrix, including one-sided pairs and empty strings |
-| `components/ThemedImage.test.tsx` | Theme resolution including `"system"`, lazy vs eager, the broken-URL fallback and that it does not loop |
-| `components/ProjectGallery.test.tsx` | Index pairing, short light lists, and the lightbox: open, wrap, keyboard, scroll lock |
-| `pages/ProjectDetail.test.tsx` | Section omission: nothing filled, some filled, whitespace-only, empty arrays, and the 404 |
-| `hooks/useDocumentMeta.test.tsx` | Per-page title and description, and restoring them on unmount |
+| **Gateway** | the ecosystem's single authenticated API, `api.dileepadari.dev` |
+| **Grant** | a per-app role on an ecosystem user, e.g. `apps.portfolio = "admin"` |
+| **Showcase page** | the full project page at `/projects/:slug`, as against the card |
+| **Visitor id** | a per-browser uuid scoping anonymous likes and comments |
+| **Anon key** | the PostgREST key that ships in the bundle; public by design |
 
-The assertion worth keeping if the rest were deleted is
-`shows no section headings at all when nothing is filled in`. Nothing crashes
-when a heading renders above nothing, so that behaviour would rot silently.
+---
 
-## Migrations
-
-`supabase/migrations/` now begins with `20260724000000_baseline.sql`, which
-creates the twelve tables that were previously made through the Lovable/Supabase
-dashboard and existed only on the hosted project.
-
-Before it, the chain started by altering `public.projects`, so `supabase start`
-failed on the very first migration and **no environment could be built from
-source**. The baseline is reconstructed from `src/integrations/supabase/types.ts`
-and presents the *pre-stage-1* shape (`is_private` not `is_contributed`,
-`blog_likes.user_ip` not `visitor_id`, `tasks`/`schedules` still present) so the
-existing migrations replay truthfully on top of it.
-
-Every statement is `if not exists`, so applying it to the hosted project is a
-no-op. The `migrations` CI job runs the whole chain from nothing on every push,
-which is what stops this regressing.
-
-**The showcase columns are not on the hosted project yet.** Run `npm run db:push`
-or apply `20260910000001_project_showcase.sql` before deploying this code, or
-`/projects/:slug` will 404 on every project.
+Minor decisions, dead ends and the reasoning behind small choices are in
+[not_for_you.md](./not_for_you.md).
