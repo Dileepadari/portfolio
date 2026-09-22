@@ -1,3 +1,20 @@
+/**
+ * Generated row types for the database this app reads.
+ *
+ * Produced by the Supabase CLI, with one hand-applied change that a plain
+ * regeneration will undo: the schema key is `portfolio`, not `public`. The
+ * tables were moved into a `portfolio` schema on the shared box, and the client
+ * is created with `db: { schema: "portfolio" }` and a matching type argument.
+ * If this file is ever regenerated, generate it for that schema:
+ *
+ *   npx supabase gen types typescript --project-id <ref> --schema portfolio
+ *
+ * Regenerating against `public` compiles, then fails at every call site instead
+ * of here, because each query silently loses its row type.
+ *
+ * @module data
+ */
+
 export type Json =
   | string
   | number
