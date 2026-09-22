@@ -47,7 +47,7 @@ import {
 } from "@/hooks/usePortfolioData";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
-import { getVisitorId } from "@/lib/visitor";
+import { getVisitorId, ownsComment } from "@/lib/visitor";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export function BlogPostView() {
@@ -444,7 +444,11 @@ function CommentCard({
   authorName,
   authorEmail
 }: CommentCardProps) {
-  const canDelete = isAdmin || comment.visitor_id === getVisitorId();
+  // Not a visitor_id comparison: the public read deliberately no longer
+  // returns anyone's visitor_id, because that is the value the delete policy
+  // trusts. `ownsComment` answers from what this browser itself posted, which
+  // has the same reach - the visitor id lives in this browser's localStorage too.
+  const canDelete = isAdmin || ownsComment(comment.id);
   const showReplyForm = replyToComment === comment.id;
 
   return (

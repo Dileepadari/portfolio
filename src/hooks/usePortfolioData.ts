@@ -12,7 +12,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
-import { getVisitorId } from '@/lib/visitor';
+import { forgetOwnComment, getVisitorId, rememberOwnComment } from '@/lib/visitor';
 import { adminApi } from '@/lib/adminApi';
 import { useAdmin } from '@/hooks/useAdmin';
 
@@ -57,8 +57,12 @@ export interface BlogComment {
   id: string;
   blog_post_id: string;
   parent_comment_id?: string;
+  /** Write-only from the browser's point of view: sent on insert so RLS can
+   *  scope ownership, never returned by the public read. */
   visitor_id?: string;
   author_name: string;
+  /** Write-only, for the same reason: the public read omits it so one
+   *  commenter's address is not served to every other reader. */
   author_email?: string;
   content: string;
   is_approved: boolean;
@@ -602,7 +606,7 @@ export function useAchievements() {
  * delete boilerplate above.
  */
 /** A table name supabase-js will accept. */
-type TableName = keyof Database['public']['Tables'];
+type TableName = keyof Database['portfolio']['Tables'];
 
 function useAdminCrud<T extends { id: string }>(table: TableName, orderBy: string) {
   const [data, setData] = useState<T[]>(() => getCachedData<T[]>(`crud_${table}`) || []);
@@ -744,9 +748,12 @@ export function useBlogComments(blogPostId: string) {
   const fetchComments = useCallback(async () => {
     try {
       setLoading(true);
+      // Explicit columns, not `*`. The table also holds `author_email`, which
+      // commenters type into the form, and `visitor_id`, which is what the
+      // delete policy trusts - `*` published both to every reader of the post.
       const { data: result, error } = await supabase
         .from('blog_comments')
-        .select('*')
+        .select('id, blog_post_id, parent_comment_id, author_name, content, is_approved, created_at, updated_at')
         .eq('blog_post_id', blogPostId)
         .eq('is_approved', true)
         .order('created_at', { ascending: true });
@@ -790,13 +797,23 @@ export function useBlogLike(blogPostId: string) {
 
   const checkLikeStatus = useCallback(async () => {
     try {
-      const { data: likes } = await supabase
-        .from('blog_likes')
-        .select('visitor_id')
-        .eq('blog_post_id', blogPostId);
+      // Two counts rather than one list. Selecting `visitor_id` handed every
+      // reader the ids of everyone who had liked the post, and the unlike
+      // policy trusts exactly that id in the x-visitor-id header.
+      const [total, mine] = await Promise.all([
+        supabase
+          .from('blog_likes')
+          .select('id', { count: 'exact', head: true })
+          .eq('blog_post_id', blogPostId),
+        supabase
+          .from('blog_likes')
+          .select('id', { count: 'exact', head: true })
+          .eq('blog_post_id', blogPostId)
+          .eq('visitor_id', visitorId),
+      ]);
 
-      setLikeCount(likes?.length || 0);
-      setIsLiked(!!likes?.some((like) => like.visitor_id === visitorId));
+      setLikeCount(total.count || 0);
+      setIsLiked((mine.count || 0) > 0);
     } catch (error) {
       console.error('Error checking like status:', error);
     }
@@ -890,11 +907,14 @@ export const addBlogComment = async (commentData: Omit<BlogComment, 'id' | 'crea
     .from('blog_comments')
     // BlogComment carries `replies`, which the app assembles client-side and
     // the table does not have. Insert only the columns that exist.
-    .insert(commentData as Database['public']['Tables']['blog_comments']['Insert'])
-    .select()
+    .insert(commentData as Database['portfolio']['Tables']['blog_comments']['Insert'])
+    .select('id')
     .single();
 
   if (error) throw error;
+  // The insert is the only moment this browser is certain the comment is its
+  // own, and the public read no longer returns `visitor_id` to tell it later.
+  if (data?.id) rememberOwnComment(data.id);
   return data;
 };
 
@@ -908,6 +928,7 @@ export const deleteBlogComment = async (commentId: string) => {
     .eq('id', commentId);
 
   if (error) throw error;
+  forgetOwnComment(commentId);
 };
 
 /** Admin moderation: deletes any comment regardless of ownership, via the
@@ -964,7 +985,9 @@ export function useSiteSettings() {
   }, [fetchSettings]);
 
   const updateSetting = async <K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) => {
-    await adminApi.upsert('site_settings', { key, value }, 'key');
+    // Two arguments, not three: the gateway's /settings route keys on `key`
+    // itself, so the id column the old table-generic upsert took is gone.
+    await adminApi.upsert('site_settings', { key, value });
     await fetchSettings();
   };
 
