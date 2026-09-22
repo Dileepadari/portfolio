@@ -58,13 +58,20 @@ light mode is at **[README-light.md](./README-light.md)**.
 
 | | |
 |---|---|
-| **Projects** <br> Cards carry a dark and a light image and pick per theme <br><br> <img src="docs/screenshots/dark/projects.png" alt="Project list" loading="lazy"> | **Project showcase** <br> One project in full, addressed by slug <br><br> <img src="docs/screenshots/dark/project-detail.png" alt="Project detail page" loading="lazy"> |
-
-<p align="center"><b>The showcase, lower half</b> &middot; gallery with a lightbox, then everything a developer needs, behind a divider</p>
-<p align="center"><img src="docs/screenshots/dark/project-showcase.png" alt="Gallery and developer sections" loading="lazy"></p>
+| **Profile** <br> The landing page: bio, highlights, experience, skills, all of it editable in place <br><br> <img src="docs/screenshots/dark/01-profile.png" alt="Profile page" loading="lazy"> | **Projects** <br> 46 projects; cards carry a dark and a light image and pick per theme <br><br> <img src="docs/screenshots/dark/02-projects.png" alt="Project list" loading="lazy"> |
+| **Project showcase** <br> One project in full, addressed by slug <br><br> <img src="docs/screenshots/dark/03-project-showcase.png" alt="Project showcase page" loading="lazy"> | **Gallery and the developer half** <br> A lightbox gallery, then everything a developer needs behind a divider <br><br> <img src="docs/screenshots/dark/04-project-gallery.png" alt="Gallery and developer sections" loading="lazy"> |
+| **Blog** <br> Markdown posts with threaded comments and per-visitor likes <br><br> <img src="docs/screenshots/dark/05-blog.png" alt="Blog index" loading="lazy"> | **Contact** <br> A message form and a task request form, both open to anyone <br><br> <img src="docs/screenshots/dark/06-contact.png" alt="Contact page" loading="lazy"> |
 
 <p align="center"><b>A partly filled project</b> &middot; sections with no content are omitted, not left as empty headings</p>
-<p align="center"><img src="docs/screenshots/dark/project-partial.png" alt="A project with only some sections filled" loading="lazy"></p>
+<p align="center"><img src="docs/screenshots/dark/07-project-partial.png" alt="A project with only some sections filled" loading="lazy"></p>
+
+### Responsive
+
+Captured at 390x844 (mobile) and 820x1180 (tablet).
+
+| Mobile, profile | Mobile, projects | Tablet, projects |
+|---|---|---|
+| <img src="docs/screenshots/responsive/mobile-profile.png" alt="Profile at 390px" loading="lazy"> | <img src="docs/screenshots/responsive/mobile-projects.png" alt="Projects at 390px" loading="lazy"> | <img src="docs/screenshots/responsive/tablet-projects.png" alt="Projects at 820px" loading="lazy"> |
 
 ## Features
 
