@@ -63,22 +63,63 @@ The second constraint is that **a visitor pays for none of it**. The admin surfa
 This page shows **dark mode**; the same gallery in
 light mode is at **[README-light.md](./README-light.md)**.
 
-| | |
-|---|---|
-| **Profile** <br> The landing page: bio, highlights, experience, skills, all of it editable in place <br><br> <img src="docs/screenshots/dark/01-profile.png" alt="Profile page" loading="lazy"> | **Projects** <br> 46 projects; cards carry a dark and a light image and pick per theme <br><br> <img src="docs/screenshots/dark/02-projects.png" alt="Project list" loading="lazy"> |
-| **Project showcase** <br> One project in full, addressed by slug <br><br> <img src="docs/screenshots/dark/03-project-showcase.png" alt="Project showcase page" loading="lazy"> | **Gallery and the developer half** <br> A lightbox gallery, then everything a developer needs behind a divider <br><br> <img src="docs/screenshots/dark/04-project-gallery.png" alt="Gallery and developer sections" loading="lazy"> |
-| **Blog** <br> Markdown posts with threaded comments and per-visitor likes <br><br> <img src="docs/screenshots/dark/05-blog.png" alt="Blog index" loading="lazy"> | **Contact** <br> A message form and a task request form, both open to anyone <br><br> <img src="docs/screenshots/dark/06-contact.png" alt="Contact page" loading="lazy"> |
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/01-profile.png" alt="Profile page: bio, highlights, experience and skills" loading="lazy">
+      <p align="center"><b>Profile</b><br><sub>Bio, highlights, experience and skills, all editable in place.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/02-projects.png" alt="Project list, with cards that pick an image per theme" loading="lazy">
+      <p align="center"><b>Projects</b><br><sub>46 projects; each card carries a dark and a light image.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/03-project-showcase.png" alt="A project showcase page addressed by its slug" loading="lazy">
+      <p align="center"><b>Project showcase</b><br><sub>One project in full, addressed by slug.</sub></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/04-project-gallery.png" alt="A project's lightbox gallery and the developer sections below it" loading="lazy">
+      <p align="center"><b>Gallery and developer half</b><br><sub>A lightbox gallery, then the developer detail behind a divider.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/05-blog.png" alt="Blog index with markdown posts, comments and likes" loading="lazy">
+      <p align="center"><b>Blog</b><br><sub>Markdown posts with threaded comments and per-visitor likes.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/06-contact.png" alt="Contact page with a message form and a task request form" loading="lazy">
+      <p align="center"><b>Contact</b><br><sub>A message form and a task request form, both open to anyone.</sub></p>
+    </td>
+  </tr>
+</table>
 
-<p align="center"><b>A partly filled project</b> &middot; sections with no content are omitted, not left as empty headings</p>
-<p align="center"><img src="docs/screenshots/dark/07-project-partial.png" alt="A project with only some sections filled" loading="lazy"></p>
+<details>
+<summary><b>A partly filled project</b></summary>
+<br>
+<img src="./docs/screenshots/dark/07-project-partial.png" alt="A project with only some sections filled: empty ones are omitted, not left as bare headings" loading="lazy">
+</details>
 
 ### Responsive
 
-Captured at 390x844 (mobile) and 820x1180 (tablet).
+Each image is its own device viewport, not a crop of the desktop layout.
 
-| Mobile, profile | Mobile, projects | Tablet, projects |
-|---|---|---|
-| <img src="docs/screenshots/responsive/mobile-profile.png" alt="Profile at 390px" loading="lazy"> | <img src="docs/screenshots/responsive/mobile-projects.png" alt="Projects at 390px" loading="lazy"> | <img src="docs/screenshots/responsive/tablet-projects.png" alt="Projects at 820px" loading="lazy"> |
+<table>
+  <tr>
+    <td width="25%" valign="top">
+      <img src="./docs/screenshots/responsive/mobile-profile.png" alt="Profile at 390px wide" loading="lazy">
+      <p align="center"><sub><b>Profile</b><br>390 x 844</sub></p>
+    </td>
+    <td width="25%" valign="top">
+      <img src="./docs/screenshots/responsive/mobile-projects.png" alt="Projects at 390px wide" loading="lazy">
+      <p align="center"><sub><b>Projects</b><br>390 x 844</sub></p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="./docs/screenshots/responsive/tablet-projects.png" alt="Projects at 820px wide" loading="lazy">
+      <p align="center"><sub><b>Projects</b><br>820 x 1180</sub></p>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
