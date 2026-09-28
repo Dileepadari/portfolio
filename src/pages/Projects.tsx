@@ -275,6 +275,9 @@ export function Projects() {
                        category === "extension development" ? "Extensions" :
                        category === "distributed systems" ? "Distributed" :
                        category === "machine learning" ? "ML" :
+                       category === "ai/ml" ? "AI / ML" :
+                       category === "systems programming" ? "Systems" :
+                       category === "developer tools" ? "Dev Tools" :
                        category === "game development" ? "Games" :
                        category.split(' ').map(word => 
                          word.charAt(0).toUpperCase() + word.slice(1)

@@ -574,6 +574,7 @@ export function ProjectEditForm({ project, onSave, onCancel }: ProjectEditFormPr
               {projectCategories.slice(1).map((category) => (
                 <SelectItem key={category} value={category}>
                   {category === "iot" ? "IoT & Embedded Systems" :
+                    category === "ai/ml" ? "AI / ML" :
                     category.split(' ').map(word =>
                       word.charAt(0).toUpperCase() + word.slice(1)
                     ).join(' ')}
