@@ -177,37 +177,6 @@ export function ProjectDetail() {
       {/* ---------------------------------------------------------------- */}
       {/* Hero.                                                             */}
       {/*                                                                   */}
-      {/* The banner is whatever the admin uploaded, which will not always  */}
-      {/* be banner-shaped: a square logo and a tall screenshot are both     */}
-      {/* likely. `object-cover` alone turns either into an arbitrary        */}
-      {/* zoomed slice. So the image is *contained* and a blurred, scaled    */}
-      {/* copy of itself fills the space behind it. Any aspect ratio reads   */}
-      {/* as a deliberate banner, and nothing is cropped away.               */}
-      {/*                                                                   */}
-      {/* Eager, not lazy: it is the one image above the fold, and deferring */}
-      {/* it leaves a hole exactly where the eye lands.                      */}
-      {/* ---------------------------------------------------------------- */}
-      {(hasText(project.hero_url) || hasText(project.hero_url_light)) && (
-        <div className="relative h-48 w-full overflow-hidden border-b border-border bg-muted/30 sm:h-64 lg:h-80">
-          <ThemedImage
-            dark={project.hero_url}
-            light={project.hero_url_light}
-            alt=""
-            aria-hidden="true"
-            eager
-            className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl saturate-125"
-          />
-          <ThemedImage
-            dark={project.hero_url}
-            light={project.hero_url_light}
-            alt={`${project.title} banner`}
-            eager
-            className="relative mx-auto h-full w-auto max-w-full object-contain"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/25 to-transparent" />
-        </div>
-      )}
-
       <div className="mx-auto max-w-5xl space-y-12 px-4 py-8 sm:px-6 lg:px-8">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link to="/projects">
@@ -235,6 +204,31 @@ export function ProjectDetail() {
             className="text-3xl font-bold tracking-tight sm:text-4xl"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.title) }}
           />
+
+          {/* The cover sits in the page body, directly under the title, rather
+              than as a full-bleed band above it. It used to be the latter,
+              with a blurred scaled copy of itself filling the band behind the
+              contained image - which made any aspect ratio read as a banner,
+              but also put a large decorative surface between the reader and
+              the first line of text.
+
+              Here it is just the picture: contained so nothing is cropped,
+              with a border and a neutral surface behind the letterboxing. A
+              square logo and a tall screenshot both sit inside it without a
+              blurred backdrop doing the work.
+
+              Eager, because it is still the one image above the fold. */}
+          {(hasText(project.hero_url) || hasText(project.hero_url_light)) && (
+            <div className="overflow-hidden rounded-lg border border-border bg-muted/30">
+              <ThemedImage
+                dark={project.hero_url}
+                light={project.hero_url_light}
+                alt={`${project.title} cover`}
+                eager
+                className="mx-auto max-h-[22rem] w-auto max-w-full object-contain"
+              />
+            </div>
+          )}
 
           {hasText(project.tagline) && (
             <p className="text-lg text-muted-foreground sm:text-xl">{project.tagline}</p>
