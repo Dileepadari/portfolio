@@ -274,7 +274,6 @@ export function Projects() {
                        category === "mobile development" ? "Mobile" :
                        category === "extension development" ? "Extensions" :
                        category === "distributed systems" ? "Distributed" :
-                       category === "machine learning" ? "ML" :
                        category === "ai/ml" ? "AI / ML" :
                        category === "systems programming" ? "Systems" :
                        category === "developer tools" ? "Dev Tools" :

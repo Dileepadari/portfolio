@@ -10,6 +10,10 @@
  * the projects page and no option in the editor, so those projects were
  * reachable only under "All" and their category could not be re-picked once
  * changed. Add the value here before storing a new one.
+
+ * "machine learning" was listed and used by nothing, while every model that
+ * category describes is stored as "ai/ml" - two tabs, one of them always
+ * empty. Only the value the data actually uses is listed.
  */
 export const projectCategories = [
   "all",
@@ -23,7 +27,6 @@ export const projectCategories = [
   "hardware",
   "iot",
   "ai/ml",
-  "machine learning",
   "creative coding",
   "game development"
 ];
