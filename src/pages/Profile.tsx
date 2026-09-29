@@ -490,13 +490,13 @@ export function Profile() {
                   whole page sideways. The centring here was never coming from
                   w-max anyway, it comes from text-center and mx-auto. */}
               <div className="max-w-full text-center lg:text-left">
-                <div className="flex items-start justify-between mb-2 mx-auto max-w-full lg:mx-0">
-                  <div className="max-w-full">
+                <div className="relative flex items-start justify-center mb-2 mx-auto max-w-full lg:mx-0 lg:justify-between">
+                  <div className="w-full max-w-full lg:w-auto">
                     <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground break-words">
                       {personalInfo?.name}
                     </h1>
                   </div>
-                  <div className="flex items-center gap-2 ml-4 shrink-0">
+                  <div className="absolute right-0 top-0 flex items-center gap-2 ml-4 shrink-0 lg:static">
                     {isAdmin && (
                       <Button
                         variant="outline"
