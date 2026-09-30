@@ -18,6 +18,11 @@ const ORACLE_UPLOAD_API_KEY = Deno.env.get("ORACLE_UPLOAD_API_KEY") ?? "This_is_
 Both live, both written as `??` defaults, committed on 2026-08-29 and still at
 HEAD eleven days later in a public repository.
 
+That file was deleted on 2026-09-30 along with the rest of the retired function,
+which changes nothing about this: the values are in the history of a public
+repository, and both were rotated on 2026-09-30 because that is the only thing
+that does change it.
+
 `SELFHOST_JWT_SECRET` is the one that matters. It is the `JWT_SECRET` of the
 self-hosted Supabase stack on the Oracle VM, and that box is shared: this
 project, placement-navigator and workos all upload to it. placement-navigator's
@@ -256,11 +261,11 @@ anyway.
 
 ## Left alone deliberately
 
-- **`supabase/functions/admin/` is retired and still in the tree.** The gateway's
-  `services/gateway/apps/portfolio.ts` owns those routes now, and nothing in this
-  app calls the function. I did not delete it: whether that Supabase function is
-  still deployed is a deploy question, not a source question, and deleting source
-  does not undeploy anything. Flagged for the owner instead.
+- **`supabase/functions/admin/` was retired, and was deleted on 2026-09-30.** The
+  gateway's `services/gateway/apps/portfolio.ts` owns those routes and nothing in
+  this app called the function. Deleting source does not undeploy anything, so if
+  that Supabase function is still running it is still running; tearing it down is
+  a deploy job and remains open.
 - **`supabase/migrations/` likewise.** They built this schema before it moved to
   the shared box. They are history, not provisioning.
 - **Sign-in still has no rate limit.** The gateway is the right place for it and

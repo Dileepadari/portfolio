@@ -416,8 +416,8 @@ build.
 - All external links carry `rel="noreferrer noopener"`.
 - **Sign-in has no rate limit.** It is recorded rather than solved; the gateway is the right place
   for it, and it is not built.
-- `supabase/functions/admin` is retired and unreferenced. It is still in the tree; see
-  [not_for_you.md](./not_for_you.md).
+- `supabase/functions/admin` was retired and unreferenced, and was deleted from the tree on
+  2026-09-30. It may still be deployed; see [not_for_you.md](./not_for_you.md).
 
 ## Known constraints and future work
 

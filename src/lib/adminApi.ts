@@ -9,8 +9,8 @@
  * turns an expired session into a message a person can act on.
  *
  * Writes used to go to a Deno edge function in this repo
- * (`supabase/functions/admin`). The gateway replaced it; that function is no
- * longer called from anywhere here.
+ * (`supabase/functions/admin`). The gateway replaced it, nothing called it,
+ * and its source was deleted on 2026-09-30.
  *
  * @module admin
  */
