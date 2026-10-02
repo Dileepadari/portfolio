@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { preventAccidentalDialogClose, sanitizeHtml } from "@/lib/utils";
+import { dialHref, isOwnSite, preventAccidentalDialogClose, sanitizeHtml } from "@/lib/utils";
 import { ProfileSkeleton } from "@/components/skeletons/pages";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -518,7 +518,7 @@ export function Profile() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 mx-auto max-w-full lg:mx-0">
                   <a
-                    href={`tel:${personalInfo?.phone}`}
+                    href={dialHref(personalInfo?.phone)}
                     className="flex items-center justify-center lg:justify-start text-sm md:text-base text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   >
                     <Phone className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2 shrink-0" />
@@ -589,13 +589,20 @@ export function Profile() {
                     </Button>
                   )}
 
-                  <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
-                    <a href={personalInfo?.website} target="_blank" rel="noopener noreferrer">
-                      <Globe className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
-                      <span className="hidden xs:inline sm:hidden md:inline">Portfolio</span>
-                      <span className="hidden sm:inline md:hidden">Web</span>
-                    </a>
-                  </Button>
+                  {/*
+                    Hidden when the website is this site. personal_info.website
+                    is "https://dileepadari.dev", so on the portfolio itself
+                    this button only reloaded the page you were already on.
+                  */}
+                  {personalInfo?.website && !isOwnSite(personalInfo.website) && (
+                    <Button variant="outline" size="sm" className="w-max text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4" asChild>
+                      <a href={personalInfo.website} target="_blank" rel="noopener noreferrer">
+                        <Globe className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
+                        <span className="hidden xs:inline sm:hidden md:inline">Portfolio</span>
+                        <span className="hidden sm:inline md:hidden">Web</span>
+                      </a>
+                    </Button>
+                  )}
                 </div>
 
                 <div className="flex flex-row xs:flex-row justify-center lg:justify-start gap-2 sm:gap-3 mx-auto max-w-full lg:mx-0">
@@ -1313,7 +1320,14 @@ export function Profile() {
                             )}
                             {achievement?.certificate_url && (
                               <a href={achievement.certificate_url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground mt-2">
-                                View Certificate
+                                {/*
+                                  "View credential", not "View certificate":
+                                  some of these point at a profile that proves
+                                  the achievement rather than at a certificate,
+                                  and the Codeforces one links to the rating
+                                  page because no certificate exists for it.
+                                */}
+                                View credential
                               </a>
                             )}
                             </div>

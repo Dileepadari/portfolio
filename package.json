@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "vite",
     "start": "vite start",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build": "vite build && node scripts/build-sitemap.mjs",
+    "build:dev": "vite build --mode development && node scripts/build-sitemap.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "create-admin": "node scripts/create-admin.mjs",

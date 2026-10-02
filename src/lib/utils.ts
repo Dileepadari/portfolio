@@ -111,3 +111,45 @@ export function sanitizeHtml(dirty: string): string {
   return doc.body.innerHTML;
 }
 
+
+/**
+ * Turns a human-readable phone number into the `tel:` URI for it.
+ *
+ * `personal_info.phone` is typed for people to read - "+91 7330701217" - and
+ * interpolating that straight into an href produced `tel:+91 7330701217`. A
+ * space is not valid in a `tel:` URI: RFC 3966 allows digits, a leading `+`
+ * and visual separators, and a raw space has to be percent-encoded, which
+ * leaves the dialler with `%20` in the middle of a number. Strip everything
+ * that is not dialable instead, and keep the `+` so the country code survives.
+ *
+ * Returns an empty string for a value with no digits in it, so the caller can
+ * leave the link out rather than render `tel:`.
+ */
+export function dialHref(phone: string | null | undefined): string {
+  if (!phone) return "";
+  const digits = phone.replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
+  return /\d/.test(digits) ? `tel:${digits}` : "";
+}
+
+/**
+ * True when a URL points back at this site.
+ *
+ * `personal_info.website` is "https://dileepadari.dev", and the header rendered
+ * it as a "Portfolio" button on the portfolio: a link whose only effect is to
+ * reload the page you are already on. The field is still worth keeping - it is
+ * what a printed copy or a scraped profile wants - so this hides the button
+ * rather than clearing the data.
+ *
+ * `www.` is stripped from both sides because the apex redirects to the www host
+ * and either spelling means the same site. An unparseable value is not this
+ * site, so a malformed URL still renders as an ordinary external link.
+ */
+export function isOwnSite(url: string | null | undefined): boolean {
+  if (!url) return false;
+  const strip = (host: string) => host.replace(/^www\./i, "").toLowerCase();
+  try {
+    return strip(new URL(url).hostname) === strip(window.location.hostname);
+  } catch {
+    return false;
+  }
+}

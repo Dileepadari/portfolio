@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { sanitizeHtml } from "./utils";
+import { dialHref, isOwnSite, sanitizeHtml } from "./utils";
 
 describe("sanitizeHtml", () => {
   it("keeps the formatting tags it exists to allow", () => {
@@ -62,5 +62,57 @@ describe("sanitizeHtml", () => {
 
   it("returns an empty string for empty input", () => {
     expect(sanitizeHtml("")).toBe("");
+  });
+});
+
+describe("dialHref", () => {
+  it("strips the spaces a readable number is written with", () => {
+    // The stored value is "+91 7330701217", and interpolating it straight into
+    // an href gave `tel:+91 7330701217`. A space is not valid in a tel: URI.
+    expect(dialHref("+91 7330701217")).toBe("tel:+917330701217");
+  });
+
+  it("keeps the leading plus so the country code survives", () => {
+    expect(dialHref("+917330701217")).toBe("tel:+917330701217");
+  });
+
+  it("strips brackets, dashes and dots", () => {
+    expect(dialHref("+1 (555) 010-9999")).toBe("tel:+15550109999");
+  });
+
+  it("drops a plus that is not the country prefix", () => {
+    expect(dialHref("+91 733+070 1217")).toBe("tel:+917330701217");
+  });
+
+  it("returns an empty string when there is no number to dial", () => {
+    // So the caller can leave the link out rather than render `tel:`.
+    expect(dialHref("")).toBe("");
+    expect(dialHref(null)).toBe("");
+    expect(dialHref(undefined)).toBe("");
+    expect(dialHref("not a phone")).toBe("");
+  });
+});
+
+describe("isOwnSite", () => {
+  // jsdom serves the tests from localhost.
+  it("matches the host the page is served from", () => {
+    expect(isOwnSite(`https://${window.location.hostname}/`)).toBe(true);
+  });
+
+  it("ignores a www prefix on either side", () => {
+    expect(isOwnSite(`https://www.${window.location.hostname}`)).toBe(true);
+  });
+
+  it("does not match another host", () => {
+    expect(isOwnSite("https://github.com/Dileepadari")).toBe(false);
+  });
+
+  it("treats a missing or unparseable value as not this site", () => {
+    // So a malformed URL still renders as an ordinary external link rather
+    // than silently disappearing.
+    expect(isOwnSite(null)).toBe(false);
+    expect(isOwnSite(undefined)).toBe(false);
+    expect(isOwnSite("")).toBe(false);
+    expect(isOwnSite("dileepadari.dev")).toBe(false);
   });
 });

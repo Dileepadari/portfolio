@@ -1,9 +1,11 @@
 /**
- * Per-page title and description.
+ * Per-page title, description, canonical link and social tags.
  *
  * The failure this guards against is not a crash: it is a project link
  * previewing in a chat app as the site's generic title, which is what every
- * route did before, and which nothing would ever have surfaced as a bug.
+ * route did before, and which nothing would ever have surfaced as a bug. The
+ * canonical assertions guard the worse version of the same thing - /projects
+ * and /blog each telling a crawler they were the homepage.
  */
 
 import { render } from "@testing-library/react";
@@ -19,9 +21,18 @@ function currentDescription() {
   return document.querySelector<HTMLMetaElement>('meta[name="description"]')?.content;
 }
 
+function meta(key: string, attr: "name" | "property" = "name") {
+  return document.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`)?.content;
+}
+
+function canonical() {
+  return document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href;
+}
+
 beforeEach(() => {
   document.title = "Site default";
-  document.querySelector('meta[name="description"]')?.remove();
+  document.head.querySelectorAll('meta[name], meta[property], link[rel="canonical"]').forEach((el) => el.remove());
+  window.history.replaceState({}, "", "/");
 });
 
 describe("useDocumentMeta", () => {
@@ -59,5 +70,72 @@ describe("useDocumentMeta", () => {
   it("strips markup out of the description too", () => {
     render(<Page title="A" description="<p>Builds <b>things</b>.</p>" />);
     expect(currentDescription()).toBe("Builds things.");
+  });
+
+  it("points the canonical link at the route being viewed", () => {
+    // index.html hard-codes the homepage here. Leaving it alone is what told a
+    // crawler that /projects was a duplicate of /.
+    window.history.replaceState({}, "", "/projects");
+    render(<Page title="Projects | Dileep Adari" />);
+    expect(canonical()).toBe("https://www.dileepadari.dev/projects");
+    expect(meta("og:url", "property")).toBe("https://www.dileepadari.dev/projects");
+  });
+
+  it("drops the query string and the trailing slash from the canonical", () => {
+    // /projects?tab=web is the same page as /projects, and a canonical that
+    // keeps the query invites a crawler to index every filter separately.
+    window.history.replaceState({}, "", "/projects/?tab=web#top");
+    render(<Page title="Projects" />);
+    expect(canonical()).toBe("https://www.dileepadari.dev/projects");
+  });
+
+  it("keeps the slash on the root", () => {
+    window.history.replaceState({}, "", "/");
+    render(<Page title="Home" />);
+    expect(canonical()).toBe("https://www.dileepadari.dev/");
+  });
+
+  it("sets the canonical even before the title has loaded", () => {
+    // ProjectDetail calls this with undefined until the fetch resolves. The
+    // canonical does not depend on the title, so it must not wait for it.
+    window.history.replaceState({}, "", "/projects/nfsdrive");
+    render(<Page />);
+    expect(canonical()).toBe("https://www.dileepadari.dev/projects/nfsdrive");
+  });
+
+  it("mirrors the title and description into the og and twitter tags", () => {
+    // A scraper reads og:title, not <title>, so updating only the document
+    // title left every link preview on the index.html fallback.
+    render(<Page title="NFSDrive | Dileep Adari" description="A distributed file system" />);
+    expect(meta("og:title", "property")).toBe("NFSDrive | Dileep Adari");
+    expect(meta("twitter:title")).toBe("NFSDrive | Dileep Adari");
+    expect(meta("og:description", "property")).toBe("A distributed file system");
+    expect(meta("twitter:description")).toBe("A distributed file system");
+  });
+
+  it("uses property, not name, for the og tags", () => {
+    // meta name="og:title" is ignored by every scraper that reads Open Graph.
+    render(<Page title="NFSDrive" description="x" />);
+    expect(meta("og:title")).toBeUndefined();
+    expect(meta("og:description")).toBeUndefined();
+  });
+
+  it("restores the canonical and the social tags on unmount", () => {
+    // index.html's own values, which is what the page should fall back to.
+    const link = document.createElement("link");
+    link.rel = "canonical";
+    link.href = "https://www.dileepadari.dev/";
+    document.head.appendChild(link);
+    const og = document.createElement("meta");
+    og.setAttribute("property", "og:title");
+    og.content = "Site default";
+    document.head.appendChild(og);
+
+    window.history.replaceState({}, "", "/projects/nfsdrive");
+    const { unmount } = render(<Page title="NFSDrive" description="A file system" />);
+    expect(canonical()).toBe("https://www.dileepadari.dev/projects/nfsdrive");
+    unmount();
+    expect(canonical()).toBe("https://www.dileepadari.dev/");
+    expect(meta("og:title", "property")).toBe("Site default");
   });
 });
