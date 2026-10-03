@@ -125,8 +125,24 @@ function entryFor(prefix, row, priority) {
 const routes = [...STATIC_ROUTES];
 const creds = credentials();
 
+/**
+ * How this file was built, written into the file.
+ *
+ * The fallback is the point of this script and also its hazard: a sitemap with
+ * four routes is a *valid* sitemap, so a build that silently failed to reach
+ * the database looks exactly like a build that succeeded. Two deployments went
+ * out that way before anyone could tell them apart, and the build log - the one
+ * place the reason existed - is not somewhere you can look from a checkout.
+ *
+ * So the reason goes in the artifact. A crawler ignores an XML comment, it
+ * costs one line, and `curl .../sitemap.xml | head -3` now answers "did this
+ * work?" without any access to the deployment.
+ */
+let provenance;
+
 if (!creds) {
-  console.warn("sitemap: no VITE_SUPABASE_URL / key, writing the static routes only");
+  provenance = "no VITE_SUPABASE_URL / key in the build environment";
+  console.warn(`sitemap: ${provenance}, writing the static routes only`);
 } else {
   try {
     for (const row of await fetchRows(creds, "projects", "slug,updated_at")) {
@@ -138,7 +154,9 @@ if (!creds) {
       const entry = entryFor("/blog", row, "0.6");
       if (entry) routes.push(entry);
     }
+    provenance = `${routes.length - STATIC_ROUTES.length} routes read from the database`;
   } catch (err) {
+    provenance = `database not read: ${err.message}`;
     console.warn(`sitemap: ${err.message}; writing the routes gathered so far`);
   }
 }
@@ -161,7 +179,8 @@ const body = routes
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(
   OUT,
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`
+  `<?xml version="1.0" encoding="UTF-8"?>\n<!-- ${escape(provenance)} -->\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`
 );
 
 console.log(`sitemap: ${routes.length} urls -> dist/sitemap.xml`);
