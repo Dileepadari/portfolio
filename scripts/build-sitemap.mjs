@@ -164,16 +164,38 @@ if (!creds) {
       if (entry) routes.push(entry);
     }
     // A post the anon role cannot see is a draft, and is absent for that reason.
-    const posts = await fetchRows(creds, "blog_posts", "slug,updated_at,published_at");
-    for (const row of posts) {
+    // `published_at` does not exist on this table - asking for it is what made
+    // PostgREST answer 400 once the schema was right.
+    const posts = await fetchRows(creds, "blog_posts", "slug,updated_at,external_link,published");
+
+    // An external post has no page here. `/blog/<slug>` opens the external URL
+    // in a new window and redirects back to `/blog` (see BlogPostView), so
+    // listing it would point a crawler at a URL with nothing on it. All three
+    // posts are external today, which is why "0 posts" below is the correct
+    // answer and not a symptom.
+    const ownPosts = posts.filter((row) => row.published && !row.external_link);
+    for (const row of ownPosts) {
       const entry = entryFor("/blog", row, "0.6");
       if (entry) routes.push(entry);
     }
+    // Counted apart, not as one leftover: "external" and "unpublished" are
+    // different facts, and a comment that reports a draft as an external post
+    // is the kind of almost-true line this file exists to stop.
+    const external = posts.filter((row) => row.external_link).length;
+    const unpublished = posts.filter((row) => !row.published && !row.external_link).length;
     // Counted per table rather than totalled: a reachable database that
     // answers with nothing is the failure that looks most like a success, and
     // "0 projects" is the only thing that would say so.
     const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
-    provenance = `${plural(projects.length, "project")}, ${plural(posts.length, "post")} from ${SCHEMA}`;
+    // These counts are carried so that "0 posts" reads as a fact about the blog
+    // rather than as a database that answered with nothing.
+    const skipped = [
+      external ? `${plural(external, "post")} external, no page here` : null,
+      unpublished ? `${plural(unpublished, "post")} unpublished` : null,
+    ].filter(Boolean);
+    provenance =
+      `${plural(projects.length, "project")}, ${plural(ownPosts.length, "post")} from ${SCHEMA}` +
+      (skipped.length ? ` (${skipped.join("; ")})` : "");
   } catch (err) {
     provenance = `database not read: ${err.message}`;
     console.warn(`sitemap: ${err.message}; writing the routes gathered so far`);
