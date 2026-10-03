@@ -21,7 +21,6 @@
  * than both, and the static routes are the ones that matter most anyway.
  */
 
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -64,27 +63,34 @@ function credentials() {
 /**
  * One PostgREST read.
  *
- * The thrown message names the table and nothing else. `execFileSync` puts the
- * whole argv into `err.message`, and that argv carries `apikey: <key>`: letting
- * it reach the console writes the key into every Vercel build log for as long
- * as the fetch keeps failing. The key is publishable and the logs are private,
- * so this is tidiness rather than a leak, but a build log is the wrong place to
- * start keeping credentials.
+ * `fetch`, not curl through `execFileSync`. The first version shelled out, and
+ * the first real deployment came back with a four-route sitemap: the build
+ * container is not obliged to have curl on its PATH, and a build step that
+ * depends on a binary nobody declared fails silently by design here, because
+ * the fallback is meant to survive a database outage rather than hide a bug.
+ * Global fetch has been stable since Node 18 and this package requires 20.19.
+ *
+ * The thrown message names the table and nothing else. `execFileSync` used to
+ * put the whole argv into `err.message`, and that argv carried `apikey: <key>`,
+ * which wrote the key into every build log for as long as the read kept
+ * failing. The key is publishable and the logs are private, so that was
+ * tidiness rather than a leak, but a build log is the wrong place to start
+ * keeping credentials - and it is worth keeping true of whatever replaces this.
  */
-function fetchRows({ url, key }, table, select) {
-  let body;
+async function fetchRows({ url, key }, table, select) {
+  let res;
   try {
-    body = execFileSync(
-      "curl",
-      ["-sS", "--max-time", "20", `${url}/rest/v1/${table}?select=${select}`, "-H", `apikey: ${key}`],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 32 * 1024 * 1024 }
-    );
+    res = await fetch(`${url}/rest/v1/${table}?select=${select}`, {
+      headers: { apikey: key },
+      signal: AbortSignal.timeout(20000),
+    });
   } catch {
-    throw new Error(`could not read ${table}`);
+    throw new Error(`could not reach ${table}`);
   }
+  if (!res.ok) throw new Error(`${table} returned ${res.status}`);
   let parsed;
   try {
-    parsed = JSON.parse(body);
+    parsed = await res.json();
   } catch {
     throw new Error(`${table} did not return JSON`);
   }
@@ -123,12 +129,12 @@ if (!creds) {
   console.warn("sitemap: no VITE_SUPABASE_URL / key, writing the static routes only");
 } else {
   try {
-    for (const row of fetchRows(creds, "projects", "slug,updated_at")) {
+    for (const row of await fetchRows(creds, "projects", "slug,updated_at")) {
       const entry = entryFor("/projects", row, "0.7");
       if (entry) routes.push(entry);
     }
     // A post the anon role cannot see is a draft, and is absent for that reason.
-    for (const row of fetchRows(creds, "blog_posts", "slug,updated_at,published_at")) {
+    for (const row of await fetchRows(creds, "blog_posts", "slug,updated_at,published_at")) {
       const entry = entryFor("/blog", row, "0.6");
       if (entry) routes.push(entry);
     }
