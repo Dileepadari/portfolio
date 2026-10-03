@@ -30,6 +30,9 @@ const OUT = path.join(ROOT, "dist", "sitemap.xml");
 /** Must match the canonical origin in index.html and useDocumentMeta. */
 const ORIGIN = "https://www.dileepadari.dev";
 
+/** Must match `db: { schema }` in src/integrations/supabase/client.ts. */
+const SCHEMA = "portfolio";
+
 /**
  * The routes that exist whether or not the database answers.
  *
@@ -70,6 +73,16 @@ function credentials() {
  * the fallback is meant to survive a database outage rather than hide a bug.
  * Global fetch has been stable since Node 18 and this package requires 20.19.
  *
+ * `Accept-Profile` is not optional. These tables live in the `portfolio`
+ * schema, not `public`, which belongs to a different site on the same box -
+ * exactly as `src/integrations/supabase/client.ts` configures the browser
+ * client. Without the header PostgREST resolves against `public`, where
+ * `blog_posts` does not exist (404) and `projects` is somebody else's table.
+ * The first deployment of this script read `public` and published four routes
+ * while reporting nothing; worse than the 404 would have been `public.projects`
+ * answering, because then the sitemap would have advertised another site's
+ * slugs under this domain.
+ *
  * The thrown message names the table and nothing else. `execFileSync` used to
  * put the whole argv into `err.message`, and that argv carried `apikey: <key>`,
  * which wrote the key into every build log for as long as the read kept
@@ -81,7 +94,7 @@ async function fetchRows({ url, key }, table, select) {
   let res;
   try {
     res = await fetch(`${url}/rest/v1/${table}?select=${select}`, {
-      headers: { apikey: key },
+      headers: { apikey: key, "Accept-Profile": SCHEMA },
       signal: AbortSignal.timeout(20000),
     });
   } catch {
@@ -145,16 +158,22 @@ if (!creds) {
   console.warn(`sitemap: ${provenance}, writing the static routes only`);
 } else {
   try {
-    for (const row of await fetchRows(creds, "projects", "slug,updated_at")) {
+    const projects = await fetchRows(creds, "projects", "slug,updated_at");
+    for (const row of projects) {
       const entry = entryFor("/projects", row, "0.7");
       if (entry) routes.push(entry);
     }
     // A post the anon role cannot see is a draft, and is absent for that reason.
-    for (const row of await fetchRows(creds, "blog_posts", "slug,updated_at,published_at")) {
+    const posts = await fetchRows(creds, "blog_posts", "slug,updated_at,published_at");
+    for (const row of posts) {
       const entry = entryFor("/blog", row, "0.6");
       if (entry) routes.push(entry);
     }
-    provenance = `${routes.length - STATIC_ROUTES.length} routes read from the database`;
+    // Counted per table rather than totalled: a reachable database that
+    // answers with nothing is the failure that looks most like a success, and
+    // "0 projects" is the only thing that would say so.
+    const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+    provenance = `${plural(projects.length, "project")}, ${plural(posts.length, "post")} from ${SCHEMA}`;
   } catch (err) {
     provenance = `database not read: ${err.message}`;
     console.warn(`sitemap: ${err.message}; writing the routes gathered so far`);
